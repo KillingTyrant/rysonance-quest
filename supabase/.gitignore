@@ -6,3 +6,7 @@
 .env.keys
 .env.local
 .env.*.local
+
+# Snippet dello Studio locale: contengono credenziali in chiaro (es. la password
+# del ruolo wallet_service). Restano solo in locale.
+snippets/
