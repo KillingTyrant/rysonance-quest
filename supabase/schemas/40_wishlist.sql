@@ -21,6 +21,20 @@ create table wishlist_subscribers (
   consent_ip inet,
   consent_user_agent text,
 
+  -- Da dove è arrivato l'iscritto. `referrer` è il sito che l'ha mandato,
+  -- letto al render della pagina: dentro la Server Action l'header `referer`
+  -- punterebbe sempre a /wishlist, perché il POST parte da lì. Gli utm_* sono
+  -- il post o la campagna. Entrambi arrivano da campi hidden del form, quindi
+  -- sono falsificabili: valgono come attribuzione, non come prova.
+  referrer text,
+  utm_source text,
+  utm_medium text,
+  utm_campaign text,
+
+  -- Tag della lingua preferita (es. 'it-IT'), dal primo valore di
+  -- accept-language: dice in che lingua scrivere a chi non è italiano.
+  locale text,
+
   -- Stato della mail di benvenuto, separato dall'iscrizione: se il webhook
   -- n8n fallisce l'indirizzo resta in lista e qui si vede cosa riprovare.
   welcome_status text not null default 'pending'
@@ -39,6 +53,8 @@ create table wishlist_subscribers (
   check ((welcome_status = 'sent') = (welcome_sent_at is not null))
 );
 
+-- Richiede public.touch_updated_at(), definita in schemas/01_functions.sql: il
+-- prefisso numerico di questo file lo fa eseguire dopo, quindi la funzione c'è.
 create trigger wishlist_subscribers_touch_updated_at
   before update on wishlist_subscribers
   for each row execute function public.touch_updated_at();
@@ -78,11 +94,18 @@ create index if not exists wishlist_events_subscriber_idx
 -- n8n. Invece della service_role key — che apre l'intero database, e starebbe
 -- nella config di n8n — un ruolo dedicato con i soli privilegi che servono,
 -- come già fa wallet_service (vedi supabase/roles.sql per il ruolo).
+--
+-- Il ruolo va anche concesso all'authenticator, altrimenti PostgREST non può
+-- assumerlo e ogni richiesta muore con «permission denied to set role»:
+--
+--   grant wishlist_service to authenticator;
 
 grant usage on schema public to wishlist_service;
 
 -- Niente DELETE: la cancellazione per richiesta GDPR è un'operazione manuale
 -- e irreversibile, non qualcosa che un webhook deve poter fare da solo.
+-- Nessun grant sulle sequenze: wishlist_events.id è `generated always as
+-- identity`, e per le identity basta il privilegio insert sulla tabella.
 grant select, insert, update on wishlist_subscribers to wishlist_service;
 
 -- Il log è append-only: si aggiunge cosa è successo, non si riscrive.

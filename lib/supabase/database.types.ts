@@ -458,11 +458,16 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          locale: string | null
+          referrer: string | null
           source: string
           status: string
           unsubscribe_token: string
           unsubscribed_at: string | null
           updated_at: string
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
           welcome_error: string | null
           welcome_sent_at: string | null
           welcome_status: string
@@ -474,11 +479,16 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
+          locale?: string | null
+          referrer?: string | null
           source?: string
           status?: string
           unsubscribe_token?: string
           unsubscribed_at?: string | null
           updated_at?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
           welcome_error?: string | null
           welcome_sent_at?: string | null
           welcome_status?: string
@@ -490,11 +500,16 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          locale?: string | null
+          referrer?: string | null
           source?: string
           status?: string
           unsubscribe_token?: string
           unsubscribed_at?: string | null
           updated_at?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
           welcome_error?: string | null
           welcome_sent_at?: string | null
           welcome_status?: string
