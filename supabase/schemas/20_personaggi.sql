@@ -199,3 +199,14 @@ create policy personaggio_talenti_delete_own on public.personaggio_talenti
   ));
 
 grant select, insert, update, delete on table public.personaggio_talenti to authenticated;
+
+-- Dati personaggio: il servizio deve poter rendere il pass di qualsiasi utente,
+-- quindi niente predicato di ownership (che qui sarebbe comunque inapplicabile:
+-- wallet_service non ha un auth.uid()).
+create policy personaggi_read_service
+    on public.personaggi
+    for select to wallet_service using (true);
+
+create policy personaggio_talenti_read_service
+    on public.personaggio_talenti
+    for select to wallet_service using (true);

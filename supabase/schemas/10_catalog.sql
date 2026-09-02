@@ -283,3 +283,17 @@ create policy tendenze_read on public.tendenze
   for select to anon, authenticated using (true);
 
 grant select on table public.tendenze to anon, authenticated;
+
+-- wallet_service ha già i grant SELECT su queste 7 tabelle, ma RLS è attiva e
+-- tutte le policy esistenti sono per {anon, authenticated}: sotto wallet_service
+-- ogni riga viene filtrata via in silenzio (0 righe, nessun errore), e il
+-- renderer del pass restituisce 404. Queste policy chiudono il buco senza
+-- allargare i privilegi oltre i grant già concessi: sola lettura, solo su
+-- queste tabelle, nessun impatto su anon/authenticated.
+
+-- Cataloghi: già pubblici in lettura per anon/authenticated.
+create policy razze_read_service   on public.razze   for select to wallet_service using (true);
+create policy tribu_read_service   on public.tribu   for select to wallet_service using (true);
+create policy vie_read_service     on public.vie     for select to wallet_service using (true);
+create policy talenti_read_service on public.talenti for select to wallet_service using (true);
+create policy sottovie_read_service on public.sottovie for select to wallet_service using (true);
