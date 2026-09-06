@@ -136,6 +136,15 @@ export function validateDraft(
       "Talenti",
       `Non esiste nessun talento a scelta con chiave "${sconosciuti[0]}".`,
     );
+  } else if (!via) {
+    // Senza Via non si sa quanti talenti servano: la scelta non può dirsi
+    // fatta. Senza questo caso `attesi` varrebbe 0 e un draft ancora vuoto
+    // risulterebbe completo — spunta verde sulla riga "talenti" della hub.
+    add(
+      "talenti",
+      "Talenti",
+      "Scegli prima la Via: è lei a dire quanti talenti puoi apprendere.",
+    );
   } else if (draft.talenti.length !== attesi) {
     const mancanti = attesi - draft.talenti.length;
     add(
