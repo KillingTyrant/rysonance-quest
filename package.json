@@ -4,16 +4,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint .",
-    "db:start": "supabase start",
-    "db:stop": "supabase stop",
-    "db:status": "supabase status",
-    "db:reset": "supabase db reset",
-    "db:diff": "supabase db diff -f",
-    "db:migrate": "supabase migration up",
-    "db:advisors": "supabase db advisors --local",
-    "db:types": "supabase gen types typescript --local > lib/supabase/database.types.ts",
-    "db:push": "supabase db push"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.1",
