@@ -10,12 +10,6 @@ import type {
 } from "./types";
 import { SESSI } from "./types";
 
-/**
- * Quanti talenti a scelta dà una via prima dei suoi bonus. Allineato al 2 di
- * `public.talenti_a_scelta`: se cambia, cambia in tutti e due.
- */
-export const TALENTI_SCELTI_BASE = 2;
-
 // ─────────────────────────────── Lookup ─────────────────────────────────────
 
 export function viaByKey(catalog: Catalog, key: string | null): Via | null {
@@ -61,23 +55,24 @@ export function sessoName(sesso: Sesso | null): string | null {
 
 // ─────────────────────────────── Derivazioni ────────────────────────────────
 
-/**
- * Il talento con cui la via comincia: quello della sottovia di livello 0,
- * unica per `unique (via_key, level)`.
- */
+/** Il talento con cui la via comincia (`vie.talent_key`). */
 export function talentoIniziale(via: Via | null): Talento | null {
-  return via?.sottovie.find((sottovia) => sottovia.level === 0)?.talento ?? null;
+  return via?.talento ?? null;
 }
 
-/** Quanti talenti deve scegliere chi percorre questa via. */
+/**
+ * Quanti talenti deve scegliere chi percorre questa via. È `vie.talenti_scelta`,
+ * la stessa regola che `crea_personaggio` impone al salvataggio: qui serve al
+ * wizard per sapere quante card far scegliere prima di provare a salvare.
+ */
 export function talentiDaScegliere(via: Via | null): number {
-  return TALENTI_SCELTI_BASE + (via?.talenti_extra ?? 0);
+  return via?.talenti_scelta ?? 0;
 }
 
 /**
  * Una razza è giocabile se ha almeno una tribù: senza, non ci sarebbe niente
- * da scegliere nella sua card e il personaggio non sarebbe salvabile (lo
- * rifiuterebbe la FK composta di `personaggi`).
+ * da scegliere nella sua card e il personaggio non sarebbe salvabile
+ * (`personaggi.tribu_key` è obbligatoria).
  */
 export function isRazzaGiocabile(razza: Razza): boolean {
   return razza.tribu.length > 0;
@@ -113,42 +108,45 @@ export type ResolvedPersonaggio = {
    * distingue i due gruppi con `talento.kind`, senza bisogno di due liste.
    */
   talenti: Talento[];
-  /** I punti vita base della tribù selezionata. */
+  /**
+   * Vita, mana e velocità base della tribù. Sono `null` solo finché nel wizard
+   * la tribù non è stata scelta: nel catalogo non sono mai nulli.
+   */
   hp: number | null;
-  /** Il mana base della tribù selezionata. */
   mana: number | null;
-  /** La velocità della tribù. Con base_speed NULL la scheda mostra "—". */
   speed: number | null;
 };
 
-/** Le scelte in corso: la velocità è quella della tribù scelta. */
+/**
+ * Le scelte in corso: la razza è quella della card selezionata, che può
+ * esistere anche prima della tribù.
+ */
 export function resolveDraft(
   catalog: Catalog,
   draft: PersonaggioDraft,
 ): ResolvedPersonaggio {
-  return resolve(catalog, draft);
+  return resolve(catalog, draft, draft.razza_key);
 }
 
 /**
- * Un personaggio salvato: la velocità è lo snapshot scritto alla creazione,
- * non quella corrente del catalogo — che può essere cambiato nel frattempo.
+ * Un personaggio salvato non porta la razza: la si ricava dalla tribù, come
+ * fa il DB (`tribu.razza_key`).
  */
 export function resolveRow(
   catalog: Catalog,
   personaggio: Personaggio,
 ): ResolvedPersonaggio {
-  return {
-    ...resolve(catalog, personaggio),
-    speed: personaggio.speed,
-  };
+  const tribu = tribuByKey(catalog, personaggio.tribu_key);
+  return resolve(catalog, personaggio, tribu?.razza_key ?? null);
 }
 
 function resolve(
   catalog: Catalog,
   scelte: PersonaggioDraft | Personaggio,
+  razzaKey: string | null,
 ): ResolvedPersonaggio {
   const via = viaByKey(catalog, scelte.via_key);
-  const razza = razzaByKey(catalog, scelte.razza_key);
+  const razza = razzaByKey(catalog, razzaKey);
   const tribu = tribuByKey(catalog, scelte.tribu_key);
 
   return {

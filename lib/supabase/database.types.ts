@@ -34,41 +34,12 @@ export type Database = {
   }
   public: {
     Tables: {
-      caratteristiche: {
-        Row: {
-          description: string
-          hp_per_punto: number
-          key: string
-          mana_per_punto: number
-          name: string
-          sort_order: number
-        }
-        Insert: {
-          description?: string
-          hp_per_punto?: number
-          key: string
-          mana_per_punto?: number
-          name: string
-          sort_order?: number
-        }
-        Update: {
-          description?: string
-          hp_per_punto?: number
-          key?: string
-          mana_per_punto?: number
-          name?: string
-          sort_order?: number
-        }
-        Relationships: []
-      }
       personaggi: {
         Row: {
           created_at: string
           id: string
           name: string
-          razza_key: string
           sesso: Database["public"]["Enums"]["sesso"]
-          speed: number | null
           tribu_key: string
           updated_at: string
           user_id: string
@@ -78,9 +49,7 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
-          razza_key: string
           sesso: Database["public"]["Enums"]["sesso"]
-          speed?: number | null
           tribu_key: string
           updated_at?: string
           user_id: string
@@ -90,9 +59,7 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
-          razza_key?: string
           sesso?: Database["public"]["Enums"]["sesso"]
-          speed?: number | null
           tribu_key?: string
           updated_at?: string
           user_id?: string
@@ -100,18 +67,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "personaggi_razza_key_fkey"
-            columns: ["razza_key"]
-            isOneToOne: false
-            referencedRelation: "razze"
-            referencedColumns: ["key"]
-          },
-          {
-            foreignKeyName: "personaggi_razza_key_tribu_key_fkey"
-            columns: ["razza_key", "tribu_key"]
+            foreignKeyName: "personaggi_tribu_key_fkey"
+            columns: ["tribu_key"]
             isOneToOne: false
             referencedRelation: "tribu"
-            referencedColumns: ["razza_key", "key"]
+            referencedColumns: ["key"]
           },
           {
             foreignKeyName: "personaggi_via_key_fkey"
@@ -126,17 +86,14 @@ export type Database = {
         Row: {
           personaggio_id: string
           talent_key: string
-          talent_kind: string | null
         }
         Insert: {
           personaggio_id: string
           talent_key: string
-          talent_kind?: string | null
         }
         Update: {
           personaggio_id?: string
           talent_key?: string
-          talent_kind?: string | null
         }
         Relationships: [
           {
@@ -147,43 +104,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "personaggio_talenti_talent_key_talent_kind_fkey"
-            columns: ["talent_key", "talent_kind"]
+            foreignKeyName: "personaggio_talenti_talent_key_fkey"
+            columns: ["talent_key"]
             isOneToOne: false
             referencedRelation: "talenti"
-            referencedColumns: ["key", "kind"]
-          },
-        ]
-      }
-      razza_caratteristiche: {
-        Row: {
-          caratteristica_key: string
-          razza_key: string
-          sort_order: number
-        }
-        Insert: {
-          caratteristica_key: string
-          razza_key: string
-          sort_order?: number
-        }
-        Update: {
-          caratteristica_key?: string
-          razza_key?: string
-          sort_order?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "razza_caratteristiche_caratteristica_key_fkey"
-            columns: ["caratteristica_key"]
-            isOneToOne: false
-            referencedRelation: "caratteristiche"
-            referencedColumns: ["key"]
-          },
-          {
-            foreignKeyName: "razza_caratteristiche_razza_key_fkey"
-            columns: ["razza_key"]
-            isOneToOne: false
-            referencedRelation: "razze"
             referencedColumns: ["key"]
           },
         ]
@@ -195,7 +119,6 @@ export type Database = {
           name: string
           sort_order: number
           talent_key: string | null
-          talent_kind: string | null
         }
         Insert: {
           description?: string
@@ -203,7 +126,6 @@ export type Database = {
           name: string
           sort_order?: number
           talent_key?: string | null
-          talent_kind?: string | null
         }
         Update: {
           description?: string
@@ -211,59 +133,13 @@ export type Database = {
           name?: string
           sort_order?: number
           talent_key?: string | null
-          talent_kind?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "razze_talent_key_talent_kind_fkey"
-            columns: ["talent_key", "talent_kind"]
-            isOneToOne: false
+            foreignKeyName: "razze_talent_key_fkey"
+            columns: ["talent_key"]
+            isOneToOne: true
             referencedRelation: "talenti"
-            referencedColumns: ["key", "kind"]
-          },
-        ]
-      }
-      sottovie: {
-        Row: {
-          description: string
-          key: string
-          level: number
-          name: string
-          talent_key: string | null
-          talent_kind: string | null
-          via_key: string
-        }
-        Insert: {
-          description?: string
-          key: string
-          level?: number
-          name: string
-          talent_key?: string | null
-          talent_kind?: string | null
-          via_key: string
-        }
-        Update: {
-          description?: string
-          key?: string
-          level?: number
-          name?: string
-          talent_key?: string | null
-          talent_kind?: string | null
-          via_key?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "sottovie_talent_key_talent_kind_fkey"
-            columns: ["talent_key", "talent_kind"]
-            isOneToOne: false
-            referencedRelation: "talenti"
-            referencedColumns: ["key", "kind"]
-          },
-          {
-            foreignKeyName: "sottovie_via_key_fkey"
-            columns: ["via_key"]
-            isOneToOne: false
-            referencedRelation: "vie"
             referencedColumns: ["key"]
           },
         ]
@@ -275,7 +151,6 @@ export type Database = {
           key: string
           kind: string
           name: string
-          properties: Json
           ramo: string | null
           scuola: string | null
           sort_order: number
@@ -286,7 +161,6 @@ export type Database = {
           key: string
           kind: string
           name: string
-          properties?: Json
           ramo?: string | null
           scuola?: string | null
           sort_order?: number
@@ -297,88 +171,45 @@ export type Database = {
           key?: string
           kind?: string
           name?: string
-          properties?: Json
           ramo?: string | null
           scuola?: string | null
           sort_order?: number
         }
         Relationships: []
       }
-      tendenze: {
-        Row: {
-          default_value: number | null
-          description: string
-          key: string
-          max_label: string
-          max_value: number
-          min_label: string
-          min_value: number
-          name: string
-          sort_order: number
-          type: string
-        }
-        Insert: {
-          default_value?: number | null
-          description?: string
-          key: string
-          max_label?: string
-          max_value?: number
-          min_label?: string
-          min_value?: number
-          name: string
-          sort_order?: number
-          type: string
-        }
-        Update: {
-          default_value?: number | null
-          description?: string
-          key?: string
-          max_label?: string
-          max_value?: number
-          min_label?: string
-          min_value?: number
-          name?: string
-          sort_order?: number
-          type?: string
-        }
-        Relationships: []
-      }
       tribu: {
         Row: {
-          base_hp: number | null
-          base_mana: number | null
-          base_speed: number | null
+          base_hp: number
+          base_mana: number
+          base_speed: number
           description: string
           key: string
           name: string
           razza_key: string
           sort_order: number
           talent_key: string | null
-          talent_kind: string | null
         }
         Insert: {
-          base_hp?: number | null
-          base_mana?: number | null
-          base_speed?: number | null
+          base_hp: number
+          base_mana: number
+          base_speed: number
           description?: string
           key: string
           name: string
           razza_key: string
           sort_order?: number
           talent_key?: string | null
-          talent_kind?: string | null
         }
         Update: {
-          base_hp?: number | null
-          base_mana?: number | null
-          base_speed?: number | null
+          base_hp?: number
+          base_mana?: number
+          base_speed?: number
           description?: string
           key?: string
           name?: string
           razza_key?: string
           sort_order?: number
           talent_key?: string | null
-          talent_kind?: string | null
         }
         Relationships: [
           {
@@ -389,11 +220,11 @@ export type Database = {
             referencedColumns: ["key"]
           },
           {
-            foreignKeyName: "tribu_talent_key_talent_kind_fkey"
-            columns: ["talent_key", "talent_kind"]
-            isOneToOne: false
+            foreignKeyName: "tribu_talent_key_fkey"
+            columns: ["talent_key"]
+            isOneToOne: true
             referencedRelation: "talenti"
-            referencedColumns: ["key", "kind"]
+            referencedColumns: ["key"]
           },
         ]
       }
@@ -403,20 +234,34 @@ export type Database = {
           key: string
           name: string
           sort_order: number
+          talent_key: string | null
+          talenti_scelta: number
         }
         Insert: {
           description?: string
           key: string
           name: string
           sort_order?: number
+          talent_key?: string | null
+          talenti_scelta?: number
         }
         Update: {
           description?: string
           key?: string
           name?: string
           sort_order?: number
+          talent_key?: string | null
+          talenti_scelta?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "vie_talent_key_fkey"
+            columns: ["talent_key"]
+            isOneToOne: true
+            referencedRelation: "talenti"
+            referencedColumns: ["key"]
+          },
+        ]
       }
       wishlist_events: {
         Row: {
@@ -524,7 +369,6 @@ export type Database = {
       crea_personaggio: {
         Args: {
           p_name: string
-          p_razza_key: string
           p_sesso: Database["public"]["Enums"]["sesso"]
           p_talenti: string[]
           p_tribu_key: string
@@ -532,7 +376,6 @@ export type Database = {
         }
         Returns: string
       }
-      talenti_a_scelta: { Args: { p_via_key: string }; Returns: number }
     }
     Enums: {
       sesso: "maschio" | "femmina"

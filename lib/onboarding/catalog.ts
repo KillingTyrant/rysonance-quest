@@ -5,7 +5,7 @@ import { cacheLife } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/lib/supabase/database.types";
-import type { Catalog, Sottovia, Talento, Tribu } from "./types";
+import type { Catalog, Talento, Tribu, Via } from "./types";
 
 /**
  * Client "anonimo" senza cookie: il catalogo è pubblico in lettura (RLS
@@ -22,21 +22,19 @@ function catalogClient() {
 
 /**
  * Legge il catalogo di gioco e lo ricompone secondo le relazioni del DB:
- * razza → tribù, via → sottovie, ciascuna con il proprio talento.
+ * razza → tribù, e le vie, ciascuna con il proprio talento.
  *
  * `"use cache"` + `cacheLife("max")`: viene risolto a build time e congelato
  * nelle pagine, quindi a runtime non parte nessuna query. La chiave di cache
  * include il build id, perciò ogni deploy rilegge il catalogo — il contenuto
  * cambia solo con un `db push --include-seed` seguito da un deploy.
  *
- * Cinque query invece di un embed PostgREST: il legame verso i talenti è una FK
- * *composta* (talent_key, talent_kind), che l'embedding non risolve. Il numero
- * di round-trip è comunque irrilevante, gira a build time.
+ * Quattro query piatte e una ricomposizione in memoria, invece di un embed
+ * PostgREST sui talenti: i talenti si leggono una volta sola e si agganciano
+ * per chiave. Il numero di round-trip è comunque irrilevante, gira a build time.
  *
  * Le colonne sono elencate una per una: quello che finisce qui dentro viene
- * serializzato nel payload del client. `talenti.properties` è l'eccezione —
- * si legge, se ne ricava `via.talenti_extra` e poi si butta via, così gli
- * effetti di gioco non viaggiano fino al browser.
+ * serializzato nel payload del client.
  */
 export async function getCatalog(): Promise<Catalog> {
   "use cache";
@@ -44,12 +42,12 @@ export async function getCatalog(): Promise<Catalog> {
 
   const supabase = catalogClient();
 
-  const [talenti, razze, tribu, vie, sottovie] = await Promise.all([
+  const [talenti, razze, tribu, vie] = await Promise.all([
     read(
       "talenti",
       supabase
         .from("talenti")
-        .select("key, name, description, kind, scuola, disciplina, ramo, properties")
+        .select("key, name, description, kind, scuola, disciplina, ramo")
         .order("sort_order"),
     ),
     read(
@@ -68,24 +66,16 @@ export async function getCatalog(): Promise<Catalog> {
     ),
     read(
       "vie",
-      supabase.from("vie").select("key, name, description, sort_order").order("sort_order"),
-    ),
-    read(
-      "sottovie",
       supabase
-        .from("sottovie")
-        .select("key, via_key, level, name, description, talent_key")
-        .order("level"),
+        .from("vie")
+        .select("key, name, description, sort_order, talent_key, talenti_scelta")
+        .order("sort_order"),
     ),
   ]);
 
-  // `properties` si consuma qui e non prosegue: gli effetti di gioco non
-  // devono finire nel payload del client.
   const talentoByKey = new Map<string, Talento>();
-  const extraByTalento = new Map<string, number>();
-  for (const { properties, ...talento } of talenti) {
+  for (const talento of talenti) {
     talentoByKey.set(talento.key, talento);
-    extraByTalento.set(talento.key, talentiSceltaExtra(properties));
   }
 
   const talentoOf = (key: string | null) => (key ? talentoByKey.get(key) ?? null : null);
@@ -99,23 +89,14 @@ export async function getCatalog(): Promise<Catalog> {
     (t) => t.razza_key,
   );
 
-  const sottovieByVia = groupBy(sottovie, (s) => s.via_key);
-
   return {
-    vie: vie.map((via) => {
-      const proprie = sottovieByVia.get(via.key) ?? [];
-      // Il talento di livello 0 apre la via, e con `talenti_scelta_extra` decide
-      // anche quanti talenti a scelta darà.
-      const iniziale = proprie.find((sottovia) => sottovia.level === 0)?.talent_key;
-      return {
-        ...via,
-        sottovie: proprie.map(({ talent_key, ...row }): Sottovia => ({
-          ...row,
-          talento: talentoOf(talent_key),
-        })),
-        talenti_extra: (iniziale && extraByTalento.get(iniziale)) || 0,
-      };
-    }),
+    // `talent_key` apre la via; `talenti_scelta` dice quanti talenti a scelta
+    // dà (il Viandante tre, le altre due) ed è la stessa regola che
+    // `crea_personaggio` applica al salvataggio.
+    vie: vie.map(({ talent_key, ...row }): Via => ({
+      ...row,
+      talento: talentoOf(talent_key),
+    })),
     razze: razze.map(({ talent_key, ...row }) => ({
       ...row,
       talento: talentoOf(talent_key),
@@ -125,19 +106,6 @@ export async function getCatalog(): Promise<Catalog> {
     // l'ordine in cui lo step li mostra.
     talentiScelta: [...talentoByKey.values()].filter((t) => t.kind === "scelta"),
   };
-}
-
-/**
- * Quanti talenti a scelta in più concede un talento. Specchio TypeScript di
- * `public.talenti_a_scelta`: il DB resta l'autorità, questo serve al wizard per
- * sapere quante card far scegliere prima di provare a salvare.
- */
-function talentiSceltaExtra(properties: unknown): number {
-  if (typeof properties !== "object" || properties === null) return 0;
-  const extra = (properties as Record<string, unknown>).talenti_scelta_extra;
-  return typeof extra === "number" && Number.isFinite(extra) && extra > 0
-    ? Math.trunc(extra)
-    : 0;
 }
 
 /**

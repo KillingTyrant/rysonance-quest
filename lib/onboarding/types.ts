@@ -56,20 +56,12 @@ export type Razza = Pick<
   tribu: Tribu[];
 };
 
-export type Sottovia = Pick<
-  Row<"sottovie">,
-  "key" | "via_key" | "level" | "name" | "description"
-> & { talento: Talento | null };
-
-export type Via = Pick<Row<"vie">, "key" | "name" | "description" | "sort_order"> & {
-  /** Ordinate per livello; quella di livello 0 apre la via. */
-  sottovie: Sottovia[];
-  /**
-   * Quanti talenti a scelta IN PIÙ concede la via, letti da
-   * `talenti.properties.talenti_scelta_extra` del talento di livello 0: è così
-   * che "giusta scelta" del Viandante ne dà tre invece di due.
-   */
-  talenti_extra: number;
+export type Via = Pick<
+  Row<"vie">,
+  "key" | "name" | "description" | "sort_order" | "talenti_scelta"
+> & {
+  /** Il talento con cui la via comincia (`vie.talent_key`). */
+  talento: Talento | null;
 };
 
 /**
@@ -92,14 +84,7 @@ export type Catalog = {
 /** Un personaggio salvato, con i talenti scelti già uniti. */
 export type Personaggio = Pick<
   Row<"personaggi">,
-  | "id"
-  | "name"
-  | "sesso"
-  | "via_key"
-  | "razza_key"
-  | "tribu_key"
-  | "speed"
-  | "created_at"
+  "id" | "name" | "sesso" | "via_key" | "tribu_key" | "created_at"
 > & {
   /** Chiavi dei talenti scelti dall'utente. */
   talenti: string[];
@@ -114,6 +99,10 @@ export type PersonaggioDraft = {
   name: string;
   sesso: Sesso | null;
   via_key: string | null;
+  /**
+   * Stato della UI (la card della razza), non una colonna: il DB ricava la
+   * razza dalla tribù e la RPC non la riceve.
+   */
   razza_key: string | null;
   tribu_key: string | null;
   /** Chiavi dei talenti scelti: quanti ne servono lo dice la Via. */

@@ -14,7 +14,7 @@ import { parseDraft, validateDraft } from "./validate";
  * testo del select, e una concatenazione lo degrada a `string`.
  */
 const PERSONAGGIO_SELECT =
-  "id, name, sesso, via_key, razza_key, tribu_key, speed, created_at, personaggio_talenti(talent_key)";
+  "id, name, sesso, via_key, tribu_key, created_at, personaggio_talenti(talent_key)";
 
 type PersonaggioRow = Omit<Personaggio, "talenti"> & {
   personaggio_talenti: { talent_key: string }[];
@@ -42,7 +42,9 @@ export async function listPersonaggi(): Promise<Personaggio[]> {
  * pubblico e la forma del payload va verificata a runtime, non con i tipi. La
  * validazione usa la stessa `validateDraft` del client, così le due non possono
  * divergere; la scrittura vera passa dalla RPC `crea_personaggio`, che è il
- * confine transazionale fra le tabelle e decide da sé `user_id` e la velocità.
+ * confine transazionale fra le tabelle, decide da sé `user_id` e riapplica le
+ * regole (numero di talenti, talenti a scelta). La razza non viaggia: il DB la
+ * ricava dalla tribù.
  */
 export async function creaPersonaggio(
   input: unknown,
@@ -80,7 +82,6 @@ export async function creaPersonaggio(
     // validateDraft ha già scartato i null: qui i campi sono per forza pieni.
     p_sesso: draft.sesso!,
     p_via_key: draft.via_key!,
-    p_razza_key: draft.razza_key!,
     p_tribu_key: draft.tribu_key!,
     p_talenti: draft.talenti,
   });
@@ -120,12 +121,9 @@ function toPersonaggio({ personaggio_talenti, ...row }: PersonaggioRow): Persona
  */
 const CONSTRAINT_MESSAGES: Record<string, string> = {
   personaggi_name_check: "Il nome del personaggio non è valido.",
-  personaggi_razza_key_tribu_key_fkey:
-    "La tribù scelta non appartiene alla razza selezionata.",
   personaggi_user_id_fkey: "Il tuo account non è più valido. Accedi di nuovo.",
-  personaggio_talenti_talent_key_talent_kind_fkey:
-    "Uno dei talenti scelti non è più fra quelli disponibili.",
-  personaggio_talenti_pkey: "Hai scelto due volte lo stesso talento.",
+  personaggi_tribu_key_fkey: "La tribù scelta non esiste più. Ricarica la pagina.",
+  personaggi_via_key_fkey: "La Via scelta non esiste più. Ricarica la pagina.",
 };
 
 function describeError(error: PostgrestError): string {
@@ -135,13 +133,15 @@ function describeError(error: PostgrestError): string {
   }
 
   switch (error.code) {
-    case "23503": // foreign_key_violation, incluso il raise di crea_personaggio
-      return "Una delle scelte non esiste più nel catalogo. Ricarica la pagina.";
-    case "23514": // check_violation: il conteggio dei talenti in crea_personaggio
-      // e il trigger che tiene il tetto — l'unica regola di creazione rimasta.
-      return "Il numero di talenti scelti non è più quello previsto dalla tua Via. Ricarica la pagina.";
-    case "42501":
-      return "Non hai i permessi per salvare questo personaggio. Accedi di nuovo.";
+    case "23503": // foreign_key_violation, e i raise di crea_personaggio: via
+      // inesistente, talento inesistente o non a scelta.
+      return "Una delle scelte non esiste più nel catalogo, o non è fra quelle disponibili. Ricarica la pagina.";
+    case "23514": // check_violation: crea_personaggio esige esattamente
+      // `vie.talenti_scelta` talenti.
+      return "Il numero di talenti scelti non è quello previsto dalla tua Via. Ricarica la pagina.";
+    case "42501": // insufficient_privilege: crea_personaggio senza sessione, o
+      // un accesso diretto alle tabelle, che solo la RPC può scrivere.
+      return "Serve una sessione valida per salvare il personaggio. Accedi di nuovo.";
     case "PGRST202":
     case "PGRST204":
       return "L'app non è allineata al database. Ricarica la pagina.";

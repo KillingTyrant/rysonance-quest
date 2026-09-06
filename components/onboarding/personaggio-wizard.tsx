@@ -130,8 +130,8 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
     if (patch.razza_key !== undefined) {
       const razza = razzaByKey(catalog, next.razza_key);
 
-      // Una tribù di un'altra razza non ha senso, e la FK composta la
-      // rifiuterebbe comunque.
+      // Una tribù di un'altra razza non ha senso: il DB non lo vieta (la razza
+      // la ricava dalla tribù), quindi l'invariante lo tiene la UI.
       if (next.tribu_key && !razza?.tribu.some((t) => t.key === next.tribu_key)) {
         next.tribu_key = null;
         avvisi.push("Cambiando razza la tribù non era più valida: l'ho tolta.");

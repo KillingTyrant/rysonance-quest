@@ -19,10 +19,9 @@ import { StepSection } from "../step-section";
 import type { StepProps } from "../wizard-steps";
 
 /**
- * La Via: il percorso di crescita. Ogni via ha una sottovia per livello; quella
- * di livello 0 porta il talento con cui il personaggio comincia — ed è anche ciò
- * che decide quanti talenti si potranno scegliere più avanti, perciò questo step
- * precede quello dei talenti.
+ * La Via: il percorso di crescita. Ogni via porta il talento con cui il
+ * personaggio comincia e decide quanti talenti si potranno scegliere più
+ * avanti, perciò questo step precede quello dei talenti.
  *
  * Una via per schermata, a carosello: si sfoglia con lo swipe (o frecce e
  * tastiera) e si conferma con "Seleziona". Rientrando nello step il carosello
