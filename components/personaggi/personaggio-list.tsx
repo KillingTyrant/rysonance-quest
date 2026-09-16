@@ -34,7 +34,7 @@ export async function PersonaggioList() {
             minuti.
           </p>
         </div>
-        <Button asChild>
+        <Button asChild variant="ticket">
           <Link href="/onboarding">Crea il primo personaggio</Link>
         </Button>
       </div>
