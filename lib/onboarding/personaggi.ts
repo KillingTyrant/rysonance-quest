@@ -84,6 +84,7 @@ export async function creaPersonaggio(
     p_via_key: draft.via_key!,
     p_tribu_key: draft.tribu_key!,
     p_talenti: draft.talenti,
+    p_razza_key: draft.razza_key!,
   });
 
   if (error) return { ok: false, message: describeError(error) };
