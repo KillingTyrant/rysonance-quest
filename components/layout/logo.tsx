@@ -1,3 +1,5 @@
+import type { Ref } from "react";
+
 /**
  * Logo Rysonance: simbolo + lettering.
  *
@@ -11,9 +13,10 @@
  * Nessun `id` sugli elementi (erano nomi di livello di Illustrator): inline si
  * duplicherebbero se il logo comparisse due volte nella stessa pagina.
  */
-export function Logo({ className, iconOnly = true }: { className?: string, iconOnly?: boolean }) {
+export function Logo({ className, iconOnly = true, ref }: { className?: string, iconOnly?: boolean, ref?: Ref<SVGSVGElement> }) {
   return (
     <svg
+      ref={ref}
       viewBox={`0 0 ${iconOnly ? 16.34 : 85.5} 16.34`}
       fill="currentColor"
       role="img"

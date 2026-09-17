@@ -102,4 +102,41 @@
         no-repeat;
     mask-composite: intersect;
   }
+
+  /* Card olografica della quest. Tre strati sopra l'illustrazione, pilotati da variabili
+     CSS che scrive GSAP: --px/--py (0%..100%) dove sta il dito, --holo (0..1) quanto è
+     acceso l'effetto. A riposo --holo vale 0 e resta solo la banda di luce. */
+  .carta-holo-riflesso {
+    background: radial-gradient(
+      circle at var(--px, 50%) var(--py, 30%),
+      rgb(255 255 255 / 0.45),
+      transparent 45%
+    );
+    mix-blend-mode: overlay;
+    opacity: var(--holo, 0);
+  }
+
+  .carta-holo-iride {
+    background: linear-gradient(
+      115deg,
+      transparent 25%,
+      rgb(244 114 182 / 0.55) 38%,
+      rgb(125 211 252 / 0.55) 50%,
+      rgb(253 224 71 / 0.55) 62%,
+      transparent 75%
+    );
+    background-size: 250% 250%;
+    background-position: var(--px, 50%) var(--py, 50%);
+    mix-blend-mode: color-dodge;
+    opacity: calc(var(--holo, 0) * 0.7);
+  }
+
+  .carta-holo-banda {
+    background: linear-gradient(
+      105deg,
+      transparent 35%,
+      rgb(255 255 255 / 0.3) 50%,
+      transparent 65%
+    );
+  }
 }

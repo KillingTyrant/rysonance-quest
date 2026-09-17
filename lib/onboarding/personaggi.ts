@@ -3,6 +3,7 @@ import "server-only";
 import type { PostgrestError } from "@supabase/supabase-js";
 
 import { createClient } from "@/lib/supabase/server";
+import { isUuid } from "@/lib/utils";
 
 import { getCatalog } from "./catalog";
 import type { Personaggio, SavePersonaggioResult } from "./types";
@@ -14,7 +15,7 @@ import { parseDraft, validateDraft } from "./validate";
  * testo del select, e una concatenazione lo degrada a `string`.
  */
 const PERSONAGGIO_SELECT =
-  "id, name, sesso, via_key, tribu_key, created_at, personaggio_talenti(talent_key)";
+  "id, name, sesso, via_key, razza_key, tribu_key, created_at, personaggio_talenti(talent_key)";
 
 type PersonaggioRow = Omit<Personaggio, "talenti"> & {
   personaggio_talenti: { talent_key: string }[];
@@ -36,6 +37,39 @@ export async function listPersonaggi(): Promise<Personaggio[]> {
 }
 
 /**
+ * Un personaggio dell'utente corrente, o `null` se non esiste o non è suo: per
+ * RLS le due cose sono la stessa, e va bene così — chi apre l'URL di un altro
+ * non deve nemmeno sapere se quel personaggio c'è.
+ */
+export async function getPersonaggio(id: string): Promise<Personaggio | null> {
+  if (!isUuid(id)) return null;
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("personaggi")
+    .select(PERSONAGGIO_SELECT)
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data ? toPersonaggio(data as PersonaggioRow) : null;
+}
+
+/** L'id del personaggio creato per ultimo dall'utente corrente, se ne ha uno. */
+export async function getUltimoPersonaggioId(): Promise<string | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("personaggi")
+    .select("id")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data?.id ?? null;
+}
+
+/**
  * Crea il personaggio del wizard.
  *
  * L'argomento è `unknown` di proposito: una server action è un endpoint
@@ -43,8 +77,11 @@ export async function listPersonaggi(): Promise<Personaggio[]> {
  * validazione usa la stessa `validateDraft` del client, così le due non possono
  * divergere; la scrittura vera passa dalla RPC `crea_personaggio`, che è il
  * confine transazionale fra le tabelle, decide da sé `user_id` e riapplica le
- * regole (numero di talenti, talenti a scelta). La razza non viaggia: il DB la
- * ricava dalla tribù.
+ * regole (numero di talenti, talenti a scelta).
+ *
+ * Al successo restituisce solo l'id, senza rileggere la riga: se la rilettura
+ * fallisse il personaggio esisterebbe comunque, ma il client vedrebbe un
+ * errore e riprovando ne creerebbe un secondo.
  */
 export async function creaPersonaggio(
   input: unknown,
@@ -84,26 +121,12 @@ export async function creaPersonaggio(
     p_via_key: draft.via_key!,
     p_tribu_key: draft.tribu_key!,
     p_talenti: draft.talenti,
+    p_razza_key: draft.razza_key!,
   });
 
   if (error) return { ok: false, message: describeError(error) };
 
-  const { data, error: readError } = await supabase
-    .from("personaggi")
-    .select(PERSONAGGIO_SELECT)
-    .eq("id", id)
-    .single();
-
-  // Il personaggio esiste comunque: è solo la rilettura ad aver fallito.
-  if (readError) {
-    return {
-      ok: false,
-      message:
-        "Il personaggio è stato creato, ma non è stato possibile rileggerlo. Vai alla lobby.",
-    };
-  }
-
-  return { ok: true, personaggio: toPersonaggio(data as PersonaggioRow) };
+  return { ok: true, id };
 }
 
 function toPersonaggio({ personaggio_talenti, ...row }: PersonaggioRow): Personaggio {
@@ -122,7 +145,10 @@ function toPersonaggio({ personaggio_talenti, ...row }: PersonaggioRow): Persona
 const CONSTRAINT_MESSAGES: Record<string, string> = {
   personaggi_name_check: "Il nome del personaggio non è valido.",
   personaggi_user_id_fkey: "Il tuo account non è più valido. Accedi di nuovo.",
+  personaggi_razza_key_fkey: "La razza scelta non esiste più. Ricarica la pagina.",
   personaggi_tribu_key_fkey: "La tribù scelta non esiste più. Ricarica la pagina.",
+  personaggi_tribu_key_razza_key_fkey:
+    "La tribù scelta non appartiene alla razza. Ricarica la pagina.",
   personaggi_via_key_fkey: "La Via scelta non esiste più. Ricarica la pagina.",
 };
 

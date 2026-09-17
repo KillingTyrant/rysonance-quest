@@ -29,7 +29,6 @@ import {
 import {
   SESSI,
   type Catalog,
-  type Personaggio,
   type PersonaggioDraft,
 } from "@/lib/onboarding/types";
 import { emptyDraft, validateDraft } from "@/lib/onboarding/validate";
@@ -74,7 +73,7 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
   const [view, setView] = useState<WizardView>({ mode: "hub" });
   const [notice, setNotice] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<SaveError | null>(null);
-  const [saved, setSaved] = useState<Personaggio | null>(null);
+  const [saved, setSaved] = useState<{ id: string; name: string } | null>(null);
   const [pending, startTransition] = useTransition();
 
   const viewRef = useRef<HTMLDivElement>(null);
@@ -157,7 +156,7 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
     startTransition(async () => {
       try {
         const result = await salvaPersonaggio(draft);
-        if (result.ok) setSaved(result.personaggio);
+        if (result.ok) setSaved({ id: result.id, name: draft.name.trim() });
         else setSaveError({ message: result.message, problems: result.problems });
       } catch {
         // Rete caduta, 500, deploy nel frattempo: senza questo catch la promise
@@ -209,7 +208,10 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
           {saved.name} è pronto: lo trovi fra i tuoi personaggi.
         </p>
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <Button asChild>
+          <Button asChild variant="ticket">
+            <Link href={`/quest/${saved.id}`}>Vai alla quest</Link>
+          </Button>
+          <Button asChild variant="outline">
             <Link href="/lobby">Vai alla lobby</Link>
           </Button>
           <Button
