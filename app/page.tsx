@@ -1,5 +1,6 @@
 import { Hero } from "@/components/hero";
 import { Footer } from "@/components/layout/footer";
+import { Logo } from "@/components/layout/logo";
 import { Nav } from "@/components/layout/nav";
 import { Suspense } from "react";
 
@@ -9,9 +10,17 @@ export default function Home() {
       <div className="flex-1 w-full flex flex-col gap-20 items-center">
         <Nav />
         <div className="flex-1 flex flex-col justify-center w-full p-5 items-center">
-          <Suspense fallback={<div>Loading...</div>}>
-            <Hero />
-          </Suspense>
+
+          <div className="flex flex-col gap-16 items-center max-w-4xl w-full text-center">
+
+            <div className="w-full p-[1px] bg-gradient-to-r from-transparent via-foreground/10 to-transparent my-8" />
+            <h1 className="w-full max-w-2xl">
+              <Logo className="h-auto w-full fill-primary" iconOnly={false} />
+            </h1>
+            <Suspense fallback={<div>Loading...</div>}>
+              <Hero />
+            </Suspense>
+          </div>
         </div>
         <Footer />
       </div>
