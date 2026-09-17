@@ -109,8 +109,9 @@ export type ResolvedPersonaggio = {
    */
   talenti: Talento[];
   /**
-   * Vita, mana e velocità base della tribù. Sono `null` solo finché nel wizard
-   * la tribù non è stata scelta: nel catalogo non sono mai nulli.
+   * Vita, mana e velocità base della tribù. Sono `null` finché nel wizard la
+   * tribù non è scelta, o se il personaggio salvato non ne ha una: nel
+   * catalogo non sono mai nulli.
    */
   hp: number | null;
   mana: number | null;
@@ -129,15 +130,14 @@ export function resolveDraft(
 }
 
 /**
- * Un personaggio salvato non porta la razza: la si ricava dalla tribù, come
- * fa il DB (`tribu.razza_key`).
+ * Un personaggio salvato porta la razza nella sua colonna: la tribù è
+ * facoltativa, quindi non si può ricavare da lei.
  */
 export function resolveRow(
   catalog: Catalog,
   personaggio: Personaggio,
 ): ResolvedPersonaggio {
-  const tribu = tribuByKey(catalog, personaggio.tribu_key);
-  return resolve(catalog, personaggio, tribu?.razza_key ?? null);
+  return resolve(catalog, personaggio, personaggio.razza_key);
 }
 
 function resolve(

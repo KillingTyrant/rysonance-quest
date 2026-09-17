@@ -27,6 +27,7 @@ export const DEFAULT_DICE_APPEARANCE: DiceAppearance = {
   bodyColor: "#e8b04b",
   numberColor: "#241c14",
   edgeColor: "#8a5f14",
+  floor: "disc",
   floorColor: "#dcd6cb",
   roughness: 0.42,
   metalness: 0.08,
@@ -42,6 +43,11 @@ export const APEX_HEIGHT_RANGE: Vec2Tuple = [1.3, 1.8];
 export const REDUCED_MOTION_APEX_HEIGHT = 0.18;
 /** Raggio del disco attorno all'origine in cui il dado atterra. */
 export const LANDING_RADIUS = 0.55;
+/**
+ * Quota di casualità che resta in un lancio con `power`: due gesti identici
+ * non devono produrre due voli identici.
+ */
+export const POWER_NOISE = 0.25;
 
 const TWO_PI = Math.PI * 2;
 
@@ -106,12 +112,24 @@ function randomRange(random: () => number, min: number, max: number): number {
   return lerp(min, max, random());
 }
 
-function randomInt(random: () => number, min: number, max: number): number {
-  return min + Math.floor(random() * (max - min + 1));
-}
-
 function randomSign(random: () => number): number {
   return random() < 0.5 ? -1 : 1;
+}
+
+/**
+ * Intensità 0..1 di una grandezza del lancio. Consuma sempre un solo valore di
+ * `random`, con o senza `power`: la sequenza delle estrazioni non cambia e
+ * senza `power` il piano è identico a un lancio puramente casuale.
+ */
+function throwStrength(random: () => number, power: number | undefined): number {
+  const noise = random();
+  if (power === undefined) return noise;
+  return clamp01(power) * (1 - POWER_NOISE) + noise * POWER_NOISE;
+}
+
+/** Intero in [min, max] proporzionale a `strength` (0..1). */
+function intFromStrength(strength: number, min: number, max: number): number {
+  return Math.min(max, min + Math.floor(strength * (max - min + 1)));
 }
 
 /** Versore uniforme sulla sfera: nessun asse privilegiato, la rotazione coinvolge sempre più assi. */
@@ -136,6 +154,7 @@ export function createRollPlan(options: CreateRollPlanOptions): RollPlan {
     result,
     from = [0, 0],
     reducedMotion = false,
+    power,
     random = Math.random,
   } = options;
   if (!isValidD12Value(result)) {
@@ -158,20 +177,35 @@ export function createRollPlan(options: CreateRollPlanOptions): RollPlan {
     };
   }
 
-  const apexHeight = randomRange(random, APEX_HEIGHT_RANGE[0], APEX_HEIGHT_RANGE[1]);
+  const apexHeight = lerp(
+    APEX_HEIGHT_RANGE[0],
+    APEX_HEIGHT_RANGE[1],
+    throwStrength(random, power),
+  );
   const landingAngle = random() * TWO_PI;
   const landingRadius = Math.sqrt(random()) * LANDING_RADIUS;
   const spins: RollSpin[] = [
-    { axis: randomUnitAxis(random), turns: randomSign(random) * randomInt(random, 2, 3) },
-    { axis: randomUnitAxis(random), turns: randomSign(random) * randomInt(random, 1, 2) },
+    {
+      axis: randomUnitAxis(random),
+      turns: randomSign(random) * intFromStrength(throwStrength(random, power), 2, 3),
+    },
+    {
+      axis: randomUnitAxis(random),
+      turns: randomSign(random) * intFromStrength(throwStrength(random, power), 1, 2),
+    },
   ];
   const land = 0.6;
+  const duration = lerp(
+    ROLL_DURATION_RANGE[0],
+    ROLL_DURATION_RANGE[1],
+    throwStrength(random, power),
+  );
 
   return {
     id,
     result,
     reducedMotion,
-    duration: randomRange(random, ROLL_DURATION_RANGE[0], ROLL_DURATION_RANGE[1]),
+    duration,
     apexHeight,
     from,
     to: [Math.cos(landingAngle) * landingRadius, Math.sin(landingAngle) * landingRadius],
@@ -265,11 +299,14 @@ export function createDiceController(options: DiceControllerOptions = {}): DiceC
     },
     roll(rollOptions: RollOptions = {}) {
       if (state.rolling || rollOptions.disabled) return null;
+      const result = rollOptions.result ?? randomD12(random);
+      if (!isValidD12Value(result)) return null;
       const plan = createRollPlan({
         id: nextPlanId++,
-        result: randomD12(random),
+        result,
         from: state.position,
         reducedMotion: rollOptions.reducedMotion ?? false,
+        power: rollOptions.power,
         random,
       });
       setState({ rolling: true, result: null, plan, position: state.position });

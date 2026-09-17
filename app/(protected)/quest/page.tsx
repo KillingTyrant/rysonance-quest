@@ -1,20 +1,26 @@
-import { D12Dice } from "@/components/dice/D12Dice";
+import { redirect } from "next/navigation";
+import { Suspense } from "react";
+
+import { SplashFrame } from "@/components/quest/splash-frame";
+import { getUltimoPersonaggioId } from "@/lib/onboarding/personaggi";
 
 export const metadata = {
   title: "Quest · Rysonance",
 };
 
-export default async function QuestPage() {
-
+/**
+ * `/quest` senza id porta alla quest del personaggio più recente, o a crearne
+ * uno se l'utente non ne ha.
+ */
+export default function QuestIndexPage() {
   return (
-
-    <div className="flex w-full flex-1 flex-col gap-8">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-4xl font-bold">Quest</h1>
-        </div>
-      </header>
-      <D12Dice fill className="max-w-none" />
-    </div>
+    <Suspense fallback={<SplashFrame />}>
+      <VaiAllaQuest />
+    </Suspense>
   );
+}
+
+async function VaiAllaQuest() {
+  const id = await getUltimoPersonaggioId();
+  return redirect(id ? `/quest/${id}` : "/onboarding");
 }

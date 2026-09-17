@@ -2,11 +2,13 @@ import assert from "node:assert/strict";
 import { describe, it, mock } from "node:test";
 
 import {
+  APEX_HEIGHT_RANGE,
   createDiceController,
   createRollPlan,
   evaluateRollPose,
   fitCameraDistance,
   isValidD12Value,
+  POWER_NOISE,
   randomD12,
   REDUCED_MOTION_ROLL_DURATION,
   ROLL_DURATION_RANGE,
@@ -100,6 +102,41 @@ describe("createRollPlan / evaluateRollPose", () => {
       assert.ok(pose.y >= -1e-9);
       assert.ok([pose.x, pose.y, pose.z, pose.blend, ...pose.spinAngles].every(Number.isFinite));
     }
+  });
+
+  it("con power la forza del gesto decide altezza, durata e giri", () => {
+    const [minApex, maxApex] = APEX_HEIGHT_RANGE;
+    const [minDuration, maxDuration] = ROLL_DURATION_RANGE;
+
+    // Con il rumore a zero conta solo il gesto.
+    const debole = createRollPlan({ id: 1, result: 4, power: 0, random: () => 0 });
+    assert.equal(debole.apexHeight, minApex);
+    assert.equal(debole.duration, minDuration);
+    assert.deepEqual(debole.spins.map((spin) => Math.abs(spin.turns)), [2, 1]);
+
+    const forte = createRollPlan({ id: 1, result: 4, power: 1, random: () => 0 });
+    assert.ok(Math.abs(forte.apexHeight - (minApex + (maxApex - minApex) * (1 - POWER_NOISE))) < 1e-9);
+    assert.ok(forte.duration > debole.duration);
+    assert.deepEqual(forte.spins.map((spin) => Math.abs(spin.turns)), [3, 2]);
+
+    // Qualunque sia il rumore, il lancio resta negli intervalli di sempre.
+    for (const power of [-2, 0, 0.3, 0.7, 1, 5]) {
+      const plan = createRollPlan({ id: 1, result: 9, power, random: seededRandom(power + 10) });
+      assert.ok(plan.apexHeight >= minApex && plan.apexHeight <= maxApex);
+      assert.ok(plan.duration >= minDuration && plan.duration <= maxDuration);
+      const end = evaluateRollPose(plan, plan.duration);
+      for (const angle of end.spinAngles) {
+        const turns = angle / (Math.PI * 2);
+        assert.ok(Math.abs(turns - Math.round(turns)) < 1e-9);
+      }
+    }
+  });
+
+  it("un power fuori intervallo vale come il suo estremo", () => {
+    assert.deepEqual(
+      createRollPlan({ id: 1, result: 2, power: 7, random: seededRandom(3) }),
+      createRollPlan({ id: 1, result: 2, power: 1, random: seededRandom(3) }),
+    );
   });
 
   it("con movimento ridotto è breve, senza giri né rimbalzi", () => {
@@ -225,6 +262,46 @@ describe("createDiceController", () => {
       plan: null,
       position: [0, 0],
     });
+  });
+
+  it("usa il risultato imposto dall'esterno e lo consegna a onRollEnd", () => {
+    const onRollEnd = mock.fn<(result: number) => void>();
+    const controller = createDiceController({ callbacks: { onRollEnd } });
+
+    for (const result of [1, 7, 12]) {
+      const plan = controller.roll({ result });
+      assert.ok(plan);
+      assert.equal(plan.result, result);
+      controller.settle(plan.id);
+      assert.deepEqual(onRollEnd.mock.calls.at(-1)?.arguments, [result]);
+      assert.equal(controller.getState().result, result);
+    }
+  });
+
+  it("rifiuta un risultato imposto non valido senza toccare lo stato", () => {
+    const onRollStart = mock.fn<() => void>();
+    const controller = createDiceController({ initialValue: 5, callbacks: { onRollStart } });
+    const before = controller.getState();
+
+    for (const result of [0, 13, 2.5, NaN]) {
+      assert.equal(controller.roll({ result }), null);
+    }
+    assert.equal(onRollStart.mock.callCount(), 0);
+    assert.equal(controller.getState(), before);
+
+    const plan = controller.roll({ result: 3 });
+    assert.equal(plan?.id, 1, "i lanci rifiutati non consumano id");
+  });
+
+  it("passa power al piano", () => {
+    const controller = createDiceController({ random: () => 0 });
+    const conGesto = controller.roll({ result: 6, power: 1 });
+    assert.ok(conGesto);
+    controller.settle(conGesto.id);
+    const senzaGesto = controller.roll({ result: 6 });
+    assert.ok(senzaGesto);
+    assert.ok(conGesto.apexHeight > senzaGesto.apexHeight);
+    assert.equal(senzaGesto.apexHeight, APEX_HEIGHT_RANGE[0]);
   });
 
   it("propaga reducedMotion al piano e notifica i sottoscrittori", () => {

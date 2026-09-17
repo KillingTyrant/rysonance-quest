@@ -15,7 +15,7 @@ import {
   toVector3,
 } from "./dice-geometry";
 import { evaluateRollPose, fitCameraDistance, LANDING_RADIUS } from "./dice-utils";
-import type { DiceAppearance, RollPlan, Vec2Tuple } from "./types";
+import type { DiceAppearance, DiceFloor, RollPlan, Vec2Tuple } from "./types";
 
 export type D12SceneProps = {
   /** Piano del lancio in corso; `null` quando il dado è fermo. */
@@ -24,19 +24,26 @@ export type D12SceneProps = {
   restValue: number | null;
   /** Posizione (x, z) in cui il dado è appoggiato. */
   restPosition: Vec2Tuple;
-  onRollComplete: (planId: number) => void;
+  /**
+   * Il lancio è finito. `landing` è il centro della faccia superiore in
+   * coordinate normalizzate del canvas (0..1, origine in alto a sinistra).
+   */
+  onRollComplete: (planId: number, landing: Vec2Tuple) => void;
   orbitControls: boolean;
   appearance: DiceAppearance;
 };
 
-// Inquadratura dall'alto (~52°): la faccia superiore è quella dominante, il dado a riposo sta poco
-// sotto il centro e l'apice del salto resta dentro il frame.
-const CAMERA = { position: [0, 6.4, 4] as [number, number, number], fov: 38, near: 0.1, far: 60 };
+// Inquadratura quasi a piombo (~74°): la faccia superiore riempie il frame, il piano si legge
+// come un disco e l'apice del salto resta dentro l'inquadratura.
+const CAMERA = { position: [0, 8, 2] as [number, number, number], fov: 38, near: 0.1, far: 60 };
 const CAMERA_TARGET = new Vector3(0, 1.2, 0);
 const CAMERA_OFFSET = new Vector3(...CAMERA.position).sub(CAMERA_TARGET);
 /** Area di atterraggio più il raggio del dado e un margine: non deve mai uscire dai bordi laterali. */
 const MIN_VISIBLE_HALF_WIDTH = LANDING_RADIUS + D12_RADIUS + 0.3;
 const GL_OPTIONS = { antialias: true, alpha: true };
+// Misure da offsetWidth/offsetHeight e non da getBoundingClientRect: se un genitore
+// viene scalato o spostato da un'animazione CSS/GSAP il canvas non si ridimensiona.
+const RESIZE_OPTIONS = { offsetSize: true };
 const DEFAULT_REST_VALUE = 12;
 const ATLAS_TILE_SIZE = 256;
 
@@ -55,6 +62,7 @@ export function D12Scene({
       dpr={[1, 1.5]}
       camera={CAMERA}
       gl={GL_OPTIONS}
+      resize={RESIZE_OPTIONS}
       style={{ background: "transparent" }}
     >
       <CameraRig />
@@ -69,7 +77,7 @@ export function D12Scene({
         shadow-camera-far={25}
       />
       <directionalLight position={[-4, 3, -3]} intensity={0.45} />
-      <Floor color={appearance.floorColor} />
+      <Floor variant={appearance.floor} color={appearance.floorColor} />
       <Die
         plan={plan}
         restValue={restValue}
@@ -115,11 +123,17 @@ function CameraRig() {
   return null;
 }
 
-function Floor({ color }: { color: string }) {
+function Floor({ variant, color }: { variant: DiceFloor; color: string }) {
+  if (variant === "none") return null;
   return (
     <mesh rotation-x={-Math.PI / 2} receiveShadow>
       <circleGeometry args={[4.2, 64]} />
-      <meshStandardMaterial color={color} roughness={0.95} metalness={0} />
+      {variant === "shadow" ? (
+        // Riceve solo l'ombra: il resto è trasparente e sotto si vede la pagina.
+        <shadowMaterial transparent opacity={0.18} />
+      ) : (
+        <meshStandardMaterial color={color} roughness={0.95} metalness={0} />
+      )}
     </mesh>
   );
 }
@@ -133,6 +147,8 @@ type AnimationState = {
   finalQuaternion: Quaternion;
   spinQuaternion: Quaternion;
   spinAxis: Vector3;
+  /** Appoggio per proiettare sullo schermo la faccia superiore a fine lancio. */
+  landing: Vector3;
 };
 
 function createAnimationState(): AnimationState {
@@ -144,6 +160,7 @@ function createAnimationState(): AnimationState {
     finalQuaternion: new Quaternion(),
     spinQuaternion: new Quaternion(),
     spinAxis: new Vector3(),
+    landing: new Vector3(),
   };
 }
 
@@ -181,7 +198,7 @@ function Die({ plan, restValue, restPosition, onRollComplete, appearance }: DieP
     if (plan) invalidate();
   }, [plan, invalidate]);
 
-  useFrame(() => {
+  useFrame(({ camera }) => {
     const mesh = meshRef.current;
     const animation = animationRef.current;
     if (!mesh || !animation || !plan) return;
@@ -201,7 +218,12 @@ function Die({ plan, restValue, restPosition, onRollComplete, appearance }: DieP
     if (pose.done) {
       mesh.quaternion.copy(animation.finalQuaternion);
       animation.completed = true;
-      onRollComplete(plan.id);
+      // A riposo il centro sta a `inradius` dal piano: la faccia superiore è
+      // un altro `inradius` più su. `project` dà coordinate NDC (-1..1, y in su).
+      const top = animation.landing
+        .set(mesh.position.x, mesh.position.y + faceMap.inradius, mesh.position.z)
+        .project(camera);
+      onRollComplete(plan.id, [(top.x + 1) / 2, (1 - top.y) / 2]);
       return;
     }
 

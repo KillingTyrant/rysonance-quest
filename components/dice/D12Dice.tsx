@@ -4,14 +4,18 @@ import dynamic from "next/dynamic";
 import {
   Component,
   type ReactNode,
+  type Ref,
   useCallback,
   useEffect,
+  useImperativeHandle,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
   useSyncExternalStore,
 } from "react";
 
+import { useReducedMotion } from "@/components/motion/use-reduced-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -20,9 +24,19 @@ import {
   DEFAULT_DICE_APPEARANCE,
   isWebGLAvailable,
 } from "./dice-utils";
-import type { D12DiceProps, DiceAppearance } from "./types";
+import type { D12DiceProps, DiceAppearance, ScreenPoint, Vec2Tuple } from "./types";
 
 export type { D12DiceProps } from "./types";
+
+/** Comandi del dado per chi lo orchestra da fuori, per esempio con un gesto. */
+export type D12DiceHandle = {
+  /**
+   * Avvia un lancio. `result` è il valore su cui il dado deve fermarsi (se
+   * manca è casuale), `power` la forza 0..1 del gesto. Restituisce `false` se
+   * il lancio è rifiutato: già in corso, dado disabilitato o risultato non valido.
+   */
+  roll: (options?: { result?: number; power?: number }) => boolean;
+};
 
 // Il rendering WebGL è solo client: niente SSR per la scena, che porta three in un chunk separato.
 const D12Scene = dynamic(() => import("./D12Scene"), {
@@ -30,24 +44,8 @@ const D12Scene = dynamic(() => import("./D12Scene"), {
   loading: () => <ScenePlaceholder />,
 });
 
-const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
-
-function subscribeToReducedMotion(onChange: () => void) {
-  const query = window.matchMedia(REDUCED_MOTION_QUERY);
-  query.addEventListener("change", onChange);
-  return () => query.removeEventListener("change", onChange);
-}
-
-const getReducedMotion = () => window.matchMedia(REDUCED_MOTION_QUERY).matches;
-const getServerReducedMotion = () => false;
-
-function useReducedMotion(): boolean {
-  return useSyncExternalStore(
-    subscribeToReducedMotion,
-    getReducedMotion,
-    getServerReducedMotion,
-  );
-}
+/** Senza WebGL, o se il timer chiude il lancio, l'atterraggio è il centro della scena. */
+const SCENE_CENTER: Vec2Tuple = [0.5, 0.5];
 
 type WebGLSupport = "unknown" | "available" | "unavailable";
 
@@ -71,13 +69,22 @@ export function D12Dice({
   onResultChange,
   fill = false,
   orbitControls = false,
+  rollButton = true,
+  framed = true,
+  announce = true,
   appearance,
-}: D12DiceProps) {
+  ref,
+}: D12DiceProps & { ref?: Ref<D12DiceHandle> }) {
   const mountedRef = useRef(false);
   const callbacksRef = useRef({ onRollStart, onRollEnd, onResultChange });
   useEffect(() => {
     callbacksRef.current = { onRollStart, onRollEnd, onResultChange };
   });
+
+  const sceneFrameRef = useRef<HTMLDivElement>(null);
+  // Dove si è fermato l'ultimo lancio, in pixel del viewport. Lo scrive `settleAt`
+  // subito prima di chiudere il lancio, e lo legge la callback `onRollEnd`.
+  const landingRef = useRef<ScreenPoint>({ x: 0, y: 0 });
 
   // Il controller vive quanto il componente. Le sue callback leggono sempre le props
   // più recenti e tacciono dopo lo smontaggio.
@@ -89,7 +96,7 @@ export function D12Dice({
           if (mountedRef.current) callbacksRef.current.onRollStart?.();
         },
         onRollEnd: (result) => {
-          if (mountedRef.current) callbacksRef.current.onRollEnd?.(result);
+          if (mountedRef.current) callbacksRef.current.onRollEnd?.(result, landingRef.current);
         },
         onResultChange: (result) => {
           if (mountedRef.current) callbacksRef.current.onResultChange?.(result);
@@ -98,7 +105,9 @@ export function D12Dice({
     }),
   );
 
-  useEffect(() => {
+  // Layout effect e non effect: deve precedere quello che, quando la pagina torna
+  // visibile, chiude il lancio rimasto in volo — altrimenti le callback tacerebbero.
+  useLayoutEffect(() => {
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
@@ -115,10 +124,46 @@ export function D12Dice({
   const [sceneFailed, setSceneFailed] = useState(false);
   const showFallback = webgl === "unavailable" || sceneFailed;
 
+  /** Chiude il lancio convertendo l'atterraggio dal riquadro della scena al viewport. */
+  const settleAt = useCallback(
+    (planId: number, landing: Vec2Tuple) => {
+      const rect = sceneFrameRef.current?.getBoundingClientRect();
+      if (rect) {
+        landingRef.current = {
+          x: rect.left + landing[0] * rect.width,
+          y: rect.top + landing[1] * rect.height,
+        };
+      }
+      controller.settle(planId);
+    },
+    [controller],
+  );
+
   const roll = useCallback(
-    () => controller.roll({ disabled, reducedMotion }),
+    (options: { result?: number; power?: number } = {}) =>
+      controller.roll({ ...options, disabled, reducedMotion }),
     [controller, disabled, reducedMotion],
   );
+
+  useImperativeHandle(ref, () => ({ roll: (options) => roll(options) !== null }), [roll]);
+
+  // Con cacheComponents Next nasconde le pagine con <Activity> invece di smontarle.
+  // Nascondendo, il Canvas smonta il renderer e perde il contesto WebGL; tornando
+  // visibile riuserebbe quello vecchio e la scena resterebbe vuota. Quindi al ritorno
+  // si rimonta con una key nuova, e il lancio rimasto in volo si chiude subito.
+  const [sceneKey, setSceneKey] = useState(0);
+  const hiddenRef = useRef(false);
+  useLayoutEffect(() => {
+    if (hiddenRef.current) {
+      hiddenRef.current = false;
+      const { plan } = controller.getState();
+      if (plan) settleAt(plan.id, SCENE_CENTER);
+      setSceneKey((key) => key + 1);
+    }
+    return () => {
+      hiddenRef.current = true;
+    };
+  }, [controller, settleAt]);
 
   const autoRolledRef = useRef(false);
   useEffect(() => {
@@ -131,9 +176,12 @@ export function D12Dice({
   const { plan, rolling, result } = state;
   useEffect(() => {
     if (!showFallback || !plan) return;
-    const timer = window.setTimeout(() => controller.settle(plan.id), plan.duration * 1000);
+    const timer = window.setTimeout(
+      () => settleAt(plan.id, SCENE_CENTER),
+      plan.duration * 1000,
+    );
     return () => window.clearTimeout(timer);
-  }, [showFallback, plan, controller]);
+  }, [showFallback, plan, settleAt]);
 
   const mergedAppearance = useMemo<DiceAppearance>(
     () => ({ ...DEFAULT_DICE_APPEARANCE, ...appearance }),
@@ -168,17 +216,19 @@ export function D12Dice({
       )}
     >
       <div
+        ref={sceneFrameRef}
         role="img"
         aria-label={sceneLabel}
         className={cn(
-          "relative w-full overflow-hidden rounded-xl border  from-muted/40 to-muted",
+          "relative w-full",
+          framed && "overflow-hidden rounded-xl border from-muted/40 to-muted",
           fill ? "min-h-64 flex-1" : "aspect-[4/3]",
         )}
       >
         {showFallback ? (
           <DiceFallback rolling={rolling} result={result} />
         ) : webgl === "available" ? (
-          <div className="absolute inset-0">
+          <div key={sceneKey} className="absolute inset-0">
             <SceneErrorBoundary
               fallback={<DiceFallback rolling={rolling} result={result} />}
               onError={() => setSceneFailed(true)}
@@ -187,7 +237,7 @@ export function D12Dice({
                 plan={plan}
                 restValue={result}
                 restPosition={state.position}
-                onRollComplete={controller.settle}
+                onRollComplete={settleAt}
                 orbitControls={orbitControls}
                 appearance={mergedAppearance}
               />
@@ -198,34 +248,24 @@ export function D12Dice({
         )}
       </div>
 
-      <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">
-        {statusText}
-      </p>
-
-      {/* <div className="flex min-h-16 flex-col items-center justify-center gap-1">
-        <p aria-hidden="true" className="text-4xl font-bold leading-none tabular-nums">
-          {rolling ? "…" : result ?? "–"}
-        </p>
-        <p
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
-          className="text-sm text-muted-foreground"
-        >
+      {announce && (
+        <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">
           {statusText}
         </p>
-      </div> */}
+      )}
 
-      <Button
-        type="button"
-        variant={'ticket'}
-        onClick={handleRoll}
-        disabled={disabled}
-        aria-disabled={disabled || rolling}
-        className={cn("w-full", rolling && "pointer-events-none opacity-60")}
-      >
-        Lancia il d12
-      </Button>
+      {rollButton && (
+        <Button
+          type="button"
+          variant={'ticket'}
+          onClick={handleRoll}
+          disabled={disabled}
+          aria-disabled={disabled || rolling}
+          className={cn("w-full", rolling && "pointer-events-none opacity-60")}
+        >
+          Lancia il d12
+        </Button>
+      )}
     </div>
   );
 }

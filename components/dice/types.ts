@@ -6,6 +6,9 @@
 export type Vec2Tuple = readonly [number, number];
 export type Vec3Tuple = readonly [number, number, number];
 
+/** Un punto in pixel, nelle coordinate del viewport (come `clientX`/`clientY`). */
+export type ScreenPoint = { x: number; y: number };
+
 export type D12DiceProps = {
   className?: string;
   /** Impedisce nuovi lanci; il dado resta visibile con l'ultimo risultato. */
@@ -15,7 +18,11 @@ export type D12DiceProps = {
   /** Risultato mostrato prima del primo lancio, se è un intero fra 1 e 12. */
   initialValue?: number;
   onRollStart?: () => void;
-  onRollEnd?: (result: number) => void;
+  /**
+   * Il dado si è fermato. `landing` è il centro della faccia superiore nel
+   * viewport: da lì può partire un'animazione che "esce" dal dado.
+   */
+  onRollEnd?: (result: number, landing: ScreenPoint) => void;
   /** Riceve `null` all'inizio del lancio e il risultato quando il dado si ferma. */
   onResultChange?: (result: number | null) => void;
   /**
@@ -25,14 +32,31 @@ export type D12DiceProps = {
   fill?: boolean;
   /** Abilita i controlli orbitali della camera (disattivi di default). */
   orbitControls?: boolean;
+  /** Mostra il pulsante "Lancia il d12" sotto la scena (default `true`). */
+  rollButton?: boolean;
+  /** Bordo e angoli arrotondati attorno alla scena (default `true`). */
+  framed?: boolean;
+  /**
+   * Annuncia lancio e risultato con una live region (default `true`). Da
+   * spegnere quando è il genitore a raccontare cosa succede.
+   */
+  announce?: boolean;
   /** Colori, materiale e font dei numeri del dado. */
   appearance?: Partial<DiceAppearance>;
 };
+
+/**
+ * Il piano su cui cade il dado: un disco pieno, solo l'ombra (il dado sembra
+ * appoggiato sullo sfondo della pagina) o niente.
+ */
+export type DiceFloor = "disc" | "shadow" | "none";
 
 export type DiceAppearance = {
   bodyColor: string;
   numberColor: string;
   edgeColor: string;
+  floor: DiceFloor;
+  /** Colore del disco; ignorato con gli altri tipi di piano. */
   floorColor: string;
   roughness: number;
   metalness: number;
@@ -119,6 +143,12 @@ export type CreateRollPlanOptions = {
   result: number;
   from?: Vec2Tuple;
   reducedMotion?: boolean;
+  /**
+   * Forza del lancio 0..1 (per esempio dalla velocità di uno swipe): alza il
+   * salto, allunga il volo e aggiunge giri, sempre dentro gli intervalli di
+   * un lancio normale. Senza, tutto resta casuale.
+   */
+  power?: number;
   random?: () => number;
 };
 
@@ -146,6 +176,13 @@ export type DiceControllerOptions = {
 export type RollOptions = {
   disabled?: boolean;
   reducedMotion?: boolean;
+  /**
+   * Il risultato deciso fuori dal dado (per esempio estratto dal server). Se
+   * manca è casuale; se non è un valore valido il lancio viene rifiutato.
+   */
+  result?: number;
+  /** Vedi `CreateRollPlanOptions.power`. */
+  power?: number;
 };
 
 export type DiceController = {

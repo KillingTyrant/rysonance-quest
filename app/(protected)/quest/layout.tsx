@@ -1,4 +1,14 @@
-import { Nav } from "@/components/layout/nav";
+import type { Viewport } from "next";
+
+/**
+ * La quest è un'esperienza a schermo intero da telefono: niente Nav, una colonna
+ * stretta al centro, e i margini che rispettano notch e barra di sistema
+ * (`viewportFit: "cover"` fa arrivare la pagina fino ai bordi, le safe area la
+ * tengono leggibile).
+ */
+export const viewport: Viewport = {
+  viewportFit: "cover",
+};
 
 export default function QuestLayout({
   children,
@@ -6,14 +16,8 @@ export default function QuestLayout({
   children: React.ReactNode;
 }) {
   return (
-    <main className="min-h-dvh flex flex-col items-center">
-      <div className="flex-1 w-full flex flex-col items-center">
-        <Nav />
-        <div className="flex-1 w-full flex flex-col max-w-5xl p-5">
-          {children}
-        </div>
-
-      </div>
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-[max(1.25rem,env(safe-area-inset-top))]">
+      {children}
     </main>
   );
 }

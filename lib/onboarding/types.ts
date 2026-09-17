@@ -81,10 +81,13 @@ export type Catalog = {
 
 // ─────────────────────────────── Personaggio ────────────────────────────────
 
-/** Un personaggio salvato, con i talenti scelti già uniti. */
+/**
+ * Un personaggio salvato, con i talenti scelti già uniti. La razza è una
+ * colonna a sé: la tribù è facoltativa, quindi non basta a ricavarla.
+ */
 export type Personaggio = Pick<
   Row<"personaggi">,
-  "id" | "name" | "sesso" | "via_key" | "tribu_key" | "created_at"
+  "id" | "name" | "sesso" | "via_key" | "razza_key" | "tribu_key" | "created_at"
 > & {
   /** Chiavi dei talenti scelti dall'utente. */
   talenti: string[];
@@ -99,17 +102,17 @@ export type PersonaggioDraft = {
   name: string;
   sesso: Sesso | null;
   via_key: string | null;
-  /**
-   * Stato della UI (la card della razza), non una colonna: il DB ricava la
-   * razza dalla tribù e la RPC non la riceve.
-   */
+  /** La razza della card scelta: può esistere anche prima della tribù. */
   razza_key: string | null;
   tribu_key: string | null;
   /** Chiavi dei talenti scelti: quanti ne servono lo dice la Via. */
   talenti: string[];
 };
 
-/** Esito del salvataggio, restituito dalla server action al wizard. */
+/**
+ * Esito del salvataggio, restituito dalla server action al wizard. Al successo
+ * basta l'id: è ciò che serve per aprire la quest del personaggio appena nato.
+ */
 export type SavePersonaggioResult =
-  | { ok: true; personaggio: Personaggio }
+  | { ok: true; id: string }
   | { ok: false; message: string; problems?: string[] };
