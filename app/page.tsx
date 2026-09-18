@@ -1,5 +1,4 @@
 import { Hero } from "@/components/hero";
-import { HeroAnimations } from "@/components/hero-animations";
 import { Footer } from "@/components/layout/footer";
 import { Nav } from "@/components/layout/nav";
 import { Suspense } from "react";
@@ -11,9 +10,7 @@ export default function Home() {
         <Nav />
         <div className="flex-1 flex flex-col justify-center w-full p-5 items-center">
           <Suspense fallback={<div>Loading...</div>}>
-          <HeroAnimations>
             <Hero />
-          </HeroAnimations>
           </Suspense>
         </div>
         <Footer />

@@ -38,8 +38,6 @@ import { GroupIntro } from "./group-intro";
 import { HubScreen } from "./hub-screen";
 import { STEP_COMPONENTS, type SaveError } from "./wizard-steps";
 
-import { StepAnimation } from "./step-animation";
-
 /**
  * La vista corrente del wizard. La hub è il punto di partenza e di ritorno:
  * in un macro-passo si entra sempre passando dalla sua intro, mentre i salti
@@ -74,7 +72,6 @@ function sampleUnique(items: readonly string[], count: number): string[] {
 export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
   const [draft, setDraft] = useState<PersonaggioDraft>(emptyDraft);
   const [view, setView] = useState<WizardView>({ mode: "hub" });
-  const [isBackward, setIsBackward] = useState(false); // <--- STATO PER DIREZIONE AGGIUNTO
   const [notice, setNotice] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<SaveError | null>(null);
   const [saved, setSaved] = useState<Personaggio | null>(null);
@@ -194,7 +191,6 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
 
     setDraft(randomDraft);
     setSaveError(null);
-    setIsBackward(false);
     setView({ mode: "hub" });
 
     if (!via || !razza || !tribu || talenti.length !== quantiTalenti) {
@@ -207,81 +203,70 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
 
   if (saved) {
     return (
-      <StepAnimation key="saved">
-        <div className="flex w-full max-w-xl flex-col gap-6 self-center rounded-xl border bg-card p-8 text-center shadow">
-          <h1 className="text-2xl font-semibold">Personaggio salvato</h1>
-          <p className="text-muted-foreground">
-            {saved.name} è pronto: lo trovi fra i tuoi personaggi.
-          </p>
-          <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <Button asChild>
-              <Link href="/lobby">Vai alla lobby</Link>
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setSaved(null);
-                setDraft(emptyDraft());
-                setIsBackward(true);
-                setView({ mode: "hub" });
-                setNotice(null);
-                setSaveError(null);
-              }}
-            >
-              Creane un altro
-            </Button>
-          </div>
+      <div className="flex w-full max-w-xl flex-col gap-6 self-center rounded-xl border bg-card p-8 text-center shadow">
+        <h1 className="text-2xl font-semibold">Personaggio salvato</h1>
+        <p className="text-muted-foreground">
+          {saved.name} è pronto: lo trovi fra i tuoi personaggi.
+        </p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+          <Button asChild>
+            <Link href="/lobby">Vai alla lobby</Link>
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setSaved(null);
+              setDraft(emptyDraft());
+              setView({ mode: "hub" });
+              setNotice(null);
+              setSaveError(null);
+            }}
+          >
+            Creane un altro
+          </Button>
         </div>
-      </StepAnimation>
+      </div>
     );
   }
 
   if (view.mode === "hub") {
     return (
-      <StepAnimation key={viewKey} isBackward={isBackward}>
-        <div ref={viewRef} tabIndex={-1} className="flex w-full flex-1 flex-col outline-none">
-          <HubScreen
-            completed={(id) => isGroupComplete(problems, id)}
-            unlocked={(id) => isGroupUnlocked(problems, id)}
-            allComplete={allGroupsComplete(problems)}
-            draft={draft}
-            disabled={pending}
-            onOpenGroup={(id) => {
-              setIsBackward(false);
-              go({ mode: "intro", group: id });
-            }}
-            onRandomize={handleRandomize}
-            onCreaEroe={() => {
-              setIsBackward(false);
-              go({ mode: "summary" });
-            }}
-          />
-        </div>
-      </StepAnimation>
+      <div
+        key={viewKey}
+        ref={viewRef}
+        tabIndex={-1}
+        className="flex w-full flex-1 flex-col outline-none"
+      >
+        <HubScreen
+          completed={(id) => isGroupComplete(problems, id)}
+          unlocked={(id) => isGroupUnlocked(problems, id)}
+          allComplete={allGroupsComplete(problems)}
+          draft={draft}
+          disabled={pending}
+          onOpenGroup={(id) => go({ mode: "intro", group: id })}
+          onRandomize={handleRandomize}
+          onCreaEroe={() => go({ mode: "summary" })}
+        />
+      </div>
     );
   }
 
   if (view.mode === "intro") {
     const group = groupById(view.group);
     return (
-      <StepAnimation key={viewKey} isBackward={isBackward}>
-        <div ref={viewRef} 
-             tabIndex={-1} 
-             className="flex w-full flex-1 flex-col outline-none">
-          <GroupIntro
-            group={group}
-            disabled={pending}
-            onContinue={() => {
-              setIsBackward(false);
-              go({ mode: "step", step: group.steps[0] });
-            }}
-            onBack={() => {
-              setIsBackward(true);
-              go({ mode: "hub" });
-            }}
-          />
-        </div>
-      </StepAnimation>
+      <div
+        key={viewKey}
+        ref={viewRef}
+        tabIndex={-1}
+        className="flex w-full flex-1 flex-col outline-none"
+      >
+        <GroupIntro
+          group={group}
+          disabled={pending}
+          onContinue={() => go({ mode: "step", step: group.steps[0] })}
+          onBack={() => go({ mode: "hub" })}
+        />
+      </div>
     );
   }
 
@@ -295,92 +280,99 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
       : [];
 
   return (
-    <StepAnimation key={viewKey} isBackward={isBackward}>
-      <div ref={viewRef} tabIndex={-1} className="flex w-full flex-col outline-none">
-        <header className="flex flex-col gap-1">
-          <h1 className="text-4xl font-bold">
-            {view.mode === "summary"
-              ? "Creazione dell'eroe"
-              : (position?.group.introTitle ?? WIZARD_STEPS[stepIndex(step)].title)}
-          </h1>
-          {position && position.count > 1 && (
-            <p className="text-sm text-muted-foreground">
-              Passo {position.index + 1} di {position.count} —{" "}
-              {WIZARD_STEPS[stepIndex(step)].title}
+    <div
+      key={viewKey}
+      ref={viewRef}
+      tabIndex={-1}
+      className="flex w-full flex-col outline-none"
+    >
+      <header className="flex flex-col gap-1">
+        <h1 className="text-4xl font-bold">
+          {view.mode === "summary"
+            ? "Creazione dell'eroe"
+            : (position?.group.introTitle ?? WIZARD_STEPS[stepIndex(step)].title)}
+        </h1>
+        {position && position.count > 1 && (
+          <p className="text-sm text-muted-foreground">
+            Passo {position.index + 1} di {position.count} —{" "}
+            {WIZARD_STEPS[stepIndex(step)].title}
+          </p>
+        )}
+      </header>
+
+      {/* <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]"> */}
+      <div className="flex flex-col">
+        <div role="status" aria-live="polite">
+          {notice && (
+            <p className="rounded-xl border bg-secondary/40 p-3 text-sm text-muted-foreground">
+              {notice}
             </p>
           )}
-        </header>
-
-        <div className="flex flex-col">
-          <div role="status" aria-live="polite">
-            {notice && (
-              <p className="rounded-xl border bg-secondary/40 p-3 text-sm text-muted-foreground">
-                {notice}
-              </p>
-            )}
-          </div>
-
-          <Step
-            catalog={catalog}
-            draft={draft}
-            problems={problems}
-            pending={pending}
-            saveError={saveError}
-            onChange={handleChange}
-            onGoTo={(next) => {
-              setIsBackward(false);
-              go({ mode: "step", step: next });
-            }}
-            onSave={handleSave}
-          />
-
-          <nav className="flex flex-wrap items-center justify-between gap-3 border-t pt-6 mt-8">
-            <Button
-              className="w-52"
-              type="button"
-              variant="ticketSecondary"
-              disabled={pending}
-              onClick={() => {
-                setIsBackward(true);
-                if (!position || position.index === 0) go({ mode: "hub" });
-                else
-                  go({ mode: "step", step: position.group.steps[position.index - 1] });
-              }}
-            >
-              <ArrowLeft />
-              Indietro
-            </Button>
-
-            {position && (
-              <div className="flex flex-wrap items-center justify-end gap-3">
-                {missing.length > 0 && (
-                  <span className="text-sm text-muted-foreground">
-                    Manca: {missing.join(", ")}
-                  </span>
-                )}
-                <Button
-                  className="w-52"
-                  type="button"
-                  variant="ticket"
-                  disabled={missing.length > 0 || pending}
-                  onClick={() => {
-                    setIsBackward(false);
-                    if (position.index === position.count - 1) go({ mode: "hub" });
-                    else
-                      go({
-                        mode: "step",
-                        step: position.group.steps[position.index + 1],
-                      });
-                  }}
-                >
-                  Avanti
-                  <ArrowRight />
-                </Button>
-              </div>
-            )}
-          </nav>
         </div>
+
+        <Step
+          catalog={catalog}
+          draft={draft}
+          problems={problems}
+          pending={pending}
+          saveError={saveError}
+          onChange={handleChange}
+          onGoTo={(next) => go({ mode: "step", step: next })}
+          onSave={handleSave}
+        />
+
+        <nav className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
+          <Button
+            className="w-52"
+            type="button"
+            variant="ticketSecondary"
+            disabled={pending}
+            onClick={() => {
+              if (!position || position.index === 0) go({ mode: "hub" });
+              else
+                go({ mode: "step", step: position.group.steps[position.index - 1] });
+            }}
+          >
+            <ArrowLeft />
+            Indietro
+          </Button>
+
+          {position && (
+            <div className="flex flex-wrap items-center justify-end gap-3">
+              {missing.length > 0 && (
+                <span className="text-sm text-muted-foreground">
+                  Manca: {missing.join(", ")}
+                </span>
+              )}
+              <Button
+                className="w-52"
+                type="button"
+                variant="ticket"
+                disabled={missing.length > 0 || pending}
+                onClick={() => {
+                  if (position.index === position.count - 1) go({ mode: "hub" });
+                  else
+                    go({
+                      mode: "step",
+                      step: position.group.steps[position.index + 1],
+                    });
+                }}
+              >
+                Avanti
+                <ArrowRight />
+              </Button>
+            </div>
+          )}
+        </nav>
       </div>
-    </StepAnimation>
+
+      {/* <PersonaggioSheet
+          resolved={resolveDraft(catalog, draft)}
+          variant="aside"
+          title="Il tuo personaggio"
+          className="h-fit lg:sticky lg:top-6"
+        /> */}
+      {/* </div> */}
+    </div>
   );
 }
