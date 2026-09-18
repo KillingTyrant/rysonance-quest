@@ -1,16 +1,40 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 
-const defaultUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : "http://localhost:3000";
+// Dominio di produzione, non l'URL del singolo deploy (VERCEL_URL): serve ai link assoluti dei metadata.
+const productionHost = process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL;
+const defaultUrl = productionHost ? `https://${productionHost}` : "http://localhost:3000";
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
   title: "Rysonance",
-  description: "Rysonance description",
+  description: "Rysonance RPG, un gioco di ruolo immersivo",
+  keywords: ["Rysonance", "RPG", "gioco di ruolo", "immersivo"],
+  authors: [{ name: "Rysonance Team" }],
+  openGraph: {
+    title: "Rysonance",
+    description: "Rysonance RPG, un gioco di ruolo immersivo",
+    url: defaultUrl,
+    siteName: "Rysonance",
+    locale: "it_IT",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Rysonance",
+    description: "Rysonance RPG, un gioco di ruolo immersivo",
+    site: "@RysonanceTeam",
+  },
+  // Icone: le genera Next dai file app/favicon.ico, app/icon.svg e app/apple-icon.tsx.
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "white" },
+    { media: "(prefers-color-scheme: dark)", color: "black" },
+  ],
 };
 
 const cabinetGrotesk = localFont({

@@ -73,23 +73,6 @@ Regole per l'ambiente locale:
 
 <!-- BEGIN:nextjs-agent-rules -->
 
-## Regola: le animazioni si fanno con GSAP
-
-Ogni animazione dell'app (entrate, transizioni, loop, effetti legati al puntatore) si scrive
-con **GSAP**, non con `@keyframes`/`animation` CSS, `transition` per effetti scenici, né
-altre librerie di animazione.
-
-- Importa sempre da `@/components/motion/gsap` (`gsap`, `useGSAP`, `SplitText`, …), mai da
-  `"gsap"` direttamente: lì i plugin sono già registrati. Un plugin nuovo si registra in quel file.
-- Nei componenti usa `useGSAP` (client component, `"use client"`), che fa pulizia allo
-  smontaggio.
-- Rispetta "riduci movimento" con `gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", …)`:
-  senza animazione l'elemento deve restare visibile e nel suo stato finale.
-- Il CSS descrive solo la forma e lo stato di riposo. Se un effetto vive su uno pseudo-elemento
-  (`::before`/`::after`), esponi una variabile CSS e animala con GSAP.
-- Restano in CSS solo le micro-transizioni di stato dei controlli (hover/focus di bottoni e
-  input, es. `transition-colors`).
-
 # This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
