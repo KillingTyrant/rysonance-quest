@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { ArrowRight } from "lucide-react";
 import { Button } from "./ui/button";
 import Link from "next/link";
 
@@ -12,20 +13,21 @@ export async function Hero() {
   const user = data?.claims;
 
   return (
-    <>
-      {user ? (
-        <Button asChild variant="ticket" className="w-full mt-4">
-          <Link href="/lobby">Vai alla Lobby</Link>
-        </Button>
-      ) : (
-        <Button asChild variant="ticket" className="w-full mt-4">
-          <Link href="/auth/login">Accedi</Link>
-        </Button>
-      )}
-      <Button asChild variant="ticketSecondary" className="w-full">
+    <div className="flex w-full max-w-lg flex-col gap-3 sm:flex-row">
+      <Button asChild variant="ticket" size="lg" className="group h-12 flex-1 text-base">
+        <Link href={user ? "/lobby" : "/auth/login"}>
+          {user ? "Vai alla Lobby" : "Inizia la quest"}
+          <ArrowRight className="transition-transform group-hover:translate-x-0.5" />
+        </Link>
+      </Button>
+      <Button asChild variant="ticketSecondary" size="lg" className="h-12 flex-1 text-base">
         <Link href="/dado">Lancia il dado</Link>
       </Button>
-      <div className="w-full p-[1px] bg-gradient-to-r from-transparent via-foreground/10 to-transparent my-8" />
-    </>
+    </div>
   );
+}
+
+/** Stesso ingombro dei bottoni, così la pagina non salta quando arriva la sessione. */
+export function HeroFallback() {
+  return <div className="h-[6.75rem] w-full max-w-lg sm:h-12" />;
 }

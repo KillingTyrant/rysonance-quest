@@ -7,7 +7,7 @@ import { Suspense } from "react";
 
 export async function Nav() {
     return (
-        <nav className="w-full flex justify-center border-b border-b-foreground/10">
+        <nav className="w-full flex justify-center border-b border-b-foreground/10 bg-card/60 backdrop-blur-sm">
             <div className="w-full h-8 max-w-5xl flex justify-between items-center px-4 text-sm">
                 <div className="h-full flex gap-5 items-center font-semibold">
                     <Link

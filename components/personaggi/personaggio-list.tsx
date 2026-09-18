@@ -43,9 +43,6 @@ export async function PersonaggioList() {
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-muted-foreground">
-        {personaggi.length === 1 ? "1 personaggio" : `${personaggi.length} personaggi`}
-      </p>
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {personaggi.map((personaggio) => (
           <PersonaggioCard
