@@ -92,8 +92,8 @@ export function talentiAssegnati(
 // ──────────────────────────── View-model condiviso ──────────────────────────
 
 /**
- * La forma unica su cui disegna `PersonaggioSheet`. Esiste perché il riepilogo
- * serve in tre posti che partono da sorgenti diverse (le scelte in corso nel
+ * La forma unica su cui disegna `PersonaggioSheet`. Esiste perché la scheda
+ * serve in più posti che partono da sorgenti diverse (le scelte in corso nel
  * wizard, e una riga salvata nella lobby): risolvendo prima, il renderer resta
  * uno solo.
  */

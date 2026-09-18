@@ -26,7 +26,7 @@ export type Problem = {
   field: DraftField;
   /** Etichetta breve, per l'elenco "Manca: …" accanto al bottone Avanti. */
   label: string;
-  /** Frase completa, per il riepilogo e per la server action. */
+  /** Frase completa, per la hub e per la server action. */
   message: string;
 };
 
@@ -83,9 +83,8 @@ export function validateDraft(
   const add = (field: DraftField, label: string, message: string) =>
     problems.push({ field, label, message });
 
-  // I controlli seguono l'ordine degli step: è quello in cui il riepilogo
-  // elenca i problemi, e leggere questa funzione dev'essere come ripercorrere
-  // il wizard.
+  // I controlli seguono l'ordine degli step: leggere questa funzione
+  // dev'essere come ripercorrere il wizard.
 
   // ── chi è: nome, sesso, razza e tribù ─────────────────────────────────────
   const name = draft.name.trim();

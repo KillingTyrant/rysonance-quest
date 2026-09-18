@@ -8,15 +8,15 @@ import type { StepProps } from "../wizard-steps";
 
 /**
  * Chi è il personaggio: sesso e da dove viene. La razza decide il talento
- * razziale e le tribù disponibili. Il nome invece si sceglie per ultimo, nel
- * riepilogo, a eroe completo.
+ * razziale e le tribù disponibili. Il nome invece si scrive nella hub, prima
+ * di creare l'eroe.
  */
 export function IdentitaStep({ catalog, draft, onChange }: StepProps) {
   const tribu = tribuByKey(catalog, draft.tribu_key);
   const hp = tribu?.base_hp ?? null;
   const mana = tribu?.base_mana ?? null;
   // La velocità mostrata nella card aperta: quella della tribù scelta, la
-  // stessa che il riepilogo mostra e che la RPC scrive alla creazione.
+  // stessa che la RPC scrive alla creazione.
   const speed = tribu?.base_speed ?? null;
 
   return (

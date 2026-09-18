@@ -20,8 +20,8 @@ export type StepDef = {
  * step → componente sta in `components/onboarding/wizard-steps.tsx`, dove il
  * compilatore la verifica esaustiva contro `StepId`.
  *
- * `riepilogo` mostra i problemi di tutti gli altri e raccoglie solo il nome:
- * si sceglie per ultimo, a eroe completo.
+ * Il nome non appartiene a nessuno step: si scrive nella hub, accanto alla CTA
+ * che salva l'eroe.
  */
 export const WIZARD_STEPS = [
   {
@@ -31,24 +31,14 @@ export const WIZARD_STEPS = [
   },
   { id: "via", title: "La Via", fields: ["via_key"] },
   { id: "talenti", title: "Talenti", fields: ["talenti"] },
-  { id: "riepilogo", title: "Riepilogo", fields: ["name"] },
 ] as const satisfies readonly StepDef[];
 
 export type StepId = (typeof WIZARD_STEPS)[number]["id"];
 
 export const FIRST_STEP: StepId = WIZARD_STEPS[0].id;
-export const LAST_STEP: StepId = WIZARD_STEPS[WIZARD_STEPS.length - 1].id;
 
 export function stepIndex(id: StepId): number {
   return WIZARD_STEPS.findIndex((step) => step.id === id);
-}
-
-/** Lo step che raccoglie un campo: serve a portare l'utente dove correggere. */
-export function stepOf(field: DraftField): StepId {
-  return (
-    WIZARD_STEPS.find((step) => (step.fields as readonly DraftField[]).includes(field))
-      ?.id ?? LAST_STEP
-  );
 }
 
 export function problemsForStep(problems: Problem[], id: StepId): Problem[] {

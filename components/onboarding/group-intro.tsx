@@ -13,7 +13,7 @@ type GroupIntroProps = {
 /**
  * L'intro di un macro-passo: spiega cosa si sta per scegliere, prima di
  * entrare nelle schermate di selezione. Si passa da qui a ogni ingresso
- * dalla hub — mai nei salti interni o dai link del riepilogo.
+ * dalla hub — mai nei salti interni fra step dello stesso macro-passo.
  */
 export function GroupIntro({ group, disabled, onContinue, onBack }: GroupIntroProps) {
   return (

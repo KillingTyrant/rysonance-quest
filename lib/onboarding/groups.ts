@@ -15,8 +15,8 @@ export type GroupDef = {
 
 /**
  * I macro-passi mostrati nella hub "Creazione dell'eroe", come DATI: ognuno
- * raggruppa gli step di `WIZARD_STEPS` che lo compongono. Il riepilogo non è
- * un macro-passo: ci si arriva dalla CTA della hub quando tutto è completo.
+ * raggruppa gli step di `WIZARD_STEPS` che lo compongono. Il nome non è un
+ * macro-passo: si scrive direttamente nella hub, sopra la CTA che salva.
  *
  * Completamento e sblocco derivano dagli stessi problemi di `validateDraft`
  * usati dagli step: qui non vive nessuna regola di validazione nuova.
@@ -61,7 +61,7 @@ export function groupById(id: GroupId): GroupDef {
   return WIZARD_GROUPS[groupIndex(id)];
 }
 
-/** Il macro-passo a cui appartiene uno step; null per il riepilogo. */
+/** Il macro-passo a cui appartiene uno step; null se non ne ha uno. */
 export function groupOf(step: StepId): GroupDef | null {
   return (
     WIZARD_GROUPS.find((group) =>
@@ -88,7 +88,7 @@ export function allGroupsComplete(problems: Problem[]): boolean {
 
 /**
  * Posizione di uno step nel suo macro-passo, per "Passo X di Y" e per
- * Avanti/Indietro; null per gli step fuori dai gruppi (il riepilogo).
+ * Avanti/Indietro; null per gli step fuori dai gruppi.
  */
 export function stepPositionInGroup(
   step: StepId,

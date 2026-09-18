@@ -7,7 +7,7 @@ import type { ResolvedPersonaggio } from "@/lib/onboarding/selectors";
 export type SheetVariant =
   /** Colonna laterale del wizard: si aggiorna a ogni scelta. */
   | "aside"
-  /** Riepilogo finale del wizard. */
+  /** Scheda completa, a tutta larghezza. */
   | "full"
   /** Scheda di un personaggio salvato, nella lobby. */
   | "card";
@@ -22,9 +22,8 @@ type PersonaggioSheetProps = {
 };
 
 /**
- * L'unico renderer di un personaggio. Serve il riepilogo finale del wizard e la
- * lobby (e la variante `aside`, oggi non montata): tutti partono da
- * `ResolvedPersonaggio`, quindi la differenza fra "sto scegliendo" e "ho
+ * L'unico renderer di un personaggio (oggi non montato da nessuna parte):
+ * tutte le varianti partono da `ResolvedPersonaggio`, quindi la differenza fra "sto scegliendo" e "ho
  * scelto" sta nei selettori, non qui.
  */
 export function PersonaggioSheet({

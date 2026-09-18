@@ -39,15 +39,13 @@ import { STEP_COMPONENTS, type SaveError } from "./wizard-steps";
 
 /**
  * La vista corrente del wizard. La hub è il punto di partenza e di ritorno:
- * in un macro-passo si entra sempre passando dalla sua intro, mentre i salti
- * dal riepilogo ("Vai a …") vanno dritti allo step, senza intro. Il riepilogo
- * è una vista a sé, raggiunta dalla CTA della hub quando tutto è completo.
+ * in un macro-passo si entra sempre passando dalla sua intro. Nella hub si
+ * scrive anche il nome, e la sua CTA salva l'eroe.
  */
 type WizardView =
   | { mode: "hub" }
   | { mode: "intro"; group: GroupId }
-  | { mode: "step"; step: StepId }
-  | { mode: "summary" };
+  | { mode: "step"; step: StepId };
 
 function pickRandom<T>(items: readonly T[]): T | null {
   if (items.length === 0) return null;
@@ -104,14 +102,14 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
   }, [saved]);
 
   // Una sola valutazione per render, da cui derivano il gate di "Avanti",
-  // l'elenco di cosa manca, lo stato delle righe della hub e il riepilogo.
+  // l'elenco di cosa manca, lo stato delle righe della hub e il gate della CTA.
   const problems = validateDraft(catalog, draft);
 
   function go(next: WizardView) {
     setNotice(null);
     // Un errore di salvataggio riguarda il tentativo appena fallito: lasciarlo
     // in giro dopo aver cambiato vista lo farebbe sembrare ancora attuale al
-    // ritorno sul riepilogo.
+    // ritorno sulla hub.
     setSaveError(null);
     setView(next);
   }
@@ -243,11 +241,16 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
           completed={(id) => isGroupComplete(problems, id)}
           unlocked={(id) => isGroupUnlocked(problems, id)}
           allComplete={allGroupsComplete(problems)}
+          nameProblems={problems
+            .filter((problem) => problem.field === "name")
+            .map((problem) => problem.message)}
           draft={draft}
-          disabled={pending}
+          pending={pending}
+          saveError={saveError}
+          onNameChange={(name) => handleChange({ name })}
           onOpenGroup={(id) => go({ mode: "intro", group: id })}
           onRandomize={handleRandomize}
-          onCreaEroe={() => go({ mode: "summary" })}
+          onCreaEroe={handleSave}
         />
       </div>
     );
@@ -272,14 +275,10 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
     );
   }
 
-  // step | summary: stesso layout a due colonne, con la scheda a fianco su lg.
-  const step: StepId = view.mode === "step" ? view.step : "riepilogo";
+  const step = view.step;
   const Step = STEP_COMPONENTS[step];
-  const position = view.mode === "step" ? stepPositionInGroup(step) : null;
-  const missing =
-    view.mode === "step"
-      ? problemsForStep(problems, step).map((problem) => problem.label)
-      : [];
+  const position = stepPositionInGroup(step);
+  const missing = problemsForStep(problems, step).map((problem) => problem.label);
 
   return (
     <div
@@ -290,9 +289,7 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
     >
       <header className="flex flex-col gap-1">
         <h1 className="text-4xl font-bold">
-          {view.mode === "summary"
-            ? "Creazione dell'eroe"
-            : (position?.group.introTitle ?? WIZARD_STEPS[stepIndex(step)].title)}
+          {position?.group.introTitle ?? WIZARD_STEPS[stepIndex(step)].title}
         </h1>
         {position && position.count > 1 && (
           <p className="text-sm text-muted-foreground">
@@ -316,11 +313,7 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
           catalog={catalog}
           draft={draft}
           problems={problems}
-          pending={pending}
-          saveError={saveError}
           onChange={handleChange}
-          onGoTo={(next) => go({ mode: "step", step: next })}
-          onSave={handleSave}
         />
 
         <nav className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
