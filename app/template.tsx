@@ -1,0 +1,60 @@
+"use client";
+
+import { useRef } from "react";
+import { usePathname } from "next/navigation";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
+
+export default function Template({ children }: { children: React.ReactNode }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+
+  useGSAP(
+    () => {
+      
+      if (pathname.startsWith("/onboarding")) {
+        gsap.fromTo(
+          containerRef.current,
+          { opacity: 0, scale: 0.96, y: 10 },
+          { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: "power2.out" }
+        );
+      } 
+      
+      else if (pathname.startsWith("/auth")) {
+        gsap.fromTo(
+          containerRef.current,
+          { opacity: 0, y: -20 },
+          { opacity: 1, y: 0, duration: 0.35, ease: "power1.out" }
+        );
+      } 
+      
+      else if(pathname === ("/")){
+        gsap.fromTo(
+          containerRef.current,
+          { opacity: 0, y: 15 },
+          { opacity: 1, y: 0, duration: 2.5, ease: "power1.out" }
+        );
+      }
+      else if (pathname === "/lobby") {
+      
+      gsap.set(containerRef.current, 
+        { opacity: 1, y: 0 });
+      } 
+      
+      else {
+        gsap.fromTo(
+          containerRef.current,
+          { opacity: 0, y: 15 },
+          { opacity: 1, y: 0, duration: 0.8, ease: "power1.out" }
+        );
+      }
+    },
+    { dependencies: [pathname], scope: containerRef }
+  );
+
+  return (
+    <div ref={containerRef} className="w-full">
+      {children}
+    </div>
+  );
+}

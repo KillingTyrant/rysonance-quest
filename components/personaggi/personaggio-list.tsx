@@ -5,6 +5,7 @@ import { getCatalog } from "@/lib/onboarding/catalog";
 import { listPersonaggi } from "@/lib/onboarding/personaggi";
 
 import { PersonaggioCard } from "./personaggio-card";
+import { CardAnimation } from "./card-animation";
 
 /**
  * Lista dei personaggi dell'utente. Legge i cookie (sessione), quindi va
@@ -47,12 +48,13 @@ export async function PersonaggioList() {
         {personaggi.length === 1 ? "1 personaggio" : `${personaggi.length} personaggi`}
       </p>
       <div className="grid gap-4 sm:grid-cols-2">
-        {personaggi.map((personaggio) => (
-          <PersonaggioCard
-            key={personaggio.id}
-            personaggio={personaggio}
-            catalog={catalog}
-          />
+        {personaggi.map((personaggio, index) => (
+          <CardAnimation key={personaggio.id} index={index}>
+            <PersonaggioCard
+              personaggio={personaggio}
+              catalog={catalog}
+            />
+          </CardAnimation>
         ))}
       </div>
     </div>

@@ -6,6 +6,7 @@ import {
   PersonaggioListSkeleton,
 } from "@/components/personaggi/personaggio-list";
 import { Button } from "@/components/ui/button";
+import { HeaderAnimation } from "@/components/personaggi/header-animation";
 
 export const metadata = {
   title: "I tuoi personaggi · Rysonance",
@@ -14,6 +15,7 @@ export const metadata = {
 export default function LobbyPage() {
   return (
     <div className="flex w-full flex-col gap-8">
+      <HeaderAnimation>
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h1 className="text-4xl font-bold">I tuoi personaggi</h1>
@@ -25,7 +27,7 @@ export default function LobbyPage() {
           <Link href="/onboarding">Crea un personaggio</Link>
         </Button>
       </header>
-
+      </HeaderAnimation>
       <Suspense fallback={<PersonaggioListSkeleton />}>
         <PersonaggioList />
       </Suspense>
