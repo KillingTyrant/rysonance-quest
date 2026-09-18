@@ -167,11 +167,15 @@
     background-repeat: no-repeat;
   }
 
-  /* Timbro e lettere del logo nascosti finché GSAP non li fa entrare; con "riduci movimento" restano visibili e fermi. */
+  /* Timbro, lettere del logo e fase partner dello splash nascosti finché GSAP non li fa entrare; con "riduci movimento" restano visibili e fermi. */
   @media (prefers-reduced-motion: no-preference) {
     .quest-stamp,
-    .logo-entrance path {
+    .logo-entrance path,
+    .splash-partner {
       visibility: hidden;
+    }
+    .splash-bar {
+      transform: scaleX(0);
     }
   }
 }

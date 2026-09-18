@@ -37,5 +37,8 @@ export const QUEST_COPY = {
     wallet: "Salva la scheda nel wallet",
     walletLabel: (nome: string) => `Salva la scheda di ${nome} in Apple Wallet`,
   },
-  caricamento: "Stiamo preparando la tua quest…",
+  caricamento: {
+    rysonance: "Il tuo eroe è pronto…",
+    partner: "Stiamo preparando la tua quest…",
+  },
 } as const;

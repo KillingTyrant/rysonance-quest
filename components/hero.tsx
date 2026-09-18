@@ -14,13 +14,13 @@ export async function Hero() {
 
   return (
     <div className="flex w-full max-w-lg flex-col gap-3 sm:flex-row">
-      <Button asChild variant="ticket" size="lg" className="group h-12 flex-1 text-base">
+      <Button asChild variant="ticket" size="lg" className="group h-12 text-base sm:flex-1">
         <Link href={user ? "/lobby" : "/auth/login"}>
           {user ? "Vai alla Lobby" : "Inizia la quest"}
           <ArrowRight className="transition-transform group-hover:translate-x-0.5" />
         </Link>
       </Button>
-      <Button asChild variant="ticketSecondary" size="lg" className="h-12 flex-1 text-base">
+      <Button asChild variant="ticketSecondary" size="lg" className="h-12 text-base sm:flex-1">
         <Link href="/dado">Lancia il dado</Link>
       </Button>
     </div>

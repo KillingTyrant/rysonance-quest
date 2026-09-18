@@ -205,16 +205,16 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
       <div className="flex w-full max-w-xl flex-col gap-6 self-center rounded-xl border bg-card p-8 text-center shadow">
         <h1 className="text-2xl font-semibold">Personaggio salvato</h1>
         <p className="text-muted-foreground">
-          {saved.name} è pronto: lo trovi fra i tuoi personaggi.
+          <strong className="font-semibold text-foreground">{saved.name}</strong> è pronto: lo trovi fra i tuoi personaggi.
         </p>
-        <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <Button asChild variant="ticket">
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-center w-full">
+          <Button asChild variant="ticket" className="w-full">
             <Link href={`/quest/${saved.id}`}>Vai alla quest</Link>
           </Button>
-          <Button asChild variant="outline">
+          {/* <Button asChild variant="outline">
             <Link href="/lobby">Vai alla lobby</Link>
-          </Button>
-          <Button
+          </Button> */}
+          {/* <Button
             variant="outline"
             onClick={() => {
               setSaved(null);
@@ -225,7 +225,7 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
             }}
           >
             Creane un altro
-          </Button>
+          </Button> */}
         </div>
       </div>
     );

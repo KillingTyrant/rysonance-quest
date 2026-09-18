@@ -6,6 +6,9 @@ import { SplashFrame } from "@/components/quest/splash-frame";
 import { getQuest } from "@/lib/quest/quest";
 import type { Quest } from "@/lib/quest/types";
 
+/** Tempo minimo di permanenza dello splash, anche se la quest arriva prima. */
+const SPLASH_MIN_MS = 2200;
+
 export const metadata = {
   title: "Quest · Rysonance",
 };
@@ -16,7 +19,7 @@ export const metadata = {
  * pagina. Chi apre l'id di un altro utente trova un 404: lo decide RLS.
  *
  * Senza `generateStaticParams` l'id è un dato di runtime: si legge dentro
- * Suspense, e intanto si vede l'ultimo fotogramma del caricamento.
+ * Suspense, e intanto si vede lo splash (Rysonance, poi il partner).
  */
 export default function QuestPage({ params }: { params: Promise<{ id: string }> }) {
   return (
@@ -31,7 +34,11 @@ async function QuestContent({ params }: { params: Promise<{ id: string }> }) {
 
   let quest: Quest | null;
   try {
-    quest = await getQuest(id);
+    // In parallelo: l'attesa totale è max(query, SPLASH_MIN_MS), non la somma.
+    [quest] = await Promise.all([
+      getQuest(id),
+      new Promise((resolve) => setTimeout(resolve, SPLASH_MIN_MS)),
+    ]);
   } catch {
     return <QuestErrore id={id} />;
   }
