@@ -21,11 +21,17 @@ const ThemeSwitcher = () => {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
-    return null;
-  }
-
   const ICON_SIZE = 16;
+
+  // Prima del mount il tema non è noto: stesso bottone, senza icona, per non far
+  // cambiare l'altezza del footer quando compare quello vero.
+  if (!mounted) {
+    return (
+      <Button variant="ghost" size={"sm"} disabled aria-hidden tabIndex={-1}>
+        <span style={{ width: ICON_SIZE, height: ICON_SIZE }} />
+      </Button>
+    );
+  }
 
   return (
     <DropdownMenu>
