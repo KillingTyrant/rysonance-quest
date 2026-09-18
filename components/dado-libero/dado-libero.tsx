@@ -1,9 +1,8 @@
 "use client";
-import { createClient } from "@/lib/supabase/client";
 
 import { ChevronUp } from "lucide-react";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { D12Dice, type D12DiceHandle } from "@/components/dice/D12Dice";
 import type { DiceAppearance } from "@/components/dice/types";
@@ -11,6 +10,7 @@ import { gsap, SplitText, useGSAP } from "@/components/motion/gsap";
 import { useReducedMotion } from "@/components/motion/use-reduced-motion";
 import { DadoGesto } from "@/components/quest/dado-gesto";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/client";
 
 /** Lo stesso dado della quest: grigio chiaro, numeri scuri, appoggiato sulla pagina. */
 const DADO_APPEARANCE: Partial<DiceAppearance> = {
@@ -33,7 +33,7 @@ const MOTION_OK = "(prefers-reduced-motion: no-preference)";
  * contenitori annidati, ognuno con un solo padrone delle trasformazioni:
  * `stage` per l'entrata, `float` per la fluttuazione a riposo, `press` per il dito.
  */
-export async function DadoLibero() {
+export function DadoLibero() {
   const sectionRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
@@ -51,10 +51,23 @@ export async function DadoLibero() {
   const [lanci, setLanci] = useState(0);
   const pronto = !rolling;
 
-  // retrieve user claims from supabase (if needed)
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-  const user = data?.claims;
+  const [loggato, setLoggato] = useState(false);
+
+  // La sessione si legge nel browser, dopo il mount: la pagina resta statica e
+  // per chi non ha fatto l'accesso il link resta quello del login.
+  useEffect(() => {
+    let annullato = false;
+    createClient()
+      .auth.getClaims()
+      .then(({ data }) => {
+        if (!annullato) setLoggato(Boolean(data?.claims));
+      })
+      .catch(() => {});
+    return () => {
+      annullato = true;
+    };
+  }, []);
+
   // Entrata: il titolo sale riga per riga da dietro una maschera, poi il
   // sottotitolo e il dado. Con "riduci movimento" gli elementi sono già visibili
   // (`motion-reduce:opacity-100`) e qui non succede nulla.
@@ -286,7 +299,7 @@ export async function DadoLibero() {
               scopri dove ti porta.
             </p>
             <Button asChild variant="ticket" className="w-52">
-              <Link href={user ? "/lobby" : "/auth/login"}>Crea il tuo personaggio</Link>
+              <Link href={loggato ? "/lobby" : "/auth/login"}>Crea il tuo personaggio</Link>
             </Button>
           </>
         )}
