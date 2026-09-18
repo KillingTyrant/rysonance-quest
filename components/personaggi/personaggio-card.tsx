@@ -1,11 +1,8 @@
-import Link from "next/link";
-
 import { CartaPersonaggio } from "@/components/quest/carta-personaggio";
-import { Button } from "@/components/ui/button";
 import type { Catalog, Personaggio } from "@/lib/onboarding/types";
 import { toQuestCarta } from "@/lib/quest/carta";
 
-const DATE_FORMAT = new Intl.DateTimeFormat("it-IT", { dateStyle: "long" });
+// const DATE_FORMAT = new Intl.DateTimeFormat("it-IT", { dateStyle: "long" });
 
 /**
  * Un personaggio salvato nella lobby: la stessa card olografica che chiude la quest,
