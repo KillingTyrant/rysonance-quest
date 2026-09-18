@@ -113,11 +113,13 @@ export function SummaryStep({
           </div>
         )}
 
-        <div className="flex justify-end">
+        <div className="flex justify-end pb-4">
           <Button
             type="button"
+            variant="ticket"
             disabled={pending || incompleti.length > 0 || problemiNome.length > 0}
             onClick={onSave}
+            className="w-52"
           >
             {pending ? "Salvataggio…" : "Salva il personaggio"}
           </Button>

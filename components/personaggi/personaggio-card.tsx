@@ -1,21 +1,18 @@
-import Image from "next/image";
 import Link from "next/link";
 
+import { CartaPersonaggio } from "@/components/quest/carta-personaggio";
 import { Button } from "@/components/ui/button";
-import { resolveRow } from "@/lib/onboarding/selectors";
 import type { Catalog, Personaggio } from "@/lib/onboarding/types";
-
-import { PersonaggioSheet } from "./personaggio-sheet";
+import { toQuestCarta } from "@/lib/quest/carta";
 
 const DATE_FORMAT = new Intl.DateTimeFormat("it-IT", { dateStyle: "long" });
 
 /**
- * Un personaggio salvato nella lobby. Le chiavi vengono risolte sul catalogo e
- * il disegno lo fa `PersonaggioSheet`, lo stesso del wizard.
+ * Un personaggio salvato nella lobby: la stessa card olografica che chiude la quest,
+ * con "Condividi Personaggio" e il wallet, più il link alla quest e la data.
  *
- * L'"Aggiungi ad Apple Wallet" sta qui e non nella scheda perché il pass ha una
- * foreign key su `personaggi`: nel riepilogo del wizard il personaggio non
- * esiste ancora.
+ * La card è montata già attiva: niente giro d'entrata, che in una lista di card
+ * partirebbe per tutte insieme a ogni visita.
  */
 export function PersonaggioCard({
   personaggio,
@@ -25,37 +22,21 @@ export function PersonaggioCard({
   catalog: Catalog;
 }) {
   return (
-    <PersonaggioSheet
-      resolved={resolveRow(catalog, personaggio)}
-      variant="card"
-      footer={
-        <div className="flex flex-col gap-4">
-          <Button asChild variant="ticket" className="w-full">
-            <Link href={`/quest/${personaggio.id}`}>Vai alla quest</Link>
-          </Button>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs text-muted-foreground">
-              Creato il {DATE_FORMAT.format(new Date(personaggio.created_at))}
-            </p>
-            {/* `<a>` e non `<Link>`: la risposta è un download `.pkpass`, non una
-                navigazione dell'app. L'artwork è quello ufficiale Apple, che le
-                linee guida non permettono di ridisegnare né di deformare. */}
-            <a
-              href={`/api/personaggi/${personaggio.id}/pkpass`}
-              aria-label={`Aggiungi ${personaggio.name} ad Apple Wallet`}
-              className="shrink-0 rounded-md focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            >
-              <Image
-                src="/IT_Add_to_Apple_Wallet_RGB_101821.svg"
-                alt="Aggiungi ad Apple Wallet"
-                width={111}
-                height={35}
-                unoptimized
-              />
-            </a>
-          </div>
-        </div>
-      }
-    />
+    <article className="flex flex-col gap-4">
+      <CartaPersonaggio
+        carta={toQuestCarta(catalog, personaggio)}
+        attivo
+        titolo="h2"
+        className="aspect-[5/8] min-h-0 flex-none"
+      />
+      <div className="flex flex-col gap-2">
+        <Button asChild variant="ticket" className="w-full">
+          <Link href={`/quest/${personaggio.id}`}>Vai alla quest</Link>
+        </Button>
+        <p className="text-center text-xs text-muted-foreground">
+          Creato il {DATE_FORMAT.format(new Date(personaggio.created_at))}
+        </p>
+      </div>
+    </article>
   );
 }

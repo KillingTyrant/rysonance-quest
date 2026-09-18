@@ -1,4 +1,5 @@
 "use client";
+import { createClient } from "@/lib/supabase/client";
 
 import { ChevronUp } from "lucide-react";
 import Link from "next/link";
@@ -32,7 +33,7 @@ const MOTION_OK = "(prefers-reduced-motion: no-preference)";
  * contenitori annidati, ognuno con un solo padrone delle trasformazioni:
  * `stage` per l'entrata, `float` per la fluttuazione a riposo, `press` per il dito.
  */
-export function DadoLibero() {
+export async function DadoLibero() {
   const sectionRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
@@ -50,6 +51,10 @@ export function DadoLibero() {
   const [lanci, setLanci] = useState(0);
   const pronto = !rolling;
 
+  // retrieve user claims from supabase (if needed)
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims;
   // Entrata: il titolo sale riga per riga da dietro una maschera, poi il
   // sottotitolo e il dado. Con "riduci movimento" gli elementi sono già visibili
   // (`motion-reduce:opacity-100`) e qui non succede nulla.
@@ -281,7 +286,7 @@ export function DadoLibero() {
               scopri dove ti porta.
             </p>
             <Button asChild variant="ticket" className="w-52">
-              <Link href="/auth/sign-up">Crea il tuo personaggio</Link>
+              <Link href={user ? "/lobby" : "/auth/login"}>Crea il tuo personaggio</Link>
             </Button>
           </>
         )}

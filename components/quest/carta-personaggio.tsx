@@ -2,7 +2,7 @@
 
 import { Droplet, Footprints, Heart, type LucideIcon } from "lucide-react";
 import Image from "next/image";
-import { type CSSProperties, Fragment, type PointerEvent, useRef } from "react";
+import { type CSSProperties, Fragment, type PointerEvent, useId, useRef } from "react";
 
 import { CATALOG_IMAGES } from "@/assets/catalog";
 import { Logo } from "@/components/layout/logo";
@@ -28,18 +28,32 @@ type CartaPersonaggioProps = {
    * così l'illustrazione e l'immagine da condividere sono pronte prima del giro.
    */
   attivo: boolean;
+  /**
+   * Livello del nome: `h1` nella quest, dove la card è la pagina; `h2` nella lobby,
+   * dove le card sono una lista sotto il titolo della pagina.
+   */
+  titolo?: "h1" | "h2";
+  className?: string;
 };
 
 /**
- * La card del personaggio, ultima schermata della quest: illustrazione della razza a
+ * La card del personaggio, ultima schermata della quest e scheda dei personaggi nella
+ * lobby: illustrazione della razza a
  * tutta card, nome, razza, statistiche, e i due pulsanti "Condividi Personaggio" e
  * "Salva la scheda nel wallet".
  *
  * Entra girandosi (sul retro c'è il simbolo Rysonance), poi una banda di luce la
  * attraversa, il nome arriva lettera per lettera e le statistiche contano fino al
  * loro valore. Da lì è olografica: si inclina verso il dito e il riflesso lo segue.
+ * Montata già `attivo` (la lobby) salta l'entrata ed è subito olografica.
  */
-export function CartaPersonaggio({ carta, attivo }: CartaPersonaggioProps) {
+export function CartaPersonaggio({
+  carta,
+  attivo,
+  titolo: Titolo = "h1",
+  className,
+}: CartaPersonaggioProps) {
+  const nomeId = useId();
   const rootRef = useRef<HTMLElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const frontRef = useRef<HTMLDivElement>(null);
@@ -186,12 +200,13 @@ export function CartaPersonaggio({ carta, attivo }: CartaPersonaggioProps) {
   return (
     <section
       ref={rootRef}
-      aria-labelledby="quest-carta-nome"
+      aria-labelledby={nomeId}
       className={cn(
         "flex min-h-[35rem] flex-1 flex-col [perspective:1600px]",
         // Invisibile già nell'HTML del server: chi rientra dalle istruzioni non deve
         // vedere la card sovrapposta prima che GSAP prenda il controllo.
         !attivo && "invisible",
+        className,
       )}
     >
       <div ref={cardRef} className="relative flex-1 [transform-style:preserve-3d]">
@@ -234,8 +249,8 @@ export function CartaPersonaggio({ carta, attivo }: CartaPersonaggioProps) {
             {/* Il nome riempie la larghezza: la dimensione scala con la card (cqi) e
                 con il numero di lettere. Nel mockup è un serif display che il
                 progetto non ha ancora. */}
-            <h1
-              id="quest-carta-nome"
+            <Titolo
+              id={nomeId}
               ref={nomeRef}
               data-quest-titolo
               tabIndex={-1}
@@ -243,7 +258,7 @@ export function CartaPersonaggio({ carta, attivo }: CartaPersonaggioProps) {
               className="text-balance text-center text-[min(5.5rem,calc(150cqi/var(--lettere)))] font-extrabold uppercase leading-[0.9] tracking-tight outline-none [overflow-wrap:anywhere]"
             >
               {carta.nome}
-            </h1>
+            </Titolo>
             {carta.razza && (
               <p ref={razzaRef} className="mt-5 text-2xl font-extrabold">
                 {carta.razza}

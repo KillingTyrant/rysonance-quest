@@ -14,17 +14,15 @@ export async function Hero() {
   return (
     <>
       {user ? (
-        <div className="flex items-center gap-4">
-          <Button asChild variant="ticket" className="w-52">
-            <Link href="/lobby">Lobby</Link>
-          </Button>
-        </div>
+        <Button asChild variant="ticket" className="w-full mt-4">
+          <Link href="/lobby">Vai alla Lobby</Link>
+        </Button>
       ) : (
-        <Button asChild variant="ticket" className="w-full">
+        <Button asChild variant="ticket" className="w-full mt-4">
           <Link href="/auth/login">Accedi</Link>
         </Button>
       )}
-      <Button asChild variant="ticketSecondary" className="w-52">
+      <Button asChild variant="ticketSecondary" className="w-full">
         <Link href="/dado">Lancia il dado</Link>
       </Button>
       <div className="w-full p-[1px] bg-gradient-to-r from-transparent via-foreground/10 to-transparent my-8" />

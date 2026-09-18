@@ -140,3 +140,37 @@
     );
   }
 }
+@layer components {
+  /* Timbro "Quest" sul logo della home: solo la forma. Il movimento lo fa GSAP in
+     components/quest-stamp.tsx. Il riflesso sta sullo stesso ::before del biglietto,
+     così resta dentro la mask e non esce dalle tacche; --shine ne sposta la posizione. */
+  .quest-stamp {
+    --ticket-bg: hsl(var(--primary));
+    --ticket-notch: 0.5rem;
+    --shine: 150%;
+    /* bilancia lo spazio che il tracking lascia dopo l'ultima lettera */
+    text-indent: 0.35em;
+    transform: rotate(-6deg);
+    /* drop-shadow e non box-shadow: segue la forma con le tacche */
+    filter: drop-shadow(0 8px 12px hsl(var(--foreground) / 0.25));
+  }
+
+  .quest-stamp::before {
+    background-image: linear-gradient(
+      110deg,
+      transparent 35%,
+      hsl(var(--primary-foreground) / 0.35) 50%,
+      transparent 65%
+    );
+    background-size: 250% 100%;
+    background-position: var(--shine) 0;
+    background-repeat: no-repeat;
+  }
+
+  /* Nascosto finché GSAP non lo fa entrare; con "riduci movimento" resta visibile e fermo. */
+  @media (prefers-reduced-motion: no-preference) {
+    .quest-stamp {
+      visibility: hidden;
+    }
+  }
+}

@@ -5,9 +5,9 @@ import { cookies } from "next/headers";
 import { isValidD12Value, randomD12 } from "@/components/dice/dice-utils";
 import { getCatalog } from "@/lib/onboarding/catalog";
 import { getPersonaggio } from "@/lib/onboarding/personaggi";
-import { resolveRow } from "@/lib/onboarding/selectors";
 import { isUuid } from "@/lib/utils";
 
+import { toQuestCarta } from "./carta";
 import type { LancioResult, Quest } from "./types";
 
 /**
@@ -42,19 +42,8 @@ export async function getQuest(personaggioId: string): Promise<Quest | null> {
   ]);
   if (!personaggio) return null;
 
-  const resolved = resolveRow(catalog, personaggio);
   return {
-    carta: {
-      personaggioId: personaggio.id,
-      nome: resolved.name,
-      razzaKey: personaggio.razza_key,
-      razza: resolved.razza?.name ?? null,
-      tribu: resolved.tribu?.name ?? null,
-      via: resolved.via?.name ?? null,
-      vita: resolved.hp,
-      mana: resolved.mana,
-      movimento: resolved.speed,
-    },
+    carta: toQuestCarta(catalog, personaggio),
     numero: leggiNumero(store, personaggio.id),
   };
 }

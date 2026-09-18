@@ -46,7 +46,7 @@ export async function PersonaggioList() {
       <p className="text-sm text-muted-foreground">
         {personaggi.length === 1 ? "1 personaggio" : `${personaggi.length} personaggi`}
       </p>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {personaggi.map((personaggio) => (
           <PersonaggioCard
             key={personaggio.id}
@@ -62,11 +62,11 @@ export async function PersonaggioList() {
 /** Segnaposto mostrato mentre la lista viene caricata. */
 export function PersonaggioListSkeleton() {
   return (
-    <div className="grid gap-4 sm:grid-cols-2" aria-hidden>
-      {[0, 1].map((index) => (
+    <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3" aria-hidden>
+      {[0, 1, 2].map((index) => (
         <div
           key={index}
-          className="h-64 animate-pulse rounded-xl border bg-card shadow"
+          className="aspect-[5/8] animate-pulse rounded-[1.75rem] bg-muted shadow"
         />
       ))}
     </div>
