@@ -20,7 +20,8 @@ export function QuestStamp({ className }: { className?: string }) {
     // annulla le animazioni e il timbro torna fermo e visibile.
     gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
       gsap
-        .timeline({ delay: 0.4 })
+        // Parte quando l'entrata del logo (logo-entrance.tsx) è quasi finita.
+        .timeline({ delay: 1.4 })
         // Il CSS lo tiene nascosto finché non parte: niente scatto all'idratazione.
         .fromTo(
           stamp.current,

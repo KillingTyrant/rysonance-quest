@@ -1,7 +1,7 @@
 import { Hero } from "@/components/hero";
 import { Footer } from "@/components/layout/footer";
-import { Logo } from "@/components/layout/logo";
 import { Nav } from "@/components/layout/nav";
+import { LogoEntrance } from "@/components/logo-entrance";
 import { QuestStamp } from "@/components/quest-stamp";
 import { Suspense } from "react";
 
@@ -16,7 +16,7 @@ export default function Home() {
 
             <div className="w-full p-[1px] bg-gradient-to-r from-transparent via-foreground/10 to-transparent my-8" />
             <h1 className="relative w-full max-w-2xl">
-              <Logo className="h-auto w-full fill-primary" iconOnly={false} />
+              <LogoEntrance className="h-auto w-full fill-primary" />
               <QuestStamp className="absolute -bottom-5 right-0 px-4 py-1 text-xl font-black uppercase tracking-[0.35em] text-primary-foreground sm:-bottom-8 sm:px-6 sm:py-1.5 sm:text-4xl" />
             </h1>
             <Suspense fallback={<div>Loading...</div>}>

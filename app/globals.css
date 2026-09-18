@@ -167,9 +167,10 @@
     background-repeat: no-repeat;
   }
 
-  /* Nascosto finché GSAP non lo fa entrare; con "riduci movimento" resta visibile e fermo. */
+  /* Timbro e lettere del logo nascosti finché GSAP non li fa entrare; con "riduci movimento" restano visibili e fermi. */
   @media (prefers-reduced-motion: no-preference) {
-    .quest-stamp {
+    .quest-stamp,
+    .logo-entrance path {
       visibility: hidden;
     }
   }

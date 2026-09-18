@@ -29,14 +29,14 @@ export function PersonaggioCard({
         titolo="h2"
         className="aspect-[5/8] min-h-0 flex-none"
       />
-      <div className="flex flex-col gap-2">
+      {/* <div className="flex flex-col gap-2">
         <Button asChild variant="ticket" className="w-full">
           <Link href={`/quest/${personaggio.id}`}>Vai alla quest</Link>
         </Button>
         <p className="text-center text-xs text-muted-foreground">
           Creato il {DATE_FORMAT.format(new Date(personaggio.created_at))}
         </p>
-      </div>
+      </div> */}
     </article>
   );
 }
