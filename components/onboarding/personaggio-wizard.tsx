@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { salvaPersonaggio } from "@/app/(protected)/onboarding/actions";
 import { Button } from "@/components/ui/button";
@@ -238,6 +237,7 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
         className="flex w-full flex-1 flex-col outline-none"
       >
         <HubScreen
+          catalog={catalog}
           completed={(id) => isGroupComplete(problems, id)}
           unlocked={(id) => isGroupUnlocked(problems, id)}
           allComplete={allGroupsComplete(problems)}
@@ -328,7 +328,7 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
                 go({ mode: "step", step: position.group.steps[position.index - 1] });
             }}
           >
-            <ArrowLeft />
+            {/* <ArrowLeft /> */}
             Indietro
           </Button>
 
@@ -354,7 +354,7 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
                 }}
               >
                 Avanti
-                <ArrowRight />
+                {/* <ArrowRight /> */}
               </Button>
             </div>
           )}

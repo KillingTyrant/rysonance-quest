@@ -1,4 +1,4 @@
-import { Check, Plus, Shuffle } from "lucide-react";
+import { Check, Plus } from "lucide-react";
 import Image, { type StaticImageData } from "next/image";
 
 import { CATALOG_IMAGES } from "@/assets/catalog";
@@ -7,24 +7,27 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { WIZARD_GROUPS, type GroupId } from "@/lib/onboarding/groups";
+import { resolveDraft, type ResolvedPersonaggio } from "@/lib/onboarding/selectors";
 import { cn } from "@/lib/utils";
-import { PersonaggioDraft } from "@/lib/onboarding/types";
+import type { Catalog, PersonaggioDraft } from "@/lib/onboarding/types";
 import { NAME_MAX_LENGTH } from "@/lib/onboarding/validate";
 
 import type { SaveError } from "./wizard-steps";
 
-function selectionValue(groupId: GroupId, draft: PersonaggioDraft): string | null {
+/** Il riepilogo della riga, con i nomi del catalogo al posto delle chiavi. */
+function selectionValue(groupId: GroupId, resolved: ResolvedPersonaggio): string | null {
   if (groupId === "razza") {
-    const values = [draft.sesso, draft.razza_key, draft.tribu_key].filter(
+    const values = [resolved.sesso, resolved.razza?.name, resolved.tribu?.name].filter(
       (value): value is string => Boolean(value),
     );
     return values.length > 0 ? values.join(" • ") : null;
   }
 
-  if (groupId === "via") return draft.via_key;
+  if (groupId === "via") return resolved.via?.name ?? null;
 
   if (groupId === "talenti") {
-    return draft.talenti.length > 0 ? draft.talenti.join(", ") : null;
+    const { talenti } = resolved;
+    return talenti.length > 0 ? talenti.map((talento) => talento.name).join(", ") : null;
   }
 
   return null;
@@ -40,6 +43,7 @@ function selectionImage(groupId: GroupId, draft: PersonaggioDraft): StaticImageD
 }
 
 type HubScreenProps = {
+  catalog: Catalog;
   draft: PersonaggioDraft;
   completed: (id: GroupId) => boolean;
   unlocked: (id: GroupId) => boolean;
@@ -62,6 +66,7 @@ type HubScreenProps = {
  * abilita solo quando tutti i macro-passi sono completi e il nome è valido.
  */
 export function HubScreen({
+  catalog,
   draft,
   completed,
   unlocked,
@@ -74,6 +79,8 @@ export function HubScreen({
   onRandomize,
   onCreaEroe,
 }: HubScreenProps) {
+  const resolved = resolveDraft(catalog, draft);
+
   return (
     <div className="relative isolate flex flex-1 flex-col">
       {/*
@@ -92,7 +99,7 @@ export function HubScreen({
         {WIZARD_GROUPS.map((group) => {
           const isDone = completed(group.id);
           const isUnlocked = unlocked(group.id);
-          const selectedValue = selectionValue(group.id, draft);
+          const selectedValue = selectionValue(group.id, resolved);
           const image = selectionImage(group.id, draft);
           return (
             <li key={group.id}>
@@ -210,7 +217,7 @@ export function HubScreen({
           disabled={pending}
           onClick={onRandomize}
         >
-          <Shuffle />
+          {/* <Shuffle /> */}
           Crea un eroe random
         </Button>
         <Button

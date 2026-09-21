@@ -80,17 +80,12 @@ export function PersonaggioSheet({
       <Blocco title="Talenti">
         {talenti.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            Arrivano da razza, tribù e Via, più quelli a scelta.
+            Nessun talento scelto.
           </p>
         ) : (
           <div className="flex flex-wrap gap-1">
-            {/* I due scelti dall'utente si distinguono da quelli che arrivano
-                dalle altre scelte: il bordo al posto del pieno. */}
             {talenti.map((talento) => (
-              <Badge
-                key={talento.key}
-                variant={talento.kind === "scelta" ? "outline" : "secondary"}
-              >
+              <Badge key={talento.key} variant="outline">
                 {talento.name}
               </Badge>
             ))}

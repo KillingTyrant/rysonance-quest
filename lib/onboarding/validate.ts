@@ -133,7 +133,7 @@ export function validateDraft(
     add(
       "talenti",
       "Talenti",
-      `Non esiste nessun talento a scelta con chiave "${sconosciuti[0]}".`,
+      `Non esiste nessun talento con chiave "${sconosciuti[0]}".`,
     );
   } else if (!via) {
     // Senza Via non si sa quanti talenti servano: la scelta non può dirsi

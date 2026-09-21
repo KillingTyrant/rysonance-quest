@@ -1,29 +1,40 @@
 import { cn } from "@/lib/utils";
-import React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import Link from "next/link";
-import { Button } from "../ui/button";
 
-export function SignUpSuccess({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
-    return (
-        <div className={cn("flex flex-col gap-6", className)} {...props}>
-            <Card className="border-0">
-                <CardHeader>
-                    <CardTitle className="text-5xl">
-                        Thank you for signing up!
-                    </CardTitle>
-                    <CardDescription className="text-xl">Check your email to confirm</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-sm text-muted-foreground">
-                        You&apos;ve successfully signed up. Please check your email to
-                        confirm your account before signing in.
-                    </p>
-                    <Button asChild variant="ticket" className="w-full">
-                        <Link href="/auth/login">Accedi</Link>
-                    </Button>
-                </CardContent>
-            </Card>
-        </div>
-    );
+export function SignUpSuccess({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<"div">) {
+  return (
+    <div className={cn("flex flex-col gap-6", className)} {...props}>
+      <Card className="border-0">
+        <CardHeader>
+          <CardTitle className="text-5xl font-bold">Controlla la tua email</CardTitle>
+          <CardDescription className="text-xl">
+            Ti abbiamo inviato un link per confermare l&apos;account.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col gap-6">
+            <p className="text-sm text-muted-foreground">
+              Apri il link nell&apos;email per attivare l&apos;account: ti porterà
+              direttamente alla creazione del tuo eroe. Se non la trovi, controlla
+              anche la cartella spam.
+            </p>
+            <Button asChild variant="ticket" className="w-full">
+              <Link href="/auth/login">Accedi</Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }

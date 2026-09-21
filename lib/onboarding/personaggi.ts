@@ -160,7 +160,7 @@ function describeError(error: PostgrestError): string {
 
   switch (error.code) {
     case "23503": // foreign_key_violation, e i raise di crea_personaggio: via
-      // inesistente, talento inesistente o non a scelta.
+      // inesistente, talento inesistente.
       return "Una delle scelte non esiste più nel catalogo, o non è fra quelle disponibili. Ricarica la pagina.";
     case "23514": // check_violation: crea_personaggio esige esattamente
       // `vie.talenti_scelta` talenti.

@@ -12,7 +12,7 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel";
-import { talentiDaScegliere, talentoIniziale } from "@/lib/onboarding/selectors";
+import { talentiDaScegliere } from "@/lib/onboarding/selectors";
 import { cn } from "@/lib/utils";
 
 import { StepSection } from "../step-section";
@@ -57,7 +57,6 @@ export function ViaStep({ catalog, draft, onChange }: StepProps) {
       >
         <CarouselContent>
           {catalog.vie.map((via) => {
-            const iniziale = talentoIniziale(via);
             const selected = draft.via_key === via.key;
 
             return (
@@ -71,12 +70,12 @@ export function ViaStep({ catalog, draft, onChange }: StepProps) {
                   <div className="flex w-full justify-end">
                     <Button
                       type="button"
-                      variant={selected ? "ticketSecondary" : "ticket"}
+                      variant={selected ? "ticket" : "ticketSmall"}
                       size="sm"
                       aria-pressed={selected}
                       onClick={() => onChange({ via_key: via.key })}
                     >
-                      {selected && <Check />}
+                      {/* {selected && <Check />} */}
                       {selected ? "Selezionata" : "Seleziona"}
                     </Button>
                   </div>
@@ -104,16 +103,8 @@ export function ViaStep({ catalog, draft, onChange }: StepProps) {
                         {via.description}
                       </p>
                     )}
-                    {iniziale && (
-                      <div className="flex flex-col gap-1">
-                        <p className="font-semibold">Talento di via: {iniziale.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {iniziale.description}
-                        </p>
-                      </div>
-                    )}
                     <p className="text-xs text-muted-foreground">
-                      {talentiDaScegliere(via)} talenti a scelta
+                      {talentiDaScegliere(via)} talenti da scegliere
                     </p>
                   </div>
                 </article>

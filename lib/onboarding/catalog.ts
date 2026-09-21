@@ -5,7 +5,7 @@ import { cacheLife } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/lib/supabase/database.types";
-import type { Catalog, Talento, Tribu, Via } from "./types";
+import type { Catalog } from "./types";
 
 /**
  * Client "anonimo" senza cookie: il catalogo è pubblico in lettura (RLS
@@ -22,7 +22,7 @@ function catalogClient() {
 
 /**
  * Legge il catalogo di gioco e lo ricompone secondo le relazioni del DB:
- * razza → tribù, e le vie, ciascuna con il proprio talento.
+ * razza → tribù, più le vie e i talenti in elenchi piatti.
  *
  * `"use cache"` + `cacheLife("max")`: viene risolto a build time e congelato
  * nelle pagine, quindi a runtime non parte nessuna query. La chiave di cache
@@ -30,8 +30,7 @@ function catalogClient() {
  * cambia solo con un `db push --include-seed` seguito da un deploy.
  *
  * Quattro query piatte e una ricomposizione in memoria, invece di un embed
- * PostgREST sui talenti: i talenti si leggono una volta sola e si agganciano
- * per chiave. Il numero di round-trip è comunque irrilevante, gira a build time.
+ * PostgREST. Il numero di round-trip è comunque irrilevante, gira a build time.
  *
  * Le colonne sono elencate una per una: quello che finisce qui dentro viene
  * serializzato nel payload del client.
@@ -47,64 +46,47 @@ export async function getCatalog(): Promise<Catalog> {
       "talenti",
       supabase
         .from("talenti")
-        .select("key, name, description, kind, scuola, disciplina, ramo")
+        .select("key, name, description")
         .order("sort_order"),
     ),
     read(
       "razze",
       supabase
         .from("razze")
-        .select("key, name, description, sort_order, talent_key")
+        .select("key, name, description, sort_order")
         .order("sort_order"),
     ),
     read(
       "tribu",
       supabase
         .from("tribu")
-        .select("key, razza_key, name, description, base_hp, base_mana, base_speed, sort_order, talent_key")
+        .select("key, razza_key, name, description, base_hp, base_mana, base_speed, sort_order")
         .order("sort_order"),
     ),
     read(
       "vie",
       supabase
         .from("vie")
-        .select("key, name, description, sort_order, talent_key, talenti_scelta")
+        .select("key, name, description, sort_order, talenti_scelta")
         .order("sort_order"),
     ),
   ]);
 
-  const talentoByKey = new Map<string, Talento>();
-  for (const talento of talenti) {
-    talentoByKey.set(talento.key, talento);
-  }
-
-  const talentoOf = (key: string | null) => (key ? talentoByKey.get(key) ?? null : null);
-
   // Una passata per raggruppare, invece di rifiltrare l'array dentro ogni map.
-  const tribuByRazza = groupBy(
-    tribu.map(({ talent_key, ...row }): Tribu => ({
-      ...row,
-      talento: talentoOf(talent_key),
-    })),
-    (t) => t.razza_key,
-  );
+  const tribuByRazza = groupBy(tribu, (t) => t.razza_key);
 
   return {
-    // `talent_key` apre la via; `talenti_scelta` dice quanti talenti a scelta
-    // dà (il Viandante tre, le altre due) ed è la stessa regola che
-    // `crea_personaggio` applica al salvataggio.
-    vie: vie.map(({ talent_key, ...row }): Via => ({
+    // `talenti_scelta` dice quanti talenti dà la via (il Viandante tre, le
+    // altre due) ed è la stessa regola che `crea_personaggio` applica al
+    // salvataggio.
+    vie,
+    razze: razze.map((row) => ({
       ...row,
-      talento: talentoOf(talent_key),
-    })),
-    razze: razze.map(({ talent_key, ...row }) => ({
-      ...row,
-      talento: talentoOf(talent_key),
       tribu: tribuByRazza.get(row.key) ?? [],
     })),
-    // Nell'ordine di `sort_order`, che raggruppa per scuola e disciplina: è
-    // l'ordine in cui lo step li mostra.
-    talentiScelta: [...talentoByKey.values()].filter((t) => t.kind === "scelta"),
+    // Tutti i talenti sono a scelta. Nell'ordine di `sort_order`: è l'ordine
+    // in cui lo step li mostra.
+    talentiScelta: talenti,
   };
 }
 

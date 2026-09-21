@@ -50,8 +50,14 @@ Regole per l'ambiente locale:
   `NODE_ENV=development`. Valori: `NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321`,
   `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` = publishable key stampata da
   `npm run db:status` in `rysonance-db`. Sono credenziali demo fisse, non segreti.
-- **`.env.local` è riservato alle credenziali del progetto cloud** e non va modificato per
-  lavorare in locale. `.env.prod.local` idem per la produzione.
+- **Anche `.env.local` punta al locale**, con gli stessi valori: così anche `next build`
+  e `next start` in locale (dove `.env.development.local` non si carica) leggono lo stack
+  Docker e non il cloud. Nessun file `.env*` letto automaticamente da Next.js deve puntare
+  al progetto cloud.
+- **Le credenziali del progetto cloud stanno solo in `.env.prod.local`**, che Next.js non
+  carica da solo (il nome non è fra quelli standard): serve come riferimento e per
+  interrogare il cloud a mano, non per far girare l'app. In produzione le variabili
+  arrivano dall'ambiente del deploy. Non va copiato in `.env.local` per lavorare.
 - **Lo stack locale si avvia e si resetta da `rysonance-db`** (`npm run db:start`,
   `db:stop`, `db:reset`, `db:status`): questo repo non ha script `db:*` e non deve averli.
   Se il DB locale sembra fuori allineamento con il codice, è `rysonance-db` a doverlo

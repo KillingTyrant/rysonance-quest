@@ -23,18 +23,8 @@ export const SESSI: readonly { key: Sesso; name: string }[] = [
 
 // ──────────────────────────────── Catalogo ──────────────────────────────────
 
-/**
- * `kind` dice da dove arriva il talento: 'razza' | 'tribu' | 'via' lo porta una
- * scelta del wizard, 'scelta' lo aggiunge l'utente nel proprio step.
- *
- * `scuola` / `disciplina` / `ramo` sono valorizzate solo per i talenti a
- * scelta e sono etichette, non una gerarchia: servono a cercare e raggruppare
- * fra 254 opzioni, non a navigarle.
- */
-export type Talento = Pick<
-  Row<"talenti">,
-  "key" | "name" | "description" | "kind" | "scuola" | "disciplina" | "ramo"
->;
+/** Ogni talento è a scelta: razza, tribù e via non ne portano più uno. */
+export type Talento = Pick<Row<"talenti">, "key" | "name" | "description">;
 
 export type Tribu = Pick<
   Row<"tribu">,
@@ -46,23 +36,19 @@ export type Tribu = Pick<
   | "base_mana"
   | "base_speed"
   | "sort_order"
-> & { talento: Talento | null };
+>;
 
 export type Razza = Pick<
   Row<"razze">,
   "key" | "name" | "description" | "sort_order"
 > & {
-  talento: Talento | null;
   tribu: Tribu[];
 };
 
 export type Via = Pick<
   Row<"vie">,
   "key" | "name" | "description" | "sort_order" | "talenti_scelta"
-> & {
-  /** Il talento con cui la via comincia (`vie.talent_key`). */
-  talento: Talento | null;
-};
+>;
 
 /**
  * Il catalogo di gioco, già ricomposto secondo le relazioni del DB. Non
@@ -71,11 +57,7 @@ export type Via = Pick<
 export type Catalog = {
   vie: Via[];
   razze: Razza[];
-  /**
-   * I talenti `kind = 'scelta'`: gli unici che l'utente prende da sé, in un
-   * elenco piatto. Gli altri non stanno qui — arrivano dalla razza, dalla tribù
-   * e dalla via che li portano.
-   */
+  /** Tutti i talenti, in un elenco piatto: sono tutti a scelta. */
   talentiScelta: Talento[];
 };
 

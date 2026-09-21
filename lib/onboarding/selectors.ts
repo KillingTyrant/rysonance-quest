@@ -29,7 +29,7 @@ export function tribuByKey(catalog: Catalog, key: string | null): Tribu | null {
   return null;
 }
 
-/** Cerca solo fra i talenti a scelta: gli altri non si possono scegliere. */
+/** Un talento del catalogo per chiave. */
 export function talentoSceltaByKey(
   catalog: Catalog,
   key: string | null,
@@ -55,11 +55,6 @@ export function sessoName(sesso: Sesso | null): string | null {
 
 // ─────────────────────────────── Derivazioni ────────────────────────────────
 
-/** Il talento con cui la via comincia (`vie.talent_key`). */
-export function talentoIniziale(via: Via | null): Talento | null {
-  return via?.talento ?? null;
-}
-
 /**
  * Quanti talenti deve scegliere chi percorre questa via. È `vie.talenti_scelta`,
  * la stessa regola che `crea_personaggio` impone al salvataggio: qui serve al
@@ -78,17 +73,6 @@ export function isRazzaGiocabile(razza: Razza): boolean {
   return razza.tribu.length > 0;
 }
 
-/** Tutti i talenti che il personaggio NON sceglie: razza, tribù, apertura della via. */
-export function talentiAssegnati(
-  razza: Razza | null,
-  tribu: Tribu | null,
-  via: Via | null,
-): Talento[] {
-  return [razza?.talento, tribu?.talento, talentoIniziale(via)].filter(
-    (talento): talento is Talento => talento !== null && talento !== undefined,
-  );
-}
-
 // ──────────────────────────── View-model condiviso ──────────────────────────
 
 /**
@@ -103,10 +87,7 @@ export type ResolvedPersonaggio = {
   via: Via | null;
   razza: Razza | null;
   tribu: Tribu | null;
-  /**
-   * Assegnati (razza, tribù, via) e poi quelli scelti dall'utente. Chi disegna
-   * distingue i due gruppi con `talento.kind`, senza bisogno di due liste.
-   */
+  /** I talenti scelti dall'utente, nell'ordine in cui li ha scelti. */
   talenti: Talento[];
   /**
    * Vita, mana e velocità base della tribù. Sono `null` finché nel wizard la
@@ -155,14 +136,11 @@ function resolve(
     via,
     razza,
     tribu,
-    talenti: [
-      ...talentiAssegnati(razza, tribu, via),
-      // Si itera sulle scelte, non sul catalogo: l'ordine è quello in cui sono
-      // state fatte. Una chiave sconosciuta semplicemente sparisce.
-      ...scelte.talenti
-        .map((key) => talentoSceltaByKey(catalog, key))
-        .filter((talento): talento is Talento => talento !== null),
-    ],
+    // Si itera sulle scelte, non sul catalogo: l'ordine è quello in cui sono
+    // state fatte. Una chiave sconosciuta semplicemente sparisce.
+    talenti: scelte.talenti
+      .map((key) => talentoSceltaByKey(catalog, key))
+      .filter((talento): talento is Talento => talento !== null),
     hp: tribu?.base_hp ?? null,
     mana: tribu?.base_mana ?? null,
     speed: tribu?.base_speed ?? null,

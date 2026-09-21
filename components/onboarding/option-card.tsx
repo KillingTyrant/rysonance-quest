@@ -27,6 +27,7 @@ export function OptionCard({
     <Button
       type="button"
       variant={selected ? "ticket" : "ticketSecondary"}
+      className="flex flex-row gap-1 w-full"
       aria-pressed={selected}
       disabled={disabled}
       onClick={onSelect}

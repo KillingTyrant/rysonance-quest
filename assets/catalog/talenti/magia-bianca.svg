@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a2f4f"/>
+      <stop offset="1" stop-color="#6b5a7e"/>
+    </linearGradient>
+    <radialGradient id="light" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fffdf0"/>
+      <stop offset=".35" stop-color="#ffe9a3" stop-opacity=".8"/>
+      <stop offset="1" stop-color="#ffd36b" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="640" height="360" fill="url(#bg)"/>
+  <g stroke="#fff4c9" stroke-linecap="round" opacity=".45">
+    <path d="M320 170L320 10" stroke-width="6"/><path d="M320 170L470 40" stroke-width="4"/>
+    <path d="M320 170L170 40" stroke-width="4"/><path d="M320 170L600 120" stroke-width="3"/>
+    <path d="M320 170L40 120" stroke-width="3"/><path d="M320 170L580 260" stroke-width="3"/>
+    <path d="M320 170L60 260" stroke-width="3"/>
+  </g>
+  <circle cx="320" cy="170" r="170" fill="url(#light)"/>
+  <g fill="none" stroke="#fffbe6" opacity=".9">
+    <circle cx="320" cy="170" r="72" stroke-width="3"/>
+    <circle cx="320" cy="170" r="92" stroke-width="1.5" stroke-dasharray="4 10"/>
+    <path d="M320 98l62 108H258z" stroke-width="2.5"/>
+    <path d="M320 242l-62-108h124z" stroke-width="2.5"/>
+  </g>
+  <path d="M320 140c10 18 12 20 30 30-18 10-20 12-30 30-10-18-12-20-30-30 18-10 20-12 30-30z" fill="#fff"/>
+  <g fill="#ffffff">
+    <path d="M150 90l4 10 10 4-10 4-4 10-4-10-10-4 10-4z" opacity=".85"/>
+    <path d="M500 230l3 8 8 3-8 3-3 8-3-8-8-3 8-3z" opacity=".85"/>
+    <path d="M520 70l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" opacity=".7"/>
+    <path d="M120 250l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" opacity=".7"/>
+  </g>
+  <path d="M0 360v-50c100-25 200 10 320 0s220-30 320-5v55z" fill="#3c3052" opacity=".9"/>
+</svg>

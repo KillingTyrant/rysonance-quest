@@ -1,5 +1,3 @@
-import { ArrowLeft } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import type { GroupDef } from "@/lib/onboarding/groups";
 
@@ -26,7 +24,6 @@ export function GroupIntro({ group, disabled, onContinue, onBack }: GroupIntroPr
       <div className="flex flex-col gap-3 pt-8">
         <Button
           variant="ticket"
-          size="lg"
           className="w-full"
           disabled={disabled}
           onClick={onContinue}
@@ -35,13 +32,12 @@ export function GroupIntro({ group, disabled, onContinue, onBack }: GroupIntroPr
         </Button>
         <Button
           type="button"
-          variant="ghost"
-          size="sm"
-          className="self-center"
+          variant="ticketSecondary"
+          className="self-center w-full"
           disabled={disabled}
           onClick={onBack}
         >
-          <ArrowLeft />
+          {/* <ArrowLeft /> */}
           Indietro
         </Button>
       </div>
