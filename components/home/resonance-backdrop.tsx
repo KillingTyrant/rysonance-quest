@@ -85,7 +85,7 @@ export function ResonanceBackdrop({ className }: { className?: string }) {
         className="relative h-full w-full opacity-0 motion-reduce:opacity-100"
       >
         {/* Alone ambra dietro il logo: lo stesso colore del biglietto "Vai alla Lobby". */}
-        <div className="absolute inset-[22%] rounded-full bg-[#FFBA30]/25 blur-3xl dark:bg-[#FFBA30]/15" />
+        <div className="absolute inset-[22%] rounded-full bg-brand/25 blur-3xl dark:bg-brand/15" />
         <svg
           viewBox="-500 -500 1000 1000"
           className="relative h-full w-full overflow-visible text-foreground"
@@ -126,7 +126,7 @@ export function ResonanceBackdrop({ className }: { className?: string }) {
           {/* Lancetta fissa: il quadrante le gira sotto. */}
           <path
             d={`M-12 ${-RAGGIO_QUADRANTE - 26} L12 ${-RAGGIO_QUADRANTE - 26} L0 ${-RAGGIO_QUADRANTE - 4} Z`}
-            fill="#FFBA30"
+            className="fill-brand"
           />
         </svg>
       </div>

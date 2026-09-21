@@ -87,7 +87,7 @@ export function HomeSteps() {
         >
           <span
             aria-hidden
-            className="absolute -right-2 -top-4 text-7xl font-black text-foreground/5 transition-colors group-hover:text-[#FFBA30]/30"
+            className="absolute -right-2 -top-4 text-7xl font-black text-foreground/5 transition-colors group-hover:text-brand/30"
           >
             {passo.numero}
           </span>

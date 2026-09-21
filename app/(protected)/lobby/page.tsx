@@ -23,7 +23,7 @@ export default function LobbyPage() {
               Tutti i personaggi che hai creato con il wizard.
             </p>
           </div>
-          <Button variant="ticket">
+          <Button asChild variant="ticketSecondary">
             <Link href="/onboarding">Crea un personaggio</Link>
           </Button>
         </header>

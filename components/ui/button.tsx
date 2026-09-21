@@ -1,11 +1,11 @@
 import * as React from "react";
-import { Slot } from "@radix-ui/react-slot";
+import { Slot, Slottable } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "group relative inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-sans transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "group relative inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-sans transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -17,7 +17,7 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         
         ticket:
-          "btn-ticket text-[#f4f4f4] [--ticket-bg:#272727] [--ticket-border-width:0px] hover:text-[#272727] hover:[--ticket-bg:#f4f4f4] hover:[--ticket-border:#272727] hover:[--ticket-border-width:3px] active:text-[#f4f4f4] active:[--ticket-bg:#272727] active:[--ticket-border-width:0px]",
+          "btn-ticket text-brand-foreground [--ticket-bg:hsl(var(--brand))] [--ticket-border-width:0px] hover:text-[#272727] hover:[--ticket-bg:#f4f4f4] hover:[--ticket-border:#272727] hover:[--ticket-border-width:3px] active:text-brand-foreground active:[--ticket-bg:hsl(var(--brand))] active:[--ticket-border-width:0px]",
         ticketSecondary:
           "btn-ticket [--notch-scale:0.5] text-[#f4f4f4] [--ticket-bg:#272727] [--ticket-border-width:0px] hover:text-[#272727] hover:[--ticket-bg:#f4f4f4] hover:[--ticket-border:#272727] hover:[--ticket-border-width:3px] active:text-[#f4f4f4] active:[--ticket-bg:#272727] active:[--ticket-border-width:0px]",
         
@@ -87,55 +87,42 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     // Pallino destro: per andare da dentro a fuori deve partire da sinistra (-translate-x-4)
     const rightDotStart = isTicketSmall ? "-translate-x-4" : "translate-x-4";
 
-    // Gestiamo il colore al click dinamicamente
-    const activeDotColor = isTicketSmall ? "group-active:bg-[#272727]" : "group-active:bg-[#f4f4f4]";
+    // Colore dei pallini al click: scuri sul giallo di ticket e sul chiaro di ticketSmall,
+    // chiari sullo sfondo scuro di ticketSecondary
+    const activeDotColor = variant === "ticketSecondary" ? "group-active:bg-[#f4f4f4]" : "group-active:bg-[#272727]";
 
-    if (asChild) {
-      return (
-        <Slot
-          className={cn("group relative", buttonVariants({ variant, size, className }))}
-          ref={ref}
-          {...props}
-        >
-          {children}
-        </Slot>
-      );
-    }
+    const dotBase = "absolute top-1/2 rounded-full bg-[#272727] transition-all duration-800 ease-out group-hover:opacity-100 group-hover:translate-x-0";
+
+    // Pallino sinistro
+    const leftDot = displayDots && (
+      <span
+        aria-hidden
+        className={cn(dotBase, `opacity-0 ${leftDotStart} -translate-y-1/2`, activeDotColor, leftDotPos, dotClass)}
+      />
+    );
+
+    // Pallino destro
+    const rightDot = displayDots && (
+      <span
+        aria-hidden
+        className={cn(dotBase, `opacity-0 ${rightDotStart} -translate-y-1/2`, activeDotColor, rightDotPos, dotClass)}
+      />
+    );
+
+    // Con asChild l'elemento renderizzato è il figlio (es. <Link>): Slottable gli
+    // inietta dentro i pallini, così l'animazione resta anche sui link.
+    const Comp = asChild ? Slot : "button";
 
     return (
-      <button
+      <Comp
         className={cn("group relative", buttonVariants({ variant, size, className }))}
         ref={ref}
         {...props}
       >
-        {/* Pallino sinistro */}
-        {displayDots && (
-          <span className={cn(
-            "absolute top-1/2 rounded-full bg-[#272727] transition-all duration-800 ease-out",
-            // Usiamo la variabile per lo stato invisibile/iniziale
-            `opacity-0 ${leftDotStart} -translate-y-1/2`,
-            "group-hover:opacity-100 group-hover:translate-x-0",
-            activeDotColor, 
-            leftDotPos,
-            dotClass
-          )} />
-        )}
-
-        <span>{children}</span>
-
-        {/* Pallino destro */}
-        {displayDots && (
-          <span className={cn(
-            "absolute top-1/2 rounded-full bg-[#272727] transition-all duration-800 ease-out",
-            // Usiamo la variabile per lo stato invisibile/iniziale
-            `opacity-0 ${rightDotStart} -translate-y-1/2`,
-            "group-hover:opacity-100 group-hover:translate-x-0",
-            activeDotColor, 
-            rightDotPos,
-            dotClass
-          )} />
-        )}
-      </button>
+        {leftDot}
+        {asChild ? <Slottable>{children}</Slottable> : <span>{children}</span>}
+        {rightDot}
+      </Comp>
     );
   },
 );

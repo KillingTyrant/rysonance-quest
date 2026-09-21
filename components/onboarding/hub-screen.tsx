@@ -216,6 +216,7 @@ export function HubScreen({
           className="flex w-full items-center gap-4 rounded-md py-2 text-left"
           disabled={pending}
           onClick={onRandomize}
+          showDots
         >
           {/* <Shuffle /> */}
           Crea un eroe random
