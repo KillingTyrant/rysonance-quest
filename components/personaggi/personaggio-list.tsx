@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { getCatalog } from "@/lib/onboarding/catalog";
 import { listPersonaggi } from "@/lib/onboarding/personaggi";
 
+import { CardAnimation } from "./card-animation";
 import { PersonaggioCard } from "./personaggio-card";
 
 /**
@@ -34,7 +35,7 @@ export async function PersonaggioList() {
             minuti.
           </p>
         </div>
-        <Button asChild variant="ticket">
+        <Button variant="ticket" className="w-full">
           <Link href="/onboarding">Crea il primo personaggio</Link>
         </Button>
       </div>
@@ -44,12 +45,10 @@ export async function PersonaggioList() {
   return (
     <div className="flex flex-col gap-4">
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        {personaggi.map((personaggio) => (
-          <PersonaggioCard
-            key={personaggio.id}
-            personaggio={personaggio}
-            catalog={catalog}
-          />
+        {personaggi.map((personaggio, index) => (
+          <CardAnimation key={personaggio.id} index={index}>
+            <PersonaggioCard personaggio={personaggio} catalog={catalog} />
+          </CardAnimation>
         ))}
       </div>
     </div>
