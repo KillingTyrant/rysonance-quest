@@ -298,7 +298,7 @@ export function DadoLibero() {
               In Rysonance il dado decide la tua quest. Crea il tuo personaggio e
               scopri dove ti porta.
             </p>
-            <Button asChild variant="ticket" className="w-52">
+            <Button asChild variant="ticket">
               <Link href={loggato ? "/lobby" : "/auth/login"}>Crea il tuo personaggio</Link>
             </Button>
           </>
