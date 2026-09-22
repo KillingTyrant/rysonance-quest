@@ -65,6 +65,10 @@ export default function RootLayout({
           src="https://cdn.iubenda.com/iubenda.js"
           strategy="lazyOnload"
         />
+        <Script
+          src="https://embeds.iubenda.com/widgets/a13a51f6-135d-4b0b-baf3-4237d7b5a213.js"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   );
