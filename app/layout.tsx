@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import Script from "next/script";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 
@@ -60,6 +61,10 @@ export default function RootLayout({
         >
           {children}
         </ThemeProvider>
+        <Script
+          src="https://cdn.iubenda.com/iubenda.js"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   );
