@@ -75,36 +75,42 @@ export function RazzaCard({
         {media}
 
         {/*
-          Il velo parte da `background` e non da nero: il nome è `foreground`,
-          quindi il contrasto regge in entrambi i temi qualunque sia
-          l'illustrazione sotto.
+          Il velo parte da nero e non da `background`: sotto c'è sempre
+          un'illustrazione, non la superficie della card, quindi il nome è bianco
+          in entrambi i temi e il contrasto non deve dipendere dal tema.
         */}
         <span
           aria-hidden
-          className="absolute inset-0 bg-gradient-to-t from-background/85 via-background/25 to-transparent"
+          className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
         />
 
         <span className="relative flex h-full w-full flex-col p-4">
           <span
             className={cn(
-              "flex flex-1",
-              selected ? "flex-none justify-center" : "items-center justify-end",
+              "flex flex-1 items-end",
+              selected ? "justify-center pb-4" : "justify-end",
             )}
           >
-            {/* Nel design il nome è in un serif display, che il progetto non ha
-                ancora: finché non arriva resta il font dell'app, maiuscolo. */}
+            {/* Sprat Condensed, il serif display del design (caricato dal layout
+                dell'onboarding). I corpi del mockup — 72px chiusa, 120px aperta
+                — valgono da `lg` in su: sotto scalano, altrimenti il nome di una
+                razza lunga esce dalla card sul telefono. */}
             <span
               className={cn(
-                "font-medium uppercase leading-none tracking-tight",
-                selected ? "text-5xl" : "text-4xl",
+                "font-sprat uppercase leading-none tracking-[-0.08em] text-white",
+                selected
+                  ? "font-extralight text-6xl sm:text-8xl lg:text-[120px]"
+                  : "text-right font-normal text-4xl sm:text-5xl lg:text-[72px]",
               )}
             >
               {razza.name}
             </span>
           </span>
 
+          {/* Bianco smorzato e non `muted-foreground`: sta sopra il velo scuro,
+              dove il colore del tema chiaro sparirebbe. */}
           {disabled && disabledReason && (
-            <span className="text-xs text-muted-foreground">{disabledReason}</span>
+            <span className="text-xs text-white/80">{disabledReason}</span>
           )}
         </span>
       </button>
