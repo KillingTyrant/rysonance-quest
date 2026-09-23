@@ -15,7 +15,7 @@ import { parseDraft, validateDraft } from "./validate";
  * testo del select, e una concatenazione lo degrada a `string`.
  */
 const PERSONAGGIO_SELECT =
-  "id, name, sesso, via_key, razza_key, tribu_key, created_at, personaggio_talenti(talent_key)";
+  "id, name, via_key, razza_key, tribu_key, created_at, personaggio_talenti(talent_key)";
 
 type PersonaggioRow = Omit<Personaggio, "talenti"> & {
   personaggio_talenti: { talent_key: string }[];
@@ -117,7 +117,6 @@ export async function creaPersonaggio(
   const { data: id, error } = await supabase.rpc("crea_personaggio", {
     p_name: draft.name,
     // validateDraft ha già scartato i null: qui i campi sono per forza pieni.
-    p_sesso: draft.sesso!,
     p_via_key: draft.via_key!,
     p_tribu_key: draft.tribu_key!,
     p_talenti: draft.talenti,

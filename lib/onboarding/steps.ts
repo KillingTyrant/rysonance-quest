@@ -27,7 +27,7 @@ export const WIZARD_STEPS = [
   {
     id: "identita",
     title: "Identità",
-    fields: ["sesso", "razza_key", "tribu_key"],
+    fields: ["razza_key", "tribu_key"],
   },
   { id: "via", title: "La Via", fields: ["via_key"] },
   { id: "talenti", title: "Talenti", fields: ["talenti"] },

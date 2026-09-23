@@ -7,8 +7,7 @@ import {
   tribuByKey,
   viaByKey,
 } from "./selectors";
-import type { Catalog, PersonaggioDraft, Sesso } from "./types";
-import { SESSI } from "./types";
+import type { Catalog, PersonaggioDraft } from "./types";
 
 /** Allineato al check `personaggi_name_check`. */
 export const NAME_MAX_LENGTH = 40;
@@ -16,7 +15,6 @@ export const NAME_MAX_LENGTH = 40;
 /** I campi del draft su cui può esistere un problema. */
 export type DraftField =
   | "name"
-  | "sesso"
   | "via_key"
   | "razza_key"
   | "tribu_key"
@@ -33,7 +31,6 @@ export type Problem = {
 export function emptyDraft(): PersonaggioDraft {
   return {
     name: "",
-    sesso: null,
     via_key: null,
     razza_key: null,
     tribu_key: null,
@@ -59,7 +56,6 @@ export function parseDraft(input: unknown): PersonaggioDraft | null {
 
   return {
     name: typeof raw.name === "string" ? raw.name.trim() : "",
-    sesso: SESSI.some((item) => item.key === raw.sesso) ? (raw.sesso as Sesso) : null,
     via_key: asKey(raw.via_key),
     razza_key: asKey(raw.razza_key),
     tribu_key: asKey(raw.tribu_key),
@@ -86,16 +82,12 @@ export function validateDraft(
   // I controlli seguono l'ordine degli step: leggere questa funzione
   // dev'essere come ripercorrere il wizard.
 
-  // ── chi è: nome, sesso, razza e tribù ─────────────────────────────────────
+  // ── chi è: nome, razza e tribù ────────────────────────────────────────────
   const name = draft.name.trim();
   if (name.length === 0) {
     add("name", "Nome", "Il personaggio deve avere un nome.");
   } else if (name.length > NAME_MAX_LENGTH) {
     add("name", "Nome", `Il nome non può superare i ${NAME_MAX_LENGTH} caratteri.`);
-  }
-
-  if (!draft.sesso) {
-    add("sesso", "Sesso", "Scegli il sesso del personaggio.");
   }
 
   const razza = razzaByKey(catalog, draft.razza_key);

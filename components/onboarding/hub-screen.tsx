@@ -17,7 +17,7 @@ import type { SaveError } from "./wizard-steps";
 /** Il riepilogo della riga, con i nomi del catalogo al posto delle chiavi. */
 function selectionValue(groupId: GroupId, resolved: ResolvedPersonaggio): string | null {
   if (groupId === "razza") {
-    const values = [resolved.sesso, resolved.razza?.name, resolved.tribu?.name].filter(
+    const values = [resolved.razza?.name, resolved.tribu?.name].filter(
       (value): value is string => Boolean(value),
     );
     return values.length > 0 ? values.join(" • ") : null;

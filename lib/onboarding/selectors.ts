@@ -3,12 +3,10 @@ import type {
   Personaggio,
   PersonaggioDraft,
   Razza,
-  Sesso,
   Talento,
   Tribu,
   Via,
 } from "./types";
-import { SESSI } from "./types";
 
 // ─────────────────────────────── Lookup ─────────────────────────────────────
 
@@ -49,10 +47,6 @@ export function articolo(nome: string): "i" | "gli" {
   return /^([aeiou]|z|s[bcdfglmnpqrtv]|gn|ps|x|y)/i.test(nome) ? "gli" : "i";
 }
 
-export function sessoName(sesso: Sesso | null): string | null {
-  return SESSI.find((item) => item.key === sesso)?.name ?? null;
-}
-
 // ─────────────────────────────── Derivazioni ────────────────────────────────
 
 /**
@@ -83,7 +77,6 @@ export function isRazzaGiocabile(razza: Razza): boolean {
  */
 export type ResolvedPersonaggio = {
   name: string;
-  sesso: string | null;
   via: Via | null;
   razza: Razza | null;
   tribu: Tribu | null;
@@ -132,7 +125,6 @@ function resolve(
 
   return {
     name: scelte.name,
-    sesso: sessoName(scelte.sesso),
     via,
     razza,
     tribu,

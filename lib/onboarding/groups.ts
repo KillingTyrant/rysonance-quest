@@ -30,7 +30,7 @@ export const WIZARD_GROUPS = [
     label: "Scegli la tua razza",
     introTitle: "Scelta della razza",
     introDescription:
-      "Ogni eroe di Rysonance appartiene a una razza, e ogni razza ha le sue tribù. Qui decidi chi è il tuo eroe: il sesso e il popolo da cui proviene.",
+      "Ogni eroe di Rysonance appartiene a una razza, e ogni razza ha le sue tribù. Qui decidi chi è il tuo eroe: il popolo da cui proviene e la tribù che lo ha cresciuto.",
     steps: ["identita"],
   },
   {

@@ -25,11 +25,7 @@ import {
   WIZARD_STEPS,
   type StepId,
 } from "@/lib/onboarding/steps";
-import {
-  SESSI,
-  type Catalog,
-  type PersonaggioDraft,
-} from "@/lib/onboarding/types";
+import type { Catalog, PersonaggioDraft } from "@/lib/onboarding/types";
 import { emptyDraft, validateDraft } from "@/lib/onboarding/validate";
 
 import { GroupIntro } from "./group-intro";
@@ -170,7 +166,6 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
   }
 
   function handleRandomize() {
-    const sesso = pickRandom(SESSI)?.key ?? null;
     const razza = pickRandom(catalog.razze.filter(isRazzaGiocabile));
     const tribu = razza ? pickRandom(razza.tribu) : null;
     const via = pickRandom(catalog.vie);
@@ -183,7 +178,6 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
     const randomDraft: PersonaggioDraft = {
       ...emptyDraft(),
       name: `Eroe ${Math.floor(1000 + Math.random() * 9000)}`,
-      sesso,
       razza_key: razza?.key ?? null,
       tribu_key: tribu?.key ?? null,
       via_key: via?.key ?? null,

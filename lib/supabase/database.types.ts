@@ -40,7 +40,6 @@ export type Database = {
           id: string
           name: string
           razza_key: string
-          sesso: Database["public"]["Enums"]["sesso"]
           tribu_key: string | null
           updated_at: string
           user_id: string
@@ -51,7 +50,6 @@ export type Database = {
           id?: string
           name: string
           razza_key: string
-          sesso: Database["public"]["Enums"]["sesso"]
           tribu_key?: string | null
           updated_at?: string
           user_id: string
@@ -62,7 +60,6 @@ export type Database = {
           id?: string
           name?: string
           razza_key?: string
-          sesso?: Database["public"]["Enums"]["sesso"]
           tribu_key?: string | null
           updated_at?: string
           user_id?: string
@@ -343,7 +340,6 @@ export type Database = {
         Args: {
           p_name: string
           p_razza_key: string
-          p_sesso: Database["public"]["Enums"]["sesso"]
           p_talenti: string[]
           p_tribu_key?: string
           p_via_key: string
@@ -352,7 +348,7 @@ export type Database = {
       }
     }
     Enums: {
-      sesso: "maschio" | "femmina"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -482,9 +478,7 @@ export const Constants = {
     Enums: {},
   },
   public: {
-    Enums: {
-      sesso: ["maschio", "femmina"],
-    },
+    Enums: {},
   },
 } as const
 

@@ -7,20 +7,6 @@ import type { Database } from "@/lib/supabase/database.types";
 type Row<T extends keyof Database["public"]["Tables"]> =
   Database["public"]["Tables"][T]["Row"];
 
-// ──────────────────────────── Enum del dominio ──────────────────────────────
-
-export type Sesso = Database["public"]["Enums"]["sesso"];
-
-/**
- * Il sesso è un enum del DB, non catalogo: le etichette non arrivano da una
- * query. È l'unico testo di gioco che sta nel codice invece che in
- * `supabase/seeds`.
- */
-export const SESSI: readonly { key: Sesso; name: string }[] = [
-  { key: "maschio", name: "M" },
-  { key: "femmina", name: "F" },
-] as const;
-
 // ──────────────────────────────── Catalogo ──────────────────────────────────
 
 /** Ogni talento è a scelta: razza, tribù e via non ne portano più uno. */
@@ -69,7 +55,7 @@ export type Catalog = {
  */
 export type Personaggio = Pick<
   Row<"personaggi">,
-  "id" | "name" | "sesso" | "via_key" | "razza_key" | "tribu_key" | "created_at"
+  "id" | "name" | "via_key" | "razza_key" | "tribu_key" | "created_at"
 > & {
   /** Chiavi dei talenti scelti dall'utente. */
   talenti: string[];
@@ -82,7 +68,6 @@ export type Personaggio = Pick<
  */
 export type PersonaggioDraft = {
   name: string;
-  sesso: Sesso | null;
   via_key: string | null;
   /** La razza della card scelta: può esistere anche prima della tribù. */
   razza_key: string | null;
