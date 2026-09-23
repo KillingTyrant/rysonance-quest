@@ -15,13 +15,9 @@ import { DadoGesto } from "./dado-gesto";
 import { QuestHeader } from "./quest-header";
 import type { QuestEvent, QuestState } from "./quest-machine";
 
-/** Il dado del mockup: grigio chiaro, numeri scuri, appoggiato sulla pagina. */
+/** Il d12 d'oro di default, appoggiato sulla pagina invece che su un disco. */
 const DADO_APPEARANCE: Partial<DiceAppearance> = {
-  bodyColor: "#e7e5e4",
-  numberColor: "#1c1917",
-  edgeColor: "#a8a29e",
   floor: "shadow",
-  roughness: 0.6,
 };
 
 /** Oltre questo tempo senza risposta il lancio si considera fallito, e si può ritentare. */

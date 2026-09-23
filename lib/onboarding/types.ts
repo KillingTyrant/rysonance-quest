@@ -33,7 +33,7 @@ export type Razza = Pick<
 
 export type Via = Pick<
   Row<"vie">,
-  "key" | "name" | "description" | "sort_order" | "talenti_scelta"
+  "key" | "name" | "description" | "sort_order"
 >;
 
 /**
@@ -72,7 +72,7 @@ export type PersonaggioDraft = {
   /** La razza della card scelta: può esistere anche prima della tribù. */
   razza_key: string | null;
   tribu_key: string | null;
-  /** Chiavi dei talenti scelti: quanti ne servono lo dice la Via. */
+  /** Chiavi dei talenti scelti: quanti ne servono lo dice `TALENTI_DA_SCEGLIERE`. */
   talenti: string[];
 };
 

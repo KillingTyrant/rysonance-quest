@@ -2,7 +2,7 @@ import { PersonaggioWizard } from "@/components/onboarding/personaggio-wizard";
 import { getCatalog } from "@/lib/onboarding/catalog";
 
 export const metadata = {
-  title: "Creazione dell'eroe · Rysonance",
+  title: "Genesi dell'eroe · Rysonance",
 };
 
 /**

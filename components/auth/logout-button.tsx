@@ -17,7 +17,7 @@ export function LogoutButton() {
   return (
     <Button
       onClick={logout}
-      variant="ticketSmall"
+      variant="ghost"
       size="icon"
       aria-label="Esci"
       title="Esci"

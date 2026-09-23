@@ -1,6 +1,3 @@
-import { Check, Sparkles } from "lucide-react";
-import Image, { type StaticImageData } from "next/image";
-
 import { cardVariants } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { Talento } from "@/lib/onboarding/types";
@@ -10,8 +7,10 @@ type TalentoCardProps = {
   selected: boolean;
   disabled?: boolean;
   /** L'illustrazione del talento (vedi `CATALOG_IMAGES.talenti`). */
-  image?: StaticImageData;
+  // image?: StaticImageData;
   onSelect: () => void;
+  /** Nasconde la descrizione del talento sotto l'immagine. */
+  hideDescription?: boolean;
 };
 
 /**
@@ -24,8 +23,9 @@ export function TalentoCard({
   talento,
   selected,
   disabled = false,
-  image,
+  // image = undefined,
   onSelect,
+  hideDescription = false,
 }: TalentoCardProps) {
   return (
     <button
@@ -43,8 +43,8 @@ export function TalentoCard({
         disabled && "cursor-not-allowed opacity-50 hover:translate-y-0 hover:shadow",
       )}
     >
-      <span className="relative block aspect-[16/9] w-full shrink-0 overflow-hidden bg-muted">
-        {image ? (
+      <span className="relative flex flex-col align-bottom h-52 w-full shrink-0 overflow-hidden bg-muted justify-end p-2">
+        {/* {image ? (
           <Image
             src={image}
             alt=""
@@ -60,17 +60,17 @@ export function TalentoCard({
             aria-hidden
             className="absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 text-muted-foreground"
           />
-        )}
+        )} */}
 
         {/* Come nella card della razza: il velo parte da `card`, il colore
             sotto la copertina, così il nome resta leggibile in entrambi i temi
             e l'immagine sfuma nel corpo della card senza uno stacco netto. */}
         <span
           aria-hidden
-          className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent"
+          className="absolute inset-0 bg-gradient-to-b from-card via-card/20 to-transparent"
         />
 
-        <span
+        {/* <span
           aria-hidden
           className={cn(
             "absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full border-2 transition",
@@ -80,14 +80,17 @@ export function TalentoCard({
           )}
         >
           <Check className="h-4 w-4" strokeWidth={3} />
-        </span>
+        </span> */}
 
-        <span className="absolute inset-x-0 bottom-0 px-4 pb-2 text-2xl font-medium uppercase leading-none tracking-tight">
+        {/* <span className="absolute inset-x-0 bottom-0 px-4 pb-2 text-2xl font-medium uppercase leading-none tracking-tight">
           {talento.name}
-        </span>
+        </span> */}
+        <span className="block text-5xl">{talento.name.split(" ")[0]}</span>
+        <span className="block text-5xl">{talento.name.split(" ").slice(1).join(" ")}</span>
+
       </span>
 
-      {talento.description && (
+      {!hideDescription && talento.description && (
         <span className="px-4 pb-4 pt-2 text-sm leading-relaxed text-muted-foreground">
           {talento.description}
         </span>

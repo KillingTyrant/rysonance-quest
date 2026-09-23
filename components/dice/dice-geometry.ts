@@ -18,6 +18,12 @@ import type { Vec3Tuple } from "./types";
 export const D12_RADIUS = 0.8;
 export const ATLAS_COLUMNS = 4;
 export const ATLAS_ROWS = 3;
+/**
+ * Quanto della tessera dell'atlante copre il pentagono, da vertice a vertice:
+ * il resto è margine contro il sanguinamento fra tessere. Lo usa anche chi
+ * disegna l'atlante, per far coincidere decori e cornice con i bordi reali.
+ */
+export const ATLAS_FACE_FILL = 0.96;
 
 // Ridefinito invece di importare `D12_FACES`: i test Node caricano questo modulo direttamente.
 const FACE_COUNT = 12;
@@ -129,7 +135,7 @@ export function assignFaceUvs(
   faceMap: DiceFaceMap,
   columns = ATLAS_COLUMNS,
   rows = ATLAS_ROWS,
-  fill = 0.96,
+  fill = ATLAS_FACE_FILL,
 ): void {
   const position = geometry.getAttribute("position");
   const uv = new Float32Array(position.count * 2);

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-import { Button } from "@/components/ui/button";
 import {
   Carousel,
   CarouselContent,
@@ -11,16 +10,15 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel";
-import { talentiDaScegliere } from "@/lib/onboarding/selectors";
 import { cn } from "@/lib/utils";
 
 import { StepSection } from "../step-section";
 import type { StepProps } from "../wizard-steps";
 
 /**
- * La Via: il percorso di crescita. Ogni via porta il talento con cui il
- * personaggio comincia e decide quanti talenti si potranno scegliere più
- * avanti, perciò questo step precede quello dei talenti.
+ * La Via: il percorso di crescita, il modo in cui il personaggio sta al mondo.
+ * Non porta talenti e non dice quanti se ne scelgono — quel numero è lo stesso
+ * per tutte le Vie (`TALENTI_DA_SCEGLIERE`).
  *
  * Una via per schermata, a carosello: si sfoglia con lo swipe (o frecce e
  * tastiera) e si conferma con "Seleziona". Rientrando nello step il carosello
@@ -62,22 +60,34 @@ export function ViaStep({ catalog, draft, onChange }: StepProps) {
               <CarouselItem key={via.key} className="basis-[88%] sm:basis-3/4 lg:basis-3/5">
                 <article
                   className={cn(
-                    "relative flex h-full flex-col items-center gap-6 overflow-hidden rounded-2xl border bg-card px-6 pb-8 pt-4 text-center transition-colors",
+                    "relative flex h-full flex-col items-center gap-6 overflow-hidden rounded-2xl border bg-card px-6 pb-8 pt-8 text-center transition-colors",
                     selected && "border-primary ring-1 ring-primary",
                   )}
                 >
-                  <div className="flex w-full justify-end">
-                    <Button
-                      type="button"
-                      variant={selected ? "ticket" : "ticketSmall"}
-                      size="sm"
-                      aria-pressed={selected}
-                      onClick={() => onChange({ via_key: via.key })}
-                    >
-                      {/* {selected && <Check />} */}
-                      {selected ? "Selezionata" : "Seleziona"}
-                    </Button>
-                  </div>
+                  {/*
+                    La scelta si fa sulla card intera, come per razze e
+                    talenti: a confermare è il bottone della nav, e un secondo
+                    "Seleziona" qui dentro sarebbe lo stesso testo due volte.
+                    Il bottone è una lastra sopra la card invece di un elemento
+                    nel flusso perché il contenuto della card — titoli e
+                    paragrafi — dentro un <button> non sarebbe HTML valido.
+                  */}
+                  <button
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => onChange({ via_key: via.key })}
+                    className="absolute inset-0 z-10 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                  >
+                    <span className="sr-only">
+                      {selected ? `${via.name}: selezionata` : `Scegli ${via.name}`}
+                    </span>
+                  </button>
+
+                  {selected && (
+                    <span className="absolute right-4 top-4 z-20 rounded-full bg-primary px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary-foreground">
+                      Selezionata
+                    </span>
+                  )}
 
                   {/*
                     Emblema segnaposto: quando arriverà l'arte delle vie andrà
@@ -102,9 +112,6 @@ export function ViaStep({ catalog, draft, onChange }: StepProps) {
                         {via.description}
                       </p>
                     )}
-                    <p className="text-xs text-muted-foreground">
-                      {talentiDaScegliere(via)} talenti da scegliere
-                    </p>
                   </div>
                 </article>
               </CarouselItem>

@@ -13,8 +13,9 @@ export type StepDef = {
  * da qui derivano il gate di "Avanti", l'elenco di cosa manca e le spunte
  * della hub, senza che nessuna di quelle regole venga riscritta a mano.
  *
- * L'ordine non è solo estetico: quanti talenti si scelgono dipende dalla Via —
- * chiesta prima di chi la usa.
+ * L'ordine è narrativo: chi è l'eroe, dove va, cosa sa fare. Nessuno step
+ * dipende dai precedenti — quanti talenti si scelgono è lo stesso numero per
+ * tutte le Vie (`TALENTI_DA_SCEGLIERE`).
  *
  * Niente React qui dentro: questo modulo è importato anche dal server. La mappa
  * step → componente sta in `components/onboarding/wizard-steps.tsx`, dove il

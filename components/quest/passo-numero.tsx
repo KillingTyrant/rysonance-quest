@@ -34,7 +34,7 @@ type PassoNumeroProps = {
  */
 export function PassoNumero({ step, numero, origine, onContinua, onGodi }: PassoNumeroProps) {
   const rootRef = useRef<HTMLElement>(null);
-  const numeroRef = useRef<HTMLParagraphElement>(null);
+  const numeroRef = useRef<HTMLDivElement>(null);
   const stepPrecedenteRef = useRef(step);
   // I testi del risultato esistono solo se la quest è passata di lì: chi rientra con
   // il numero già estratto parte dalle istruzioni e non deve vederli nemmeno un attimo.
@@ -101,13 +101,16 @@ export function PassoNumero({ step, numero, origine, onContinua, onGodi }: Passo
       <QuestHeader />
 
       <div className="flex flex-1 items-center justify-center py-4">
-        <p
+        <div
           ref={numeroRef}
           aria-hidden
-          className="text-[11rem] font-extrabold leading-none tabular-nums opacity-0 motion-reduce:opacity-100"
+          className="grid place-items-center text-[min(30vw,8rem)] opacity-0 motion-reduce:opacity-100 [&>*]:[grid-area:1/1]"
         >
-          {numero}
-        </p>
+          <Esagono />
+          <p className="font-extrabold leading-none tabular-nums text-numero-foreground">
+            {numero}
+          </p>
+        </div>
       </div>
 
       {/* I due blocchi di testo occupano la stessa cella: uno esce mentre l'altro entra. */}
@@ -134,6 +137,30 @@ export function PassoNumero({ step, numero, origine, onContinua, onGodi }: Passo
         />
       </div>
     </section>
+  );
+}
+
+/**
+ * L'esagono a punta in alto dietro al numero, largo quanto il testo che contiene
+ * (misure in `em`, così cresce con il numero). Il poligono è rientrato di metà
+ * tratto e il tratto, con `linejoin` tondo, ne ridisegna i vertici come raccordi:
+ * angoli arrotondati senza scrivere gli archi a mano.
+ */
+function Esagono() {
+  return (
+    <svg
+      viewBox="0 0 100 111.1"
+      className="h-auto w-[1.94em] overflow-visible text-numero"
+      aria-hidden
+    >
+      <polygon
+        points="50,14 86,34.8 86,76.4 50,97.1 14,76.4 14,34.8"
+        fill="currentColor"
+        stroke="currentColor"
+        strokeWidth="28"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 

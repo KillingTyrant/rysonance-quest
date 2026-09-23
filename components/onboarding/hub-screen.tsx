@@ -1,4 +1,4 @@
-import { Check, Plus } from "lucide-react";
+import { Check, Plus, RefreshCcw } from "lucide-react";
 import Image, { type StaticImageData } from "next/image";
 
 import { CATALOG_IMAGES } from "@/assets/catalog";
@@ -34,8 +34,19 @@ function selectionValue(groupId: GroupId, resolved: ResolvedPersonaggio): string
 }
 
 /**
- * Lo sfondo della riga: l'illustrazione della razza scelta, la stessa della
- * card della quest. Le vie non hanno ancora arte, quindi per ora solo la razza.
+ * L'etichetta spezzata in due righe: la prima parola ("Scegli") sta da sola
+ * sopra, il resto scende sotto, così le righe della hub restano allineate
+ * fra loro invece di andare a capo dove capita.
+ */
+function labelLines(label: string): [string, string] {
+  const [first, ...rest] = label.split(" ");
+  return [first, rest.join(" ")];
+}
+
+/**
+ * L'illustrazione dentro il quadrato dell'icona: l'arte della razza scelta, la
+ * stessa della card della quest. Le vie non hanno ancora arte, quindi per ora
+ * solo la razza.
  */
 function selectionImage(groupId: GroupId, draft: PersonaggioDraft): StaticImageData | undefined {
   if (groupId === "razza" && draft.razza_key) return CATALOG_IMAGES.razze[draft.razza_key];
@@ -59,7 +70,7 @@ type HubScreenProps = {
 };
 
 /**
- * La hub "Creazione dell'eroe": lo stato di avanzamento come lista di
+ * La hub "Genesi dell'eroe": lo stato di avanzamento come lista di
  * macro-passi. Le righe bloccate si sbloccano completando le precedenti;
  * quelle completate restano cliccabili per rivedere le scelte (ripassando
  * dall'intro). Qui si scrive anche il nome, e la CTA salva l'eroe: si
@@ -93,14 +104,15 @@ export function HubScreen({
         <div className="absolute inset-0 bg-gradient-to-t from-background/85 via-background/25 to-transparent" />
       </div>
 
-      <h1 className="text-4xl font-bold">Creazione dell&apos;eroe</h1>
+      <h1 className="text-4xl font-bold">Genesi dell&apos;eroe</h1>
 
-      <ol className="flex flex-col gap-4">
+      <ol className="flex flex-col gap-8 mt-4">
         {WIZARD_GROUPS.map((group) => {
           const isDone = completed(group.id);
           const isUnlocked = unlocked(group.id);
           const selectedValue = selectionValue(group.id, resolved);
           const image = selectionImage(group.id, draft);
+          const [labelHead, labelTail] = labelLines(group.label);
           return (
             <li key={group.id}>
               <button
@@ -108,72 +120,106 @@ export function HubScreen({
                 disabled={!isUnlocked || pending}
                 onClick={() => onOpenGroup(group.id)}
                 className={cn(
-                  "relative isolate flex w-full items-center gap-4 overflow-hidden rounded-md p-2 text-left",
+                  "relative isolate flex w-full items-center gap-4 overflow-hidden rounded-md text-left",
                   "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-                  isDone && "bg-emerald-100/70 text-emerald-900",
-                  image && "min-h-24",
+                  isDone && "text-primary-900",
                   !isUnlocked && "opacity-50",
                 )}
               >
-                {image && (
-                  <>
-                    <Image
-                      src={image}
-                      alt=""
-                      fill
-                      sizes="(min-width: 1024px) 60rem, 100vw"
-                      className="-z-10 object-cover"
-                    />
-                    {/*
-                      Come nella card della razza, il velo tiene leggibile il
-                      testo: qui va da sinistra, dove stanno icona ed etichetta,
-                      e prende il colore della riga completata.
-                    */}
-                    <span
-                      aria-hidden
-                      className={cn(
-                        "absolute inset-0 -z-10 bg-gradient-to-r to-transparent",
-                        isDone
-                          ? "from-emerald-100/95 via-emerald-100/70"
-                          : "from-background/90 via-background/60",
-                      )}
-                    />
-                  </>
-                )}
+                {/*
+                  Il quadrato dell'icona. La riga bloccata tiene la stessa
+                  forma e lo stesso spessore di quella attiva, ma con il bordo
+                  tratteggiato in grigio di testo: `border-primary-foreground`
+                  qui era quasi invisibile (bianco su muted in chiaro, scuro su
+                  muted in scuro), e il quadrato sembrava senza bordo.
+                */}
                 <span
                   className={cn(
-                    "flex h-12 w-12 shrink-0 items-center justify-center rounded-sm",
-                    isDone
-                      ? "bg-emerald-600 text-white"
-                      : isUnlocked
-                        ? "bg-foreground text-background"
-                        : "bg-muted text-muted-foreground",
+                    "relative isolate flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-sm",
+                    image
+                      ? isDone
+                        ? "text-white"
+                        : "border-primary text-white "
+                      : isDone
+                        ? "bg-primary text-white"
+                        : isUnlocked
+                          ? "bg-brand text-primary border-primary rounded-sm border-2"
+                          : "bg-muted/60 text-muted-foreground rounded-sm border-2",
                   )}
                 >
-                  {isDone ? <Check /> : <Plus />}
-
+                  {image && (
+                    <>
+                      <Image
+                        src={image}
+                        alt=""
+                        fill
+                        sizes="3rem"
+                        // Ritratti verticali (1000×1396): il ritaglio quadrato
+                        // parte dall'alto, così resta il volto e non il busto.
+                        className="-z-10 object-cover object-top rounded-xl"
+                      />
+                      {/*
+                        Il velo tiene leggibile l'icona sopra l'illustrazione,
+                        che è chiara o scura a seconda della razza.
+                      */}
+                      {/* <span aria-hidden className="absolute inset-0 -z-10 bg-black/35" /> */}
+                    </>
+                  )}
+                  {!isDone ? <Plus /> : !image ? <Check /> : null}
                 </span>
-                <span className={cn("w-full font-medium leading-snug", isDone && "text-emerald-900")}>
-                  <span className="block">{group.label}</span>
-                  {selectedValue && (
-                    <span
-                      className={cn(
-                        "mt-1 block text-sm font-normal text-muted-foreground",
-                        isDone && "text-emerald-800/90",
-                      )}
-                    >
-                      {selectedValue}
-                    </span>
+                <span className={cn("w-full font-medium leading-snug", isDone && "")}>
+                  {!selectedValue && <span className="block">{labelHead}</span>}
+                  {!selectedValue && <span className="block">{labelTail}</span>}
+                  {selectedValue && group.id === 'razza' ? (
+                    <>
+                      <span className="block font-bold text-xl"> {selectedValue.split(" ")[0]} </span>
+                      {/* <span className="block"> {selectedValue.split(" ")[1]} </span> */}
+                    </>
+                  ) : (
+                    <span className="block font-bold text-xl"> {selectedValue} </span>
                   )}
                 </span>
               </button>
             </li>
           );
         })}
+        {/* Crea random */}
+        <li key={'create-random'}>
+          <button
+            type="button"
+            onClick={onRandomize}
+            className={cn(
+              "relative isolate flex w-full items-center gap-4 overflow-hidden rounded-full text-left",
+              "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+            )}
+          >
+            {/*
+                  Il quadrato dell'icona. La riga bloccata tiene la stessa
+                  forma e lo stesso spessore di quella attiva, ma con il bordo
+                  tratteggiato in grigio di testo: `border-primary-foreground`
+                  qui era quasi invisibile (bianco su muted in chiaro, scuro su
+                  muted in scuro), e il quadrato sembrava senza bordo.
+                */}
+            <span
+              className={cn(
+                "flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-primary text-white"
+              )}
+            >
+              {/* random icon */}
+              <RefreshCcw />
+
+            </span>
+            <span className={cn("w-full font-medium leading-snug ")}>
+              <span className="block">Crea</span>
+              <span className="block">un eroe random</span>
+            </span>
+          </button>
+        </li>
+
       </ol>
 
-      <div className="mt-auto flex flex-col gap-3 pt-6">
-        <div className="flex flex-col gap-2">
+      <div className="mt-auto flex flex-col gap-3 pt-6 justify-center items-center">
+        <div className="flex flex-col gap-2 w-full">
           <Label htmlFor="nome-personaggio">Nome dell&apos;eroe</Label>
           <Input
             id="nome-personaggio"
@@ -185,6 +231,7 @@ export function HubScreen({
             aria-invalid={draft.name.length > 0 && nameProblems.length > 0}
             aria-describedby={nameProblems.length > 0 ? "nome-personaggio-hint" : undefined}
             onChange={(event) => onNameChange(event.target.value)}
+            className="w-full"
           />
           {nameProblems.length > 0 && (
             <p id="nome-personaggio-hint" className="text-sm text-muted-foreground">
@@ -209,7 +256,7 @@ export function HubScreen({
           </div>
         )}
 
-        <Button
+        {/* <Button
           type="button"
           variant="ticketSecondary"
           title="Creazione casuale"
@@ -218,19 +265,17 @@ export function HubScreen({
           onClick={onRandomize}
           showDots
         >
-          {/* <Shuffle /> */}
-          Crea un eroe random
-        </Button>
+        Crea un eroe random
+      </Button> */}
         <Button
           variant="ticket"
-          size="lg"
-          className="w-full"
+
           disabled={!allComplete || nameProblems.length > 0 || pending}
           onClick={onCreaEroe}
         >
           {pending ? "Creazione…" : "Crea Eroe"}
         </Button>
       </div>
-    </div>
+    </div >
   );
 }

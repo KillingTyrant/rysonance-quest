@@ -14,7 +14,7 @@ export type GroupDef = {
 };
 
 /**
- * I macro-passi mostrati nella hub "Creazione dell'eroe", come DATI: ognuno
+ * I macro-passi mostrati nella hub "Genesi dell'eroe", come DATI: ognuno
  * raggruppa gli step di `WIZARD_STEPS` che lo compongono. Il nome non è un
  * macro-passo: si scrive direttamente nella hub, sopra la CTA che salva.
  *
@@ -38,7 +38,7 @@ export const WIZARD_GROUPS = [
     label: "Scegli la tua Via",
     introTitle: "Scelta della Via",
     introDescription:
-      "La Via è il cammino che il tuo eroe percorre e definisce il suo modo di stare al mondo. Qui sceglierai la tua Via, che porta il talento con cui l'eroe comincia e decide quanti talenti potrà apprendere.",
+      "La Via è il cammino che il tuo eroe percorre e definisce il suo modo di stare al mondo. Qui sceglierai la tua Via.",
     steps: ["via"],
   },
   {
@@ -46,7 +46,7 @@ export const WIZARD_GROUPS = [
     label: "Scegli i tuoi talenti",
     introTitle: "Scelta dei talenti",
     introDescription:
-      "I talenti sono le capacità che rendono unico il tuo eroe: la Via che hai scelto decide quanti potrai apprenderne. Qui sceglierai i talenti con cui il tuo eroe comincia il viaggio.",
+      "I talenti sono le capacità che rendono unico il tuo eroe. Qui sceglierai i talenti con cui comincia il viaggio.",
     steps: ["talenti"],
   },
 ] as const satisfies readonly GroupDef[];

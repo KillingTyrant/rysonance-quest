@@ -7,6 +7,7 @@ import { CanvasTexture, type Mesh, Quaternion, SRGBColorSpace, Vector3 } from "t
 
 import {
   ATLAS_COLUMNS,
+  ATLAS_FACE_FILL,
   ATLAS_ROWS,
   createD12Geometry,
   D12_RADIUS,
@@ -46,6 +47,10 @@ const GL_OPTIONS = { antialias: true, alpha: true };
 const RESIZE_OPTIONS = { offsetSize: true };
 const DEFAULT_REST_VALUE = 12;
 const ATLAS_TILE_SIZE = 256;
+/** Raggio del pentagono dentro la tessera, in frazione del lato: lo stesso delle UV. */
+const FACE_RADIUS = ATLAS_FACE_FILL / 2;
+/** Lato delle celle del nido d'ape, in frazione della tessera. */
+const HONEYCOMB_CELL = 0.115;
 
 export function D12Scene({
   plan,
@@ -177,10 +182,35 @@ function Die({ plan, restValue, restPosition, onRollComplete, appearance }: DieP
   const { geometry, faceMap } = useMemo(() => createD12Geometry(), []);
   useEffect(() => () => geometry.dispose(), [geometry]);
 
-  const { bodyColor, numberColor, fontFamily } = appearance;
+  const {
+    bodyColor,
+    numberColor,
+    numberOutlineColor,
+    patternColor,
+    faceBorderColor,
+    fontFamily,
+  } = appearance;
   const texture = useMemo(
-    () => createNumberAtlas(faceMap, { bodyColor, numberColor, fontFamily, maxAnisotropy }),
-    [faceMap, bodyColor, numberColor, fontFamily, maxAnisotropy],
+    () =>
+      createNumberAtlas(faceMap, {
+        bodyColor,
+        numberColor,
+        numberOutlineColor,
+        patternColor,
+        faceBorderColor,
+        fontFamily,
+        maxAnisotropy,
+      }),
+    [
+      faceMap,
+      bodyColor,
+      numberColor,
+      numberOutlineColor,
+      patternColor,
+      faceBorderColor,
+      fontFamily,
+      maxAnisotropy,
+    ],
   );
   useEffect(() => () => texture.dispose(), [texture]);
 
@@ -255,6 +285,9 @@ function Die({ plan, restValue, restPosition, onRollComplete, appearance }: DieP
 type AtlasOptions = {
   bodyColor: string;
   numberColor: string;
+  numberOutlineColor: string | null;
+  patternColor: string | null;
+  faceBorderColor: string | null;
   fontFamily: string;
   maxAnisotropy: number;
 };
@@ -268,22 +301,16 @@ function createNumberAtlas(faceMap: DiceFaceMap, options: AtlasOptions): CanvasT
 
   const context = canvas.getContext("2d");
   if (context) {
+    // Il fondo copre anche i margini fra le tessere: se un pixel di bordo viene
+    // campionato per interpolazione, è comunque del colore del dado.
     context.fillStyle = options.bodyColor;
     context.fillRect(0, 0, canvas.width, canvas.height);
-    context.fillStyle = options.numberColor;
-    context.textAlign = "center";
-    context.textBaseline = "middle";
-    context.font = `700 ${Math.round(tile * 0.46)}px ${options.fontFamily}`;
 
     for (const face of faceMap.faces) {
       const index = face.value - 1;
       const cx = (index % ATLAS_COLUMNS + 0.5) * tile;
       const cy = (Math.floor(index / ATLAS_COLUMNS) + 0.5) * tile;
-      context.fillText(String(face.value), cx, cy + tile * 0.02);
-      // 6 e 9 si distinguono con la sottolineatura, come sui dadi reali.
-      if (face.value === 6 || face.value === 9) {
-        context.fillRect(cx - tile * 0.11, cy + tile * 0.24, tile * 0.22, tile * 0.03);
-      }
+      drawFace(context, face.value, cx, cy, tile, options);
     }
   }
 
@@ -291,4 +318,147 @@ function createNumberAtlas(faceMap: DiceFaceMap, options: AtlasOptions): CanvasT
   texture.colorSpace = SRGBColorSpace;
   texture.anisotropy = options.maxAnisotropy;
   return texture;
+}
+
+/**
+ * Una faccia: nido d'ape sul fondo, cornice scura lungo il pentagono e il numero
+ * contornato sopra. Il pentagono ha un vertice in alto, come nelle UV, quindi
+ * decoro e cornice cadono esattamente sugli spigoli del dado.
+ */
+function drawFace(
+  context: CanvasRenderingContext2D,
+  value: number,
+  cx: number,
+  cy: number,
+  tile: number,
+  options: AtlasOptions,
+): void {
+  const radius = FACE_RADIUS * tile;
+
+  context.save();
+  tracePentagon(context, cx, cy, radius);
+  context.clip();
+
+  context.fillStyle = options.bodyColor;
+  context.fillRect(cx - radius, cy - radius, radius * 2, radius * 2);
+  if (options.patternColor) {
+    drawHoneycomb(context, cx, cy, radius, HONEYCOMB_CELL * tile, options.patternColor);
+  }
+  if (options.faceBorderColor) {
+    // Tracciato dentro il clip: resta solo la metà interna, una fascia netta sul bordo.
+    context.strokeStyle = options.faceBorderColor;
+    context.lineWidth = tile * 0.13;
+    context.lineJoin = "round";
+    tracePentagon(context, cx, cy, radius);
+    context.stroke();
+  }
+  context.restore();
+
+  drawNumber(context, value, cx, cy, tile, options);
+}
+
+/** Pentagono regolare con un vertice in alto, come l'asse `up` della faccia. */
+function tracePentagon(
+  context: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  radius: number,
+): void {
+  context.beginPath();
+  for (let i = 0; i < 5; i += 1) {
+    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
+    const x = cx + Math.cos(angle) * radius;
+    const y = cy + Math.sin(angle) * radius;
+    if (i === 0) context.moveTo(x, y);
+    else context.lineTo(x, y);
+  }
+  context.closePath();
+}
+
+/** Reticolo di esagoni a punta in alto che copre il pentagono già ritagliato. */
+function drawHoneycomb(
+  context: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  radius: number,
+  cell: number,
+  color: string,
+): void {
+  const stepX = Math.sqrt(3) * cell;
+  const stepY = 1.5 * cell;
+  const columns = Math.ceil(radius / stepX) + 1;
+  const rows = Math.ceil(radius / stepY) + 1;
+
+  context.strokeStyle = color;
+  context.lineWidth = Math.max(1, cell * 0.16);
+  context.lineJoin = "round";
+  context.beginPath();
+  for (let row = -rows; row <= rows; row += 1) {
+    // Le righe dispari sono sfalsate di mezza cella: è quello che chiude il nido d'ape.
+    const offsetX = (Math.abs(row) % 2) * (stepX / 2);
+    for (let column = -columns; column <= columns; column += 1) {
+      traceHexagon(context, cx + column * stepX + offsetX, cy + row * stepY, cell);
+    }
+  }
+  context.stroke();
+}
+
+function traceHexagon(
+  context: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  radius: number,
+): void {
+  for (let i = 0; i < 6; i += 1) {
+    const angle = -Math.PI / 2 + (i * Math.PI) / 3;
+    const x = cx + Math.cos(angle) * radius;
+    const y = cy + Math.sin(angle) * radius;
+    if (i === 0) context.moveTo(x, y);
+    else context.lineTo(x, y);
+  }
+  context.closePath();
+}
+
+/** Il numero, con il contorno scuro che lo stacca dal nido d'ape. */
+function drawNumber(
+  context: CanvasRenderingContext2D,
+  value: number,
+  cx: number,
+  cy: number,
+  tile: number,
+  options: AtlasOptions,
+): void {
+  const baseline = cy + tile * 0.02;
+  context.save();
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.font = `700 ${Math.round(tile * 0.46)}px ${options.fontFamily}`;
+  context.lineJoin = "round";
+  context.miterLimit = 2;
+
+  const label = String(value);
+  if (options.numberOutlineColor) {
+    // Il tratto è centrato sul contorno: metà finisce sotto il riempimento che segue.
+    context.strokeStyle = options.numberOutlineColor;
+    context.lineWidth = tile * 0.075;
+    context.strokeText(label, cx, baseline);
+  }
+  context.fillStyle = options.numberColor;
+  context.fillText(label, cx, baseline);
+
+  // 6 e 9 si distinguono con la sottolineatura, come sui dadi reali.
+  if (value === 6 || value === 9) {
+    const width = tile * 0.22;
+    const height = tile * 0.035;
+    const x = cx - width / 2;
+    const y = cy + tile * 0.24;
+    if (options.numberOutlineColor) {
+      context.strokeStyle = options.numberOutlineColor;
+      context.lineWidth = tile * 0.06;
+      context.strokeRect(x, y, width, height);
+    }
+    context.fillStyle = options.numberColor;
+    context.fillRect(x, y, width, height);
+  }
+  context.restore();
 }

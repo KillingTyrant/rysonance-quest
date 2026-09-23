@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import type { GroupDef } from "@/lib/onboarding/groups";
+import Link from "next/link";
 
 type GroupIntroProps = {
   group: GroupDef;
@@ -21,7 +22,7 @@ export function GroupIntro({ group, disabled, onContinue, onBack }: GroupIntroPr
         <p className="text-muted-foreground">{group.introDescription}</p>
       </div>
 
-      <div className="flex flex-col gap-3 pt-8">
+      <div className="flex flex-col gap-3">
         <Button
           variant="ticket"
           className="w-full"
@@ -30,16 +31,26 @@ export function GroupIntro({ group, disabled, onContinue, onBack }: GroupIntroPr
         >
           Ho capito
         </Button>
-        <Button
+
+        {/* <Button
           type="button"
           variant="ticketSecondary"
           className="self-center w-full"
           disabled={disabled}
           onClick={onBack}
         >
-          {/* <ArrowLeft /> */}
           Indietro
-        </Button>
+        </Button> */}
+        <Link
+          href="#"
+          className="self-center w-full text-center text-muted-foreground underline"
+          onClick={(e) => {
+            e.preventDefault();
+            onBack();
+          }}
+        >
+          Indietro
+        </Link>
       </div>
     </div>
   );

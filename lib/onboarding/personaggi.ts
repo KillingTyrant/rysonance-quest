@@ -76,8 +76,9 @@ export async function getUltimoPersonaggioId(): Promise<string | null> {
  * pubblico e la forma del payload va verificata a runtime, non con i tipi. La
  * validazione usa la stessa `validateDraft` del client, così le due non possono
  * divergere; la scrittura vera passa dalla RPC `crea_personaggio`, che è il
- * confine transazionale fra le tabelle, decide da sé `user_id` e riapplica le
- * regole (numero di talenti, talenti a scelta).
+ * confine transazionale fra le tabelle e decide da sé `user_id`. La RPC non
+ * conta i talenti: quanti debbano essere (`TALENTI_DA_SCEGLIERE`) lo stabilisce
+ * solo `validateDraft`, qui e nel client.
  *
  * Al successo restituisce solo l'id, senza rileggere la riga: se la rilettura
  * fallisse il personaggio esisterebbe comunque, ma il client vedrebbe un
@@ -161,9 +162,6 @@ function describeError(error: PostgrestError): string {
     case "23503": // foreign_key_violation, e i raise di crea_personaggio: via
       // inesistente, talento inesistente.
       return "Una delle scelte non esiste più nel catalogo, o non è fra quelle disponibili. Ricarica la pagina.";
-    case "23514": // check_violation: crea_personaggio esige esattamente
-      // `vie.talenti_scelta` talenti.
-      return "Il numero di talenti scelti non è quello previsto dalla tua Via. Ricarica la pagina.";
     case "42501": // insufficient_privilege: crea_personaggio senza sessione, o
       // un accesso diretto alle tabelle, che solo la RPC può scrivere.
       return "Serve una sessione valida per salvare il personaggio. Accedi di nuovo.";

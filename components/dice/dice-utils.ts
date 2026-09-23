@@ -23,14 +23,21 @@ import type {
 
 export const D12_FACES = 12;
 
+/**
+ * Il d12 d'oro del gioco: facce a nido d'ape, cornice e contorni scuri come in
+ * un'illustrazione, numeri chiari che restano leggibili anche in movimento.
+ */
 export const DEFAULT_DICE_APPEARANCE: DiceAppearance = {
-  bodyColor: "#e8b04b",
-  numberColor: "#241c14",
-  edgeColor: "#8a5f14",
+  bodyColor: "#c68f22",
+  numberColor: "#f3cf67",
+  edgeColor: "#181206",
+  numberOutlineColor: "#181206",
+  patternColor: "#a3711a",
+  faceBorderColor: "#1d1508",
   floor: "disc",
   floorColor: "#dcd6cb",
-  roughness: 0.42,
-  metalness: 0.08,
+  roughness: 0.55,
+  metalness: 0.12,
   fontFamily:
     'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
 };

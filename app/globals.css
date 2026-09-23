@@ -5,7 +5,9 @@
 @layer base {
   :root {
     color-scheme: light;
-    --background: 0 0% 100%;
+    /* #F6F6F6: il fondo di tutta l'app a tema chiaro. Le card restano bianche
+       (--card), così si staccano dal fondo invece di sparirci dentro. */
+    --background: 0 0% 96.5%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;
@@ -35,6 +37,10 @@
        .dark non li ridefinisce e li eredita da :root. */
     --brand: 40 100% 59%;
     --brand-foreground: 0 0% 15%;
+    /* Esagono del numero della quest (#1C1C31): inchiostro blu notte con il numero
+       bianco sopra. */
+    --numero: 240 27% 15%;
+    --numero-foreground: 0 0% 100%;
   }
 
   .dark {
@@ -64,6 +70,9 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+    /* Sul fondo quasi nero l'inchiostro di :root sparirebbe: l'esagono si schiarisce
+       quel tanto che basta a staccarsi, il numero resta bianco. */
+    --numero: 240 20% 24%;
   }
 }
 

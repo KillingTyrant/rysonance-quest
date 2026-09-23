@@ -215,21 +215,18 @@ export type Database = {
           key: string
           name: string
           sort_order: number
-          talenti_scelta: number
         }
         Insert: {
           description?: string
           key: string
           name: string
           sort_order?: number
-          talenti_scelta?: number
         }
         Update: {
           description?: string
           key?: string
           name?: string
           sort_order?: number
-          talenti_scelta?: number
         }
         Relationships: []
       }

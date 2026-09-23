@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { salvaPersonaggio } from "@/app/(protected)/onboarding/actions";
+import { NavAction } from "@/components/layout/nav-action";
 import { Button } from "@/components/ui/button";
 import {
   allGroupsComplete,
@@ -13,12 +15,7 @@ import {
   stepPositionInGroup,
   type GroupId,
 } from "@/lib/onboarding/groups";
-import {
-  isRazzaGiocabile,
-  razzaByKey,
-  talentiDaScegliere,
-  viaByKey,
-} from "@/lib/onboarding/selectors";
+import { isRazzaGiocabile, razzaByKey } from "@/lib/onboarding/selectors";
 import {
   problemsForStep,
   stepIndex,
@@ -26,8 +23,13 @@ import {
   type StepId,
 } from "@/lib/onboarding/steps";
 import type { Catalog, PersonaggioDraft } from "@/lib/onboarding/types";
-import { emptyDraft, validateDraft } from "@/lib/onboarding/validate";
+import {
+  emptyDraft,
+  TALENTI_DA_SCEGLIERE,
+  validateDraft,
+} from "@/lib/onboarding/validate";
 
+import { ConfirmScreen } from "./confirm-screen";
 import { GroupIntro } from "./group-intro";
 import { HubScreen } from "./hub-screen";
 import { StepAnimation } from "./step-animation";
@@ -36,12 +38,14 @@ import { STEP_COMPONENTS, type SaveError } from "./wizard-steps";
 /**
  * La vista corrente del wizard. La hub è il punto di partenza e di ritorno:
  * in un macro-passo si entra sempre passando dalla sua intro. Nella hub si
- * scrive anche il nome, e la sua CTA salva l'eroe.
+ * scrive anche il nome, e la sua CTA porta alla conferma, che è l'unico punto
+ * in cui l'eroe viene davvero salvato.
  */
 type WizardView =
   | { mode: "hub" }
   | { mode: "intro"; group: GroupId }
-  | { mode: "step"; step: StepId };
+  | { mode: "step"; step: StepId }
+  | { mode: "confirm" };
 
 function pickRandom<T>(items: readonly T[]): T | null {
   if (items.length === 0) return null;
@@ -70,8 +74,9 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
   const [isBackward, setIsBackward] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<SaveError | null>(null);
-  const [saved, setSaved] = useState<{ id: string; name: string } | null>(null);
   const [pending, startTransition] = useTransition();
+
+  const router = useRouter();
 
   const viewRef = useRef<HTMLDivElement>(null);
   const mounted = useRef(false);
@@ -95,10 +100,6 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
     viewRef.current?.focus({ preventScroll: true });
     window.scrollTo({ top: 0 });
   }, [viewKey]);
-
-  useEffect(() => {
-    if (saved) window.scrollTo({ top: 0 });
-  }, [saved]);
 
   // Una sola valutazione per render, da cui derivano il gate di "Avanti",
   // l'elenco di cosa manca, lo stato delle righe della hub e il gate della CTA.
@@ -135,15 +136,8 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
       }
     }
 
-    // Il Viandante dà tre talenti a scelta, le altre vie due: cambiando Via
-    // quelli in eccesso vanno tolti, a partire dagli ultimi scelti.
-    if (patch.via_key !== undefined) {
-      const quanti = talentiDaScegliere(viaByKey(catalog, next.via_key));
-      if (next.talenti.length > quanti) {
-        next.talenti = next.talenti.slice(0, quanti);
-        avvisi.push(`Questa Via dà ${quanti} talenti a scelta: ho tolto quelli in più.`);
-      }
-    }
+    // Cambiare Via non tocca più i talenti: quanti se ne scelgono è lo stesso
+    // numero per tutte (`TALENTI_DA_SCEGLIERE`).
 
     setDraft(next);
     setNotice(avvisi.join(" ") || null);
@@ -154,7 +148,10 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
     startTransition(async () => {
       try {
         const result = await salvaPersonaggio(draft);
-        if (result.ok) setSaved({ id: result.id, name: draft.name.trim() });
+        // "Crea e gioca": salvato l'eroe si va dritti alla sua quest. La push
+        // sta dentro la transizione, quindi `pending` resta vero finché la
+        // pagina nuova non è pronta e la conferma non torna cliccabile in mezzo.
+        if (result.ok) router.push(`/quest/${result.id}`);
         else setSaveError({ message: result.message, problems: result.problems });
       } catch {
         // Rete caduta, 500, deploy nel frattempo: senza questo catch la promise
@@ -169,10 +166,9 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
     const razza = pickRandom(catalog.razze.filter(isRazzaGiocabile));
     const tribu = razza ? pickRandom(razza.tribu) : null;
     const via = pickRandom(catalog.vie);
-    const quantiTalenti = talentiDaScegliere(via);
     const talenti = sampleUnique(
       catalog.talentiScelta.map((talento) => talento.key),
-      quantiTalenti,
+      TALENTI_DA_SCEGLIERE,
     );
 
     const randomDraft: PersonaggioDraft = {
@@ -189,45 +185,12 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
     setIsBackward(false);
     setView({ mode: "hub" });
 
-    if (!via || !razza || !tribu || talenti.length !== quantiTalenti) {
+    if (!via || !razza || !tribu || talenti.length !== TALENTI_DA_SCEGLIERE) {
       setNotice("Scelte casuali parziali: completa i campi mancanti.");
       return;
     }
 
     setNotice("Eroe random generato: puoi rivedere le scelte o procedere.");
-  }
-
-  if (saved) {
-    return (
-      <StepAnimation key="saved">
-        <div className="flex w-full max-w-xl flex-col gap-6 self-center rounded-xl border bg-card p-8 text-center shadow">
-          <h1 className="text-2xl font-semibold">Personaggio salvato</h1>
-          <p className="text-muted-foreground">
-            <strong className="font-semibold text-foreground">{saved.name}</strong> è pronto: lo trovi fra i tuoi personaggi.
-          </p>
-          <div className="flex flex-col gap-3 sm:flex-row sm:justify-center w-full">
-            <Button asChild variant="ticket" className="w-full">
-              <Link href={`/quest/${saved.id}`}>Vai alla quest</Link>
-            </Button>
-            {/* <Button asChild variant="outline">
-              <Link href="/lobby">Vai alla lobby</Link>
-            </Button> */}
-            {/* <Button
-              variant="outline"
-              onClick={() => {
-                setSaved(null);
-                setDraft(emptyDraft());
-                setView({ mode: "hub" });
-                setNotice(null);
-                setSaveError(null);
-              }}
-            >
-              Creane un altro
-            </Button> */}
-          </div>
-        </div>
-      </StepAnimation>
-    );
   }
 
   if (view.mode === "hub") {
@@ -252,7 +215,7 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
             onNameChange={(name) => handleChange({ name })}
             onOpenGroup={(id) => go({ mode: "intro", group: id })}
             onRandomize={handleRandomize}
-            onCreaEroe={handleSave}
+            onCreaEroe={() => go({ mode: "confirm" })}
           />
         </div>
       </StepAnimation>
@@ -279,10 +242,42 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
     );
   }
 
+  if (view.mode === "confirm") {
+    return (
+      <StepAnimation key={viewKey} isBackward={isBackward}>
+        <div
+          ref={viewRef}
+          tabIndex={-1}
+          className="flex w-full flex-1 flex-col outline-none"
+        >
+          <ConfirmScreen
+            name={draft.name.trim()}
+            pending={pending}
+            saveError={saveError}
+            onConfirm={handleSave}
+            onBack={() => go({ mode: "hub" }, true)}
+          />
+        </div>
+      </StepAnimation>
+    );
+  }
+
   const step = view.step;
   const Step = STEP_COMPONENTS[step];
   const position = stepPositionInGroup(step);
   const missing = problemsForStep(problems, step).map((problem) => problem.label);
+
+  /** Conferma le scelte dello step e passa al successivo, o torna alla hub. */
+  function avanti() {
+    if (!position) return;
+    if (position.index === position.count - 1) go({ mode: "hub" });
+    else go({ mode: "step", step: position.group.steps[position.index + 1] });
+  }
+
+  function indietro() {
+    if (!position || position.index === 0) go({ mode: "hub" }, true);
+    else go({ mode: "step", step: position.group.steps[position.index - 1] }, true);
+  }
 
   return (
     <StepAnimation key={viewKey} isBackward={isBackward}>
@@ -320,50 +315,37 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
             onChange={handleChange}
           />
 
-          <nav className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
-            <Button
-              className="w-52"
-              type="button"
-              variant="ticketSecondary"
-              disabled={pending}
-              onClick={() => {
-                if (!position || position.index === 0) go({ mode: "hub" }, true);
-                else
-                  go(
-                    { mode: "step", step: position.group.steps[position.index - 1] },
-                    true,
-                  );
-              }}
-            >
-              {/* <ArrowLeft /> */}
-              Indietro
-            </Button>
+          {/*
+            Il bottone che manda avanti sta nella nav, in alto: le schermate di
+            scelta sono lunghe e su telefono il fondo pagina è lontano. Qui
+            resta solo il ritorno indietro.
+          */}
+          {position && (
+            <NavAction>
+              <Button
+                type="button"
+                variant="ticket"
+                size="nav"
+                disabled={missing.length > 0 || pending}
+                onClick={avanti}
+              >
+                Seleziona
+              </Button>
+            </NavAction>
+          )}
 
+          <nav className="flex flex-wrap items-center justify-center gap-3 border-t pt-6">
             {position && (
-              <div className="flex flex-wrap items-center justify-end gap-3">
-                {missing.length > 0 && (
-                  <span className="text-sm text-muted-foreground">
-                    Manca: {missing.join(", ")}
-                  </span>
-                )}
-                <Button
-                  className="w-52"
-                  type="button"
-                  variant="ticket"
-                  disabled={missing.length > 0 || pending}
-                  onClick={() => {
-                    if (position.index === position.count - 1) go({ mode: "hub" });
-                    else
-                      go({
-                        mode: "step",
-                        step: position.group.steps[position.index + 1],
-                      });
-                  }}
-                >
-                  Avanti
-                  {/* <ArrowRight /> */}
-                </Button>
-              </div>
+              <Link
+                href="#"
+                className="self-center w-full text-center text-muted-foreground underline"
+                onClick={(e) => {
+                  e.preventDefault();
+                  indietro();
+                }}
+              >
+                Indietro
+              </Link>
             )}
           </nav>
         </div>

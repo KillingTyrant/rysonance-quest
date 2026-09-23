@@ -2,7 +2,6 @@ import {
   articolo,
   isRazzaGiocabile,
   razzaByKey,
-  talentiDaScegliere,
   talentoSceltaByKey,
   tribuByKey,
   viaByKey,
@@ -11,6 +10,19 @@ import type { Catalog, PersonaggioDraft } from "./types";
 
 /** Allineato al check `personaggi_name_check`. */
 export const NAME_MAX_LENGTH = 40;
+
+/**
+ * Quanti talenti si scelgono alla creazione: lo stesso numero per tutte le Vie.
+ *
+ * È una SCELTA DI PRODOTTO, non un vincolo del database: la colonna con cui la
+ * Via imponeva il suo numero non esiste più, e `crea_personaggio` non conta i
+ * talenti — accetta qualunque numero, zero compreso. Non c'è nessun controllo
+ * server-side, quindi se questa validazione sbaglia il personaggio viene
+ * salvato com'è.
+ *
+ * Unico punto in cui la regola è scritta: per cambiarla basta questa riga.
+ */
+export const TALENTI_DA_SCEGLIERE = 1;
 
 /** I campi del draft su cui può esistere un problema. */
 export type DraftField =
@@ -118,36 +130,31 @@ export function validateDraft(
     add("via_key", "Via", "Scegli la Via dell'eroe.");
   }
 
-  // ── talenti: quanti ne servono lo dice la Via, nessun altro vincolo ────────
+  // ── talenti: sempre `TALENTI_DA_SCEGLIERE`, qualunque sia la Via ──────────
   const sconosciuti = draft.talenti.filter((key) => !talentoSceltaByKey(catalog, key));
-  const attesi = talentiDaScegliere(via);
   if (sconosciuti.length > 0) {
     add(
       "talenti",
       "Talenti",
       `Non esiste nessun talento con chiave "${sconosciuti[0]}".`,
     );
-  } else if (!via) {
-    // Senza Via non si sa quanti talenti servano: la scelta non può dirsi
-    // fatta. Senza questo caso `attesi` varrebbe 0 e un draft ancora vuoto
-    // risulterebbe completo — spunta verde sulla riga "talenti" della hub.
-    add(
-      "talenti",
-      "Talenti",
-      "Scegli prima la Via: è lei a dire quanti talenti puoi apprendere.",
-    );
-  } else if (draft.talenti.length !== attesi) {
-    const mancanti = attesi - draft.talenti.length;
+  } else if (draft.talenti.length !== TALENTI_DA_SCEGLIERE) {
+    const mancanti = TALENTI_DA_SCEGLIERE - draft.talenti.length;
     add(
       "talenti",
       "Talenti",
       mancanti > 0
-        ? `Scegli ${attesi} talenti: ne manca${mancanti === 1 ? "" : "no"} ${mancanti}.`
-        : `Puoi scegliere solo ${attesi} talenti.`,
+        ? `Scegli ${quantiTalenti(TALENTI_DA_SCEGLIERE)}: ne manca${mancanti === 1 ? "" : "no"} ${mancanti}.`
+        : `Puoi scegliere solo ${quantiTalenti(TALENTI_DA_SCEGLIERE)}.`,
     );
   }
 
   return problems;
+}
+
+/** "1 talento" / "3 talenti": la regola è una costante, i messaggi no. */
+export function quantiTalenti(n: number): string {
+  return n === 1 ? "1 talento" : `${n} talenti`;
 }
 
 function maiuscola(parola: string): string {

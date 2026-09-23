@@ -1,5 +1,4 @@
-import { CATALOG_IMAGES } from "@/assets/catalog";
-import { talentiDaScegliere, viaByKey } from "@/lib/onboarding/selectors";
+import { quantiTalenti, TALENTI_DA_SCEGLIERE } from "@/lib/onboarding/validate";
 
 import { StepSection } from "../step-section";
 import { TalentoCard } from "../talento-card";
@@ -9,12 +8,13 @@ import type { StepProps } from "../wizard-steps";
  * Gli unici talenti che sceglie l'utente: li prende da tutta la lista, senza
  * vincoli.
  *
- * Quanti se ne scelgono lo decide la Via: due, tre per il Viandante, che apre
- * con "giusta scelta". Il numero non è scritto qui.
+ * Quanti se ne scelgono è lo stesso numero per tutte le Vie
+ * (`TALENTI_DA_SCEGLIERE`): non dipende più dalla Via e il database non lo
+ * impone. Il gate di "Seleziona" legge `validateDraft`, che usa la stessa
+ * costante: le due non possono divergere.
  */
 export function TalentiStep({ catalog, draft, onChange }: StepProps) {
-  const quanti = talentiDaScegliere(viaByKey(catalog, draft.via_key));
-  const completo = draft.talenti.length >= quanti;
+  const completo = draft.talenti.length >= TALENTI_DA_SCEGLIERE;
 
   function toggle(key: string) {
     onChange({
@@ -26,14 +26,17 @@ export function TalentiStep({ catalog, draft, onChange }: StepProps) {
 
   return (
     <StepSection
-      title="Talenti"
-      description={`Scegline ${quanti} fra tutti quelli disponibili. Nessuna combinazione è vietata: gli altri talenti del personaggio arrivano già da razza, tribù e Via.`}
+      // title="Talenti"
+      // description={`Scegli ${quantiTalenti(TALENTI_DA_SCEGLIERE)} fra tutti quelli disponibili. Nessuna combinazione è vietata.`}
       // Detto una volta qui invece che su ognuna delle card disabilitate, che
       // sono tutte quelle non scelte.
-      hint={undefined}
+      hint={`Scegli ${quantiTalenti(TALENTI_DA_SCEGLIERE)} fra tutti quelli disponibili.`}
     >
+      {/* Senza questo contatore il bottone della nav resterebbe disabilitato
+          senza che si capisca quanti talenti mancano. */}
       <p className="text-sm font-medium" role="status" aria-live="polite">
-        {draft.talenti.length} di {quanti} scelti
+        {draft.talenti.length} di {TALENTI_DA_SCEGLIERE} scelt
+        {draft.talenti.length === 1 ? "o" : "i"}
       </p>
 
       {catalog.talentiScelta.length === 0 ? (
@@ -46,10 +49,11 @@ export function TalentiStep({ catalog, draft, onChange }: StepProps) {
               <TalentoCard
                 key={talento.key}
                 talento={talento}
-                image={CATALOG_IMAGES.talenti[talento.key]}
+                // image={CATALOG_IMAGES.talenti[talento.key]}
                 selected={selected}
                 disabled={completo && !selected}
                 onSelect={() => toggle(talento.key)}
+                hideDescription={true}
               />
             );
           })}

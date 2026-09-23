@@ -15,21 +15,23 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 rounded-md",
         ghost: "hover:bg-accent hover:text-accent-foreground rounded-md",
         link: "text-primary underline-offset-4 hover:underline",
-        
+
         ticket:
           "btn-ticket text-brand-foreground [--ticket-bg:hsl(var(--brand))] [--ticket-border-width:0px] hover:text-[#272727] hover:[--ticket-bg:#f4f4f4] hover:[--ticket-border:#272727] hover:[--ticket-border-width:3px] active:text-brand-foreground active:[--ticket-bg:hsl(var(--brand))] active:[--ticket-border-width:0px]",
         ticketSecondary:
           "btn-ticket [--notch-scale:0.5] text-[#f4f4f4] [--ticket-bg:#272727] [--ticket-border-width:0px] hover:text-[#272727] hover:[--ticket-bg:#f4f4f4] hover:[--ticket-border:#272727] hover:[--ticket-border-width:3px] active:text-[#f4f4f4] active:[--ticket-bg:#272727] active:[--ticket-border-width:0px]",
-        
+
         // NUOVA VARIANTE SMALL (Usa il nuovo CSS btn-ticket-sm)
         ticketSmall:
           "btn-ticket-sm text-[#f4f4f4] [--ticket-bg:#272727] [--ticket-border-width:0px] hover:text-[#272727] hover:[--ticket-bg:#f4f4f4] hover:[--ticket-border:#272727] hover:[--ticket-border-width:3px] active:text-[#f4f4f4] active:[--ticket-bg:#272727] active:[--ticket-border-width:0px]",
       },
       size: {
         default: "h-9 px-4 py-2",
-        lg: "w-[336px] h-[56px] text-[32px]/[32px] font-black tracking-normal flex items-center justify-center [--ticket-notch:18.6px]", 
-        md: "w-[288px] h-[48px] text-[26px]/[29px] font-extrabold tracking-normal flex items-center justify-center [--ticket-notch:16px]", 
-        sm: "w-[240px] h-[40px] text-[24px]/[27px] font-extrabold tracking-normal flex items-center justify-center [--ticket-notch:13.3px]", 
+        lg: "w-[336px] h-[56px] text-[32px]/[32px] font-black tracking-normal flex items-center justify-center [--ticket-notch:18.6px]",
+        md: "w-[288px] h-[48px] text-[26px]/[29px] font-extrabold tracking-normal flex items-center justify-center [--ticket-notch:16px]",
+        sm: "w-[240px] h-[40px] text-[24px]/[27px] font-extrabold tracking-normal flex items-center justify-center [--ticket-notch:13.3px]",
+        // Misura da barra: larghezza dal testo, altezza quella della nav.
+        nav: "h-8 px-6 text-[16px]/[19px] font-extrabold tracking-normal flex items-center justify-center [--ticket-notch:10.6px]",
         icon: "h-9 w-9 rounded-md",
       },
     },
@@ -63,18 +65,19 @@ export interface ButtonProps
 const dotSizes = {
   lg: "w-3 h-3",
   md: "w-[10px] h-[10px]",
-  default: "w-[10px] h-[10px]", 
+  default: "w-[10px] h-[10px]",
   sm: "w-2 h-2",
+  nav: "w-2 h-2",
   icon: "w-0 h-0"
 };
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, showDots, children, ...props }, ref) => {
-    
+
     // Logica speciale per la variante ticketSmall
     const isTicketSmall = variant === "ticketSmall";
     const displayDots = showDots !== undefined ? showDots : (variant === "ticket" || isTicketSmall);
-    
+
     const dotClass = isTicketSmall ? "w-[10px] h-[10px]" : (dotSizes[(size as keyof typeof dotSizes) || "default"] || dotSizes.default);
 
     const leftDotPos = isTicketSmall ? "-left-[5px]" : "left-4";
@@ -83,7 +86,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     // NUOVO: Invertiamo la partenza solo per i Ticket Small
     // Pallino sinistro: per andare da dentro a fuori deve partire da destra (translate-x-4)
     const leftDotStart = isTicketSmall ? "translate-x-4" : "-translate-x-4";
-    
+
     // Pallino destro: per andare da dentro a fuori deve partire da sinistra (-translate-x-4)
     const rightDotStart = isTicketSmall ? "-translate-x-4" : "translate-x-4";
 

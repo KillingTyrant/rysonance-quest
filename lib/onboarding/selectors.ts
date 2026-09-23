@@ -50,15 +50,6 @@ export function articolo(nome: string): "i" | "gli" {
 // ─────────────────────────────── Derivazioni ────────────────────────────────
 
 /**
- * Quanti talenti deve scegliere chi percorre questa via. È `vie.talenti_scelta`,
- * la stessa regola che `crea_personaggio` impone al salvataggio: qui serve al
- * wizard per sapere quante card far scegliere prima di provare a salvare.
- */
-export function talentiDaScegliere(via: Via | null): number {
-  return via?.talenti_scelta ?? 0;
-}
-
-/**
  * Una razza è giocabile se ha almeno una tribù: senza, non ci sarebbe niente
  * da scegliere nella sua card e il personaggio non sarebbe salvabile
  * (`personaggi.tribu_key` è obbligatoria).

@@ -55,6 +55,12 @@ export type DiceAppearance = {
   bodyColor: string;
   numberColor: string;
   edgeColor: string;
+  /** Contorno scuro dei numeri, per il tratto da illustrazione; `null` per numeri pieni. */
+  numberOutlineColor: string | null;
+  /** Reticolo esagonale disegnato sulle facce; `null` per facce lisce. */
+  patternColor: string | null;
+  /** Bordo scuro dipinto lungo il pentagono di ogni faccia; `null` per nessuna cornice. */
+  faceBorderColor: string | null;
   floor: DiceFloor;
   /** Colore del disco; ignorato con gli altri tipi di piano. */
   floorColor: string;

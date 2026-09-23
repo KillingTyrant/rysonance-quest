@@ -50,6 +50,10 @@ export default {
           DEFAULT: "hsl(var(--brand))",
           foreground: "hsl(var(--brand-foreground))",
         },
+        numero: {
+          DEFAULT: "hsl(var(--numero))",
+          foreground: "hsl(var(--numero-foreground))",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

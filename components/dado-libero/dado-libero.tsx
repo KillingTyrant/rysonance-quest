@@ -12,13 +12,9 @@ import { DadoGesto } from "@/components/quest/dado-gesto";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
-/** Lo stesso dado della quest: grigio chiaro, numeri scuri, appoggiato sulla pagina. */
+/** Lo stesso dado della quest: il d12 d'oro di default, appoggiato sulla pagina. */
 const DADO_APPEARANCE: Partial<DiceAppearance> = {
-  bodyColor: "#e7e5e4",
-  numberColor: "#1c1917",
-  edgeColor: "#a8a29e",
   floor: "shadow",
-  roughness: 0.6,
 };
 
 const MOTION_OK = "(prefers-reduced-motion: no-preference)";

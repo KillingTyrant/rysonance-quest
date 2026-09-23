@@ -15,10 +15,10 @@ export const QUEST_COPY = {
     riprova: "Riprova",
   },
   risultato: {
-    titolo: "Uhuh che gran bel numero!",
+    titolo: "E ora che si fa?",
     testo:
-      "È il numero della canzone che dovrai indovinare durante l'evento. Tienilo a mente: da qui comincia la tua quest.",
-    cta: "Continua",
+      "Salva o condividi la scheda del personaggio e torna al bancone di Rysonance dopo aver seguito attentamente la scaletta del Principe per ricevere la tua ricompensa unica.",
+    cta: "Goditi l'evento",
     annuncio: (numero: number) => `È uscito il ${numero}`,
   },
   istruzioni: {

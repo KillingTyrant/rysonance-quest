@@ -67,7 +67,7 @@ export async function getCatalog(): Promise<Catalog> {
       "vie",
       supabase
         .from("vie")
-        .select("key, name, description, sort_order, talenti_scelta")
+        .select("key, name, description, sort_order")
         .order("sort_order"),
     ),
   ]);
@@ -76,9 +76,9 @@ export async function getCatalog(): Promise<Catalog> {
   const tribuByRazza = groupBy(tribu, (t) => t.razza_key);
 
   return {
-    // `talenti_scelta` dice quanti talenti dà la via (il Viandante tre, le
-    // altre due) ed è la stessa regola che `crea_personaggio` applica al
-    // salvataggio.
+    // Le vie non dicono più quanti talenti si scelgono: quel numero è una
+    // regola di prodotto del client (`TALENTI_DA_SCEGLIERE`, in
+    // `lib/onboarding/validate.ts`), non una colonna del catalogo.
     vie,
     razze: razze.map((row) => ({
       ...row,
