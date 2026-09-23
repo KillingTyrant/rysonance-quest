@@ -1,0 +1,38 @@
+@font-face {
+  font-family: 'Sprat';
+  src: url('./fonts/Sprat-CondesedRegular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Sprat';
+  src: url('./fonts/Sprat-CondensedMedium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+}
+/*mettere quello light 200 di weight e collegare alla logica di switch quando si apre*/
+@font-face {
+  font-family: 'Sprat';
+  src: url('./fonts/Sprat-CondensedLight.woff2') format('woff2');
+  font-weight: 200;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Sprat';
+  src: url('./fonts/Sprat-CondensedThin.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+  font-stretch: condensed;
+}
+
+/**
+ * SETUP FONT SPRAT (Font personalizzato per Titoli razza-card)
+ * 
+ * - @font-face: Dichiara i font non-stock e li rende disponibili al browser.
+ * - src: I file fisici risiedono localmente in app/fonts/ (percorso relativo ./fonts/).
+ * - font-weight / font-stretch: Fungono da "etichette di catalogo". Non alterano 
+ *   visivamente il font, ma permettono a Tailwind di pescare il file .woff2 corretto
+ *   quando useremo le classi (es. font-thin caricherà il peso 100).
+ */

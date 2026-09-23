@@ -13,6 +13,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
+        sprat: ['Sprat', 'serif'], /* Mappa la classe utility `font-sprat` alla famiglia importata in app/sprat.css - Include 'serif' come fallback di sistema. */
         sans: ["var(--font-cabinet)", ...defaultTheme.fontFamily.sans],
       },
       colors: {

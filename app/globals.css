@@ -1,3 +1,4 @@
+@import url('./sprat.css'); /*Importiamo il font custom rendendolo disponibile globalmente*/
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

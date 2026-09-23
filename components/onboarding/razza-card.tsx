@@ -81,63 +81,34 @@ export function RazzaCard({
         */}
         <span
           aria-hidden
-          className="absolute inset-0 bg-gradient-to-t from-background/85 via-background/25 to-transparent"
+          className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
         />
-
-        <span className="relative flex h-full w-full flex-col p-4">
-          <span
+        {/* Font cambiato in sprat */}
+        <span className="relative flex h-full w-full flex-col p-4"> {/*span1 p-4: padding di 16px rispetto ai margini della card*/}
+          <span //span2
             className={cn(
               "flex flex-1",
-              selected ? "flex-none justify-center" : "items-center justify-end",
-            )}
+              selected ? "items-end justify-center pb-4" : "items-end justify-end",            )}
           >
-            {/* Nel design il nome è in un serif display, che il progetto non ha
-                ancora: finché non arriva resta il font dell'app, maiuscolo. */}
-            <span
+            <span //span che contiene titolo card in sprat
               className={cn(
-                "font-medium uppercase leading-none tracking-tight",
-                selected ? "text-5xl" : "text-4xl",
+                "uppercase leading-none text-white",
+                "font-sprat tracking-[-0.08em]",
+                selected
+                  ? "font-extralight text-[120px]" 
+                  : "font-normal text-[72px] text-right"
               )}
             >
               {razza.name}
             </span>
           </span>
-
           {disabled && disabledReason && (
             <span className="text-xs text-muted-foreground">{disabledReason}</span>
           )}
         </span>
       </button>
 
-      {selected && (
-        <div className="flex shrink-0 flex-col gap-3 border-t bg-card p-4">
-          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-            {razza.tribu.map((tribu) => (
-              <button
-                key={tribu.key}
-                type="button"
-                aria-pressed={tribu.key === tribuKey}
-                onClick={() => onSelectTribu(tribu.key)}
-                className={cn(
-                  "rounded-sm text-lg underline-offset-4 transition-colors",
-                  "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-                  tribu.key === tribuKey
-                    ? "font-semibold underline decoration-2"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {tribu.name}
-              </button>
-            ))}
-          </div>
 
-          <dl className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-            <Statistica icon={Heart} label="Vita" value={hp} />
-            <Statistica icon={Sparkles} label="Mana" value={mana} />
-            <Statistica icon={Footprints} label="Movimento" value={speed} />
-          </dl>
-        </div>
-      )}
     </div>
   );
 }
