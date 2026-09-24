@@ -68,6 +68,9 @@ export default function RootLayout({
           attribute="class"
           defaultTheme="system"
           enableSystem
+          // Per ora solo tema chiaro: il dark resta definito ma non selezionabile.
+          // Per riattivarlo togliere forcedTheme e rimettere <ThemeSwitcher /> nel footer.
+          forcedTheme="light"
           disableTransitionOnChange
         >
           {children}

@@ -19,8 +19,8 @@ export default function Home() {
     >
       <HomeArtwork />
 
-      <div className="flex flex-1 flex-col items-center justify-center gap-8 px-6 py-12 text-center">
-        <h1 className="max-w-md text-balance text-3xl font-black leading-tight sm:text-4xl">
+      <div className="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-12 text-center">
+        <h1 className="max-w-md text-balance text-3xl font-bold leading-tight sm:text-4xl">
           Che il gioco abbia inizio.
         </h1>
         <Suspense fallback={<HomeCtaFallback />}>

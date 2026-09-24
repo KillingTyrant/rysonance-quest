@@ -83,7 +83,7 @@ export function GoogleSignInButton({
       >
         {/* Il preflight di Tailwind rende gli svg `display:block`: senza questo
             flex l'icona finirebbe sopra il testo invece che accanto. */}
-        <span className="w-full inline-flex items-center justify-center gap-2.5">
+        <span className="w-full inline-flex items-center justify-center gap-2.5 font-medium">
           {showLogo && <GoogleLogo />}
           {isLoading ? "Reindirizzamento..." : label}
         </span>

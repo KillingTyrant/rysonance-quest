@@ -16,7 +16,7 @@ export async function HomeCta() {
   // Chi ha già una sessione non deve rifare il sign-up: torna alla lobby.
   if (user) {
     return (
-      <div className="flex w-full max-w-xs flex-col items-center gap-4">
+      <div className="flex w-full max-w-xs flex-col items-center gap-4 pt-4">
         <Button asChild variant="default" className={PILL} showDots={false}>
           <Link href="/lobby">Vai alla Lobby</Link>
         </Button>
@@ -28,10 +28,10 @@ export async function HomeCta() {
   }
 
   return (
-    <div className="flex w-full max-w-xs flex-col items-center gap-4">
+    <div className="flex w-full max-w-xs flex-col items-center gap-4 pt-4">
       <GoogleSignInButton
         className="w-full"
-        label="Sign up with Google"
+        label="Registrati con Google"
         showLogo
         variant="default"
         buttonClassName={PILL}

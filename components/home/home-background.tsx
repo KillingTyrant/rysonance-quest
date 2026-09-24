@@ -25,8 +25,10 @@ export function HomeBackground() {
   // Il server non conosce il tema, il client sì già all'idratazione: la griglia
   // si monta solo dopo, altrimenti i due render non coincidono (hydration error).
   const montato = useSyncExternalStore(subscribeNoop, () => true, () => false);
-  const { resolvedTheme } = useTheme();
-  const colori = !montato ? null : resolvedTheme === "dark" ? COLORI.dark : resolvedTheme === "light" ? COLORI.light : null;
+  // resolvedTheme di next-themes ignora forcedTheme: va considerato a parte.
+  const { forcedTheme, resolvedTheme } = useTheme();
+  const tema = forcedTheme ?? resolvedTheme;
+  const colori = !montato ? null : tema === "dark" ? COLORI.dark : tema === "light" ? COLORI.dark : resolvedTheme === "light" ? COLORI.light : null;
 
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 -z-20">
