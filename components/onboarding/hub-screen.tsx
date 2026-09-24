@@ -2,6 +2,8 @@ import { Check, Plus, RefreshCcw } from "lucide-react";
 import Image, { type StaticImageData } from "next/image";
 
 import { CATALOG_IMAGES } from "@/assets/catalog";
+// Import relativo e non con l'alias `@/`: vedi la nota in `assets/catalog/index.ts`.
+import squarcio from "../../assets/layout/squarcio.webp";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,12 +46,12 @@ function labelLines(label: string): [string, string] {
 }
 
 /**
- * L'illustrazione dentro il quadrato dell'icona: l'arte della razza scelta, la
- * stessa della card della quest. Le vie non hanno ancora arte, quindi per ora
- * solo la razza.
+ * L'icona dentro il quadrato della riga: quella della razza o della via
+ * scelta. I talenti non hanno icona e tengono la spunta.
  */
 function selectionImage(groupId: GroupId, draft: PersonaggioDraft): StaticImageData | undefined {
-  if (groupId === "razza" && draft.razza_key) return CATALOG_IMAGES.razze[draft.razza_key];
+  if (groupId === "razza" && draft.razza_key) return CATALOG_IMAGES.razzeIcone[draft.razza_key];
+  if (groupId === "via" && draft.via_key) return CATALOG_IMAGES.vieIcone[draft.via_key];
   return undefined;
 }
 
@@ -93,15 +95,22 @@ export function HubScreen({
   const resolved = resolveDraft(catalog, draft);
 
   return (
-    <div className="relative isolate flex flex-1 flex-col">
+    <div className="relative isolate flex flex-1 flex-col p-4">
       {/*
-        Slot per l'arte di sfondo (silhouette dell'eroe + bussola): l'asset non
-        esiste ancora. Quando arriverà va importato staticamente da `assets/`
-        (vedi docs/immagini_catalogo.md) e inserito qui, prima del velo che
-        tiene leggibile il testo in entrambi i temi.
+        Arte di sfondo: lo squarcio ha la metà alta trasparente e la materia in
+        basso, quindi resta ancorato al fondo. Sta prima del velo che tiene
+        leggibile il testo in entrambi i temi.
       */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-t from-background/85 via-background/25 to-transparent" />
+        <Image
+          src={squarcio}
+          alt=""
+          fill
+          // La hub sta nel contenitore max-w-5xl (64rem) del layout.
+          sizes="(min-width: 64rem) 64rem, 100vw"
+          className="object-cover object-bottom"
+        />
+        <div className="absolute inset-0" />
       </div>
 
       <h1 className="text-4xl font-bold">Genesi dell&apos;eroe</h1>
@@ -135,7 +144,7 @@ export function HubScreen({
                 */}
                 <span
                   className={cn(
-                    "relative isolate flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-sm",
+                    "relative isolate flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-sm",
                     image
                       ? isDone
                         ? "text-white"
@@ -154,9 +163,9 @@ export function HubScreen({
                         alt=""
                         fill
                         sizes="3rem"
-                        // Ritratti verticali (1000×1396): il ritaglio quadrato
-                        // parte dall'alto, così resta il volto e non il busto.
-                        className="-z-10 object-cover object-top rounded-xl"
+                        // Icone quasi quadrate (60×56): il ritaglio toglie
+                        // solo qualche pixel ai lati.
+                        className="-z-10 object-cover rounded-xl"
                       />
                       {/*
                         Il velo tiene leggibile l'icona sopra l'illustrazione,
@@ -202,7 +211,7 @@ export function HubScreen({
                 */}
             <span
               className={cn(
-                "flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-primary text-white"
+                "flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-primary text-white"
               )}
             >
               {/* random icon */}
@@ -220,7 +229,7 @@ export function HubScreen({
 
       <div className="mt-auto flex flex-col gap-3 pt-6 justify-center items-center">
         <div className="flex flex-col gap-2 w-full">
-          <Label htmlFor="nome-personaggio">Nome dell&apos;eroe</Label>
+          <Label htmlFor="nome-personaggio" className="text-white font-bold text-xl">Nome dell&apos;eroe</Label>
           <Input
             id="nome-personaggio"
             value={draft.name}
@@ -231,13 +240,8 @@ export function HubScreen({
             aria-invalid={draft.name.length > 0 && nameProblems.length > 0}
             aria-describedby={nameProblems.length > 0 ? "nome-personaggio-hint" : undefined}
             onChange={(event) => onNameChange(event.target.value)}
-            className="w-full"
+            className="w-full bg-primary text-background rounded-md"
           />
-          {nameProblems.length > 0 && (
-            <p id="nome-personaggio-hint" className="text-sm text-muted-foreground">
-              {nameProblems.join(" ")}
-            </p>
-          )}
         </div>
 
         {saveError && (

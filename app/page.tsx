@@ -15,7 +15,7 @@ import { Footer } from "@/components/layout/footer";
 export default function Home() {
   return (
     <main
-      className="flex min-h-screen flex-col overflow-x-clip bg-background text-foreground [--background:0_0%_96.5%] [--border:0_0%_88%] [--card-foreground:0_0%_15%] [--card:0_0%_96.5%] [--foreground:0_0%_15%] [--muted-foreground:0_0%_45%]"
+      className="flex min-h-dvh flex-col overflow-x-clip bg-background text-foreground [--background:0_0%_96.5%] [--border:0_0%_88%] [--card-foreground:0_0%_15%] [--card:0_0%_96.5%] [--foreground:0_0%_15%] [--muted-foreground:0_0%_45%]"
     >
       <HomeArtwork />
 

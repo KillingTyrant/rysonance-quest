@@ -57,7 +57,7 @@ type ImmagineCartaOptions = {
 
 /**
  * Disegna la card del personaggio in un PNG da condividere. Lo fa il browser e non
- * il server: così usa Cabinet Grotesk, che la pagina ha già caricato, invece del
+ * il server: così usa Sprat Condensed, che la pagina ha già caricato, invece del
  * font di ripiego del generatore di immagini lato server.
  */
 export async function creaImmagineCarta({

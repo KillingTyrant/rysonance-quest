@@ -91,13 +91,12 @@ export function RazzaCard({
               selected ? "justify-center pb-4" : "justify-end",
             )}
           >
-            {/* Sprat Condensed, il serif display del design (caricato dal layout
-                dell'onboarding). I corpi del mockup — 72px chiusa, 120px aperta
+            {/* I corpi del mockup — 72px chiusa, 120px aperta
                 — valgono da `lg` in su: sotto scalano, altrimenti il nome di una
                 razza lunga esce dalla card sul telefono. */}
             <span
               className={cn(
-                "font-sprat uppercase leading-none tracking-[-0.08em] text-white",
+                "uppercase leading-none tracking-[-0.08em] text-white",
                 selected
                   ? "font-extralight text-6xl sm:text-8xl lg:text-[120px]"
                   : "text-right font-normal text-4xl sm:text-5xl lg:text-[72px]",

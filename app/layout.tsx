@@ -38,11 +38,22 @@ export const viewport: Viewport = {
   ],
 };
 
-const cabinetGrotesk = localFont({
-  src: "./fonts/CabinetGrotesk-Variable.woff2",
-  variable: "--font-cabinet",
+/**
+ * Sprat Condensed, il font dell'intera app (utility `font-sans`, default del body).
+ * Light sta su 200 perché è il peso "extralight" del design delle card razza.
+ */
+const sprat = localFont({
+  src: [
+    { path: "./fonts/Sprat-CondensedThin.woff2", weight: "100", style: "normal" },
+    { path: "./fonts/Sprat-CondensedLight.woff2", weight: "200", style: "normal" },
+    { path: "./fonts/Sprat-CondensedRegular.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/Sprat-CondensedMedium.woff2", weight: "500", style: "normal" },
+  ],
+  variable: "--font-sprat",
   display: "swap",
-  weight: "100 900",
+  // Il fallback metrico di default è Arial: per un serif condensed il salto di
+  // layout è più contenuto partendo da Times New Roman.
+  adjustFontFallback: "Times New Roman",
 });
 
 export default function RootLayout({
@@ -52,7 +63,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="it" suppressHydrationWarning>
-      <body className={`${cabinetGrotesk.variable} font-sans antialiased`} suppressHydrationWarning>
+      <body className={`${sprat.variable} font-sans antialiased`} suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

@@ -20,7 +20,7 @@ export const metadata: Metadata = {
  */
 export default function NotFound() {
   return (
-    <main className="min-h-screen flex flex-col items-center">
+    <main className="min-h-dvh flex flex-col items-center pb-[env(safe-area-inset-bottom)]">
       <div className="flex-1 w-full flex flex-col gap-20 items-center">
         <Nav />
         <div className="flex-1 flex flex-col justify-center w-full p-5 items-center">
