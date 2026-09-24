@@ -33,9 +33,8 @@ export function PersonaggioSheet({
   footer,
   className,
 }: PersonaggioSheetProps) {
-  const { name, razza, tribu, via, talenti, hp, mana, speed } = resolved;
+  const { name, razza, via, talenti } = resolved;
   const compact = variant === "aside";
-  const origini = [razza?.name, tribu?.name].filter(Boolean).join(" · ");
 
   return (
     <section
@@ -53,7 +52,7 @@ export function PersonaggioSheet({
           {name.trim() || <span className="text-muted-foreground">Senza nome</span>}
         </p>
         <p className="text-sm text-muted-foreground">
-          {origini || "Origini non ancora scelte"}
+          {razza?.name ?? "Origini non ancora scelte"}
         </p>
       </header>
 
@@ -61,20 +60,6 @@ export function PersonaggioSheet({
         <p className={cn("text-sm", !via && "text-muted-foreground")}>
           {via?.name ?? "Non ancora scelta"}
         </p>
-      </Blocco>
-
-      <Blocco title="Statistiche">
-        <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground">
-          <span>
-            Vita <Stat value={hp} />
-          </span>
-          <span>
-            Mana <Stat value={mana} />
-          </span>
-          <span>
-            Velocità <Stat value={speed} />
-          </span>
-        </div>
       </Blocco>
 
       <Blocco title="Talenti">
@@ -106,18 +91,5 @@ function Blocco({ title, children }: { title: string; children: ReactNode }) {
       </h3>
       {children}
     </section>
-  );
-}
-
-function Stat({ value }: { value: number | null | undefined }) {
-  return (
-    <span
-      className={cn(
-        "font-medium tabular-nums",
-        value === null ? "text-muted-foreground" : "text-foreground",
-      )}
-    >
-      {value ?? "—"}
-    </span>
   );
 }

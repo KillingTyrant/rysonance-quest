@@ -4,7 +4,6 @@ import type {
   PersonaggioDraft,
   Razza,
   Talento,
-  Tribu,
   Via,
 } from "./types";
 
@@ -18,44 +17,12 @@ export function razzaByKey(catalog: Catalog, key: string | null): Razza | null {
   return catalog.razze.find((razza) => razza.key === key) ?? null;
 }
 
-export function tribuByKey(catalog: Catalog, key: string | null): Tribu | null {
-  if (!key) return null;
-  for (const razza of catalog.razze) {
-    const found = razza.tribu.find((tribu) => tribu.key === key);
-    if (found) return found;
-  }
-  return null;
-}
-
 /** Un talento del catalogo per chiave. */
 export function talentoSceltaByKey(
   catalog: Catalog,
   key: string | null,
 ): Talento | null {
   return catalog.talentiScelta.find((talento) => talento.key === key) ?? null;
-}
-
-/**
- * "i Nani" ma "gli Umani": l'articolo plurale maschile dipende dall'iniziale
- * del nome. Serve a comporre anche le preposizioni — "a" + articolo dà "ai" o
- * "agli", "de" + articolo dà "dei" o "degli".
- *
- * Nessun nome di razza comincia per z o s+consonante, ma la regola completa
- * costa una riga e non lascia trappole a chi aggiungerà una razza.
- */
-export function articolo(nome: string): "i" | "gli" {
-  return /^([aeiou]|z|s[bcdfglmnpqrtv]|gn|ps|x|y)/i.test(nome) ? "gli" : "i";
-}
-
-// ─────────────────────────────── Derivazioni ────────────────────────────────
-
-/**
- * Una razza è giocabile se ha almeno una tribù: senza, non ci sarebbe niente
- * da scegliere nella sua card e il personaggio non sarebbe salvabile
- * (`personaggi.tribu_key` è obbligatoria).
- */
-export function isRazzaGiocabile(razza: Razza): boolean {
-  return razza.tribu.length > 0;
 }
 
 // ──────────────────────────── View-model condiviso ──────────────────────────
@@ -70,23 +37,11 @@ export type ResolvedPersonaggio = {
   name: string;
   via: Via | null;
   razza: Razza | null;
-  tribu: Tribu | null;
   /** I talenti scelti dall'utente, nell'ordine in cui li ha scelti. */
   talenti: Talento[];
-  /**
-   * Vita, mana e velocità base della tribù. Sono `null` finché nel wizard la
-   * tribù non è scelta, o se il personaggio salvato non ne ha una: nel
-   * catalogo non sono mai nulli.
-   */
-  hp: number | null;
-  mana: number | null;
-  speed: number | null;
 };
 
-/**
- * Le scelte in corso: la razza è quella della card selezionata, che può
- * esistere anche prima della tribù.
- */
+/** Le scelte in corso: la razza è quella della card selezionata. */
 export function resolveDraft(
   catalog: Catalog,
   draft: PersonaggioDraft,
@@ -94,10 +49,7 @@ export function resolveDraft(
   return resolve(catalog, draft, draft.razza_key);
 }
 
-/**
- * Un personaggio salvato porta la razza nella sua colonna: la tribù è
- * facoltativa, quindi non si può ricavare da lei.
- */
+/** Un personaggio salvato porta la razza nella sua colonna. */
 export function resolveRow(
   catalog: Catalog,
   personaggio: Personaggio,
@@ -112,20 +64,15 @@ function resolve(
 ): ResolvedPersonaggio {
   const via = viaByKey(catalog, scelte.via_key);
   const razza = razzaByKey(catalog, razzaKey);
-  const tribu = tribuByKey(catalog, scelte.tribu_key);
 
   return {
     name: scelte.name,
     via,
     razza,
-    tribu,
     // Si itera sulle scelte, non sul catalogo: l'ordine è quello in cui sono
     // state fatte. Una chiave sconosciuta semplicemente sparisce.
     talenti: scelte.talenti
       .map((key) => talentoSceltaByKey(catalog, key))
       .filter((talento): talento is Talento => talento !== null),
-    hp: tribu?.base_hp ?? null,
-    mana: tribu?.base_mana ?? null,
-    speed: tribu?.base_speed ?? null,
   };
 }

@@ -1,7 +1,6 @@
 import Image from "next/image";
 
 import { CATALOG_IMAGES } from "@/assets/catalog";
-import { isRazzaGiocabile, tribuByKey } from "@/lib/onboarding/selectors";
 import { cn } from "@/lib/utils";
 
 import { RazzaCard } from "../razza-card";
@@ -9,18 +8,10 @@ import { StepSection } from "../step-section";
 import type { StepProps } from "../wizard-steps";
 
 /**
- * Chi è il personaggio: da dove viene. La razza decide il talento razziale e
- * le tribù disponibili. Il nome invece si scrive nella hub, prima di creare
- * l'eroe.
+ * Chi è il personaggio: da dove viene, cioè la razza. Il nome invece si scrive
+ * nella hub, prima di creare l'eroe.
  */
 export function IdentitaStep({ catalog, draft, onChange }: StepProps) {
-  const tribu = tribuByKey(catalog, draft.tribu_key);
-  const hp = tribu?.base_hp ?? null;
-  const mana = tribu?.base_mana ?? null;
-  // La velocità mostrata nella card aperta: quella della tribù scelta, la
-  // stessa che la RPC scrive alla creazione.
-  const speed = tribu?.base_speed ?? null;
-
   return (
     <StepSection>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -33,12 +24,6 @@ export function IdentitaStep({ catalog, draft, onChange }: StepProps) {
               <RazzaCard
                 razza={item}
                 selected={selected}
-                tribuKey={draft.tribu_key}
-                disabled={!isRazzaGiocabile(item)}
-                disabledReason="Non ancora giocabile: mancano le tribù."
-                hp={hp}
-                mana={mana}
-                speed={speed}
                 media={
                   illustrazione ? (
                     <Image
@@ -68,7 +53,6 @@ export function IdentitaStep({ catalog, draft, onChange }: StepProps) {
                   ) : null
                 }
                 onSelect={() => onChange({ razza_key: item.key })}
-                onSelectTribu={(key) => onChange({ tribu_key: key })}
               />
             </div>
           );

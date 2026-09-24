@@ -1,11 +1,4 @@
-import {
-  articolo,
-  isRazzaGiocabile,
-  razzaByKey,
-  talentoSceltaByKey,
-  tribuByKey,
-  viaByKey,
-} from "./selectors";
+import { razzaByKey, talentoSceltaByKey, viaByKey } from "./selectors";
 import type { Catalog, PersonaggioDraft } from "./types";
 
 /** Allineato al check `personaggi_name_check`. */
@@ -29,7 +22,6 @@ export type DraftField =
   | "name"
   | "via_key"
   | "razza_key"
-  | "tribu_key"
   | "talenti";
 
 export type Problem = {
@@ -45,7 +37,6 @@ export function emptyDraft(): PersonaggioDraft {
     name: "",
     via_key: null,
     razza_key: null,
-    tribu_key: null,
     talenti: [],
   };
 }
@@ -70,7 +61,6 @@ export function parseDraft(input: unknown): PersonaggioDraft | null {
     name: typeof raw.name === "string" ? raw.name.trim() : "",
     via_key: asKey(raw.via_key),
     razza_key: asKey(raw.razza_key),
-    tribu_key: asKey(raw.tribu_key),
     talenti,
   };
 }
@@ -94,7 +84,7 @@ export function validateDraft(
   // I controlli seguono l'ordine degli step: leggere questa funzione
   // dev'essere come ripercorrere il wizard.
 
-  // ── chi è: nome, razza e tribù ────────────────────────────────────────────
+  // ── chi è: nome e razza ───────────────────────────────────────────────────
   const name = draft.name.trim();
   if (name.length === 0) {
     add("name", "Nome", "Il personaggio deve avere un nome.");
@@ -105,23 +95,6 @@ export function validateDraft(
   const razza = razzaByKey(catalog, draft.razza_key);
   if (!razza) {
     add("razza_key", "Razza", "Scegli una razza.");
-  } else if (!isRazzaGiocabile(razza)) {
-    add(
-      "razza_key",
-      "Razza",
-      `${maiuscola(articolo(razza.name))} ${razza.name} non sono ancora giocabili.`,
-    );
-  }
-
-  const tribu = tribuByKey(catalog, draft.tribu_key);
-  if (!tribu) {
-    add("tribu_key", "Tribù", "Scegli una tribù.");
-  } else if (razza && tribu.razza_key !== razza.key) {
-    add(
-      "tribu_key",
-      "Tribù",
-      `${tribu.name} non appartiene a${articolo(razza.name)} ${razza.name}.`,
-    );
   }
 
   // ── la Via ────────────────────────────────────────────────────────────────
@@ -155,10 +128,6 @@ export function validateDraft(
 /** "1 talento" / "3 talenti": la regola è una costante, i messaggi no. */
 export function quantiTalenti(n: number): string {
   return n === 1 ? "1 talento" : `${n} talenti`;
-}
-
-function maiuscola(parola: string): string {
-  return parola[0].toUpperCase() + parola.slice(1);
 }
 
 function asKey(value: unknown): string | null {

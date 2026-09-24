@@ -28,9 +28,6 @@ export const QUEST_COPY = {
     cta: "Godi l'evento",
   },
   carta: {
-    vita: "Punti Vita",
-    mana: "Mana",
-    movimento: "Movimento",
     condividi: "Condividi Personaggio",
     condividiTitolo: (nome: string) => `${nome} · Rysonance`,
     condividiTesto: "Il mio eroe per la quest di Prince Doji.",

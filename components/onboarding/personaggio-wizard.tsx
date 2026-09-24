@@ -15,7 +15,6 @@ import {
   stepPositionInGroup,
   type GroupId,
 } from "@/lib/onboarding/groups";
-import { isRazzaGiocabile, razzaByKey } from "@/lib/onboarding/selectors";
 import {
   problemsForStep,
   stepIndex,
@@ -116,31 +115,13 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
   }
 
   /**
-   * L'unico punto in cui il draft cambia, e quindi l'unico posto in cui vivono
-   * gli invarianti fra campi. Sono tutti della stessa forma: una scelta fatta
-   * prima ne invalida una fatta dopo, e invece di bloccare il cambio si toglie
-   * ciò che non è più valido e lo si dice.
+   * L'unico punto in cui il draft cambia. Oggi non ci sono invarianti fra
+   * campi: nessuna scelta ne invalida un'altra (cambiare Via non tocca i
+   * talenti, il loro numero è `TALENTI_DA_SCEGLIERE` per tutte).
    */
   function handleChange(patch: Partial<PersonaggioDraft>) {
-    const next = { ...draft, ...patch };
-    const avvisi: string[] = [];
-
-    if (patch.razza_key !== undefined) {
-      const razza = razzaByKey(catalog, next.razza_key);
-
-      // Una tribù di un'altra razza non ha senso: il DB non lo vieta (la razza
-      // la ricava dalla tribù), quindi l'invariante lo tiene la UI.
-      if (next.tribu_key && !razza?.tribu.some((t) => t.key === next.tribu_key)) {
-        next.tribu_key = null;
-        avvisi.push("Cambiando razza la tribù non era più valida: l'ho tolta.");
-      }
-    }
-
-    // Cambiare Via non tocca più i talenti: quanti se ne scelgono è lo stesso
-    // numero per tutte (`TALENTI_DA_SCEGLIERE`).
-
-    setDraft(next);
-    setNotice(avvisi.join(" ") || null);
+    setDraft({ ...draft, ...patch });
+    setNotice(null);
   }
 
   function handleSave() {
@@ -163,8 +144,7 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
   }
 
   function handleRandomize() {
-    const razza = pickRandom(catalog.razze.filter(isRazzaGiocabile));
-    const tribu = razza ? pickRandom(razza.tribu) : null;
+    const razza = pickRandom(catalog.razze);
     const via = pickRandom(catalog.vie);
     const talenti = sampleUnique(
       catalog.talentiScelta.map((talento) => talento.key),
@@ -175,7 +155,6 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
       ...emptyDraft(),
       name: `Eroe ${Math.floor(1000 + Math.random() * 9000)}`,
       razza_key: razza?.key ?? null,
-      tribu_key: tribu?.key ?? null,
       via_key: via?.key ?? null,
       talenti,
     };
@@ -185,7 +164,7 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
     setIsBackward(false);
     setView({ mode: "hub" });
 
-    if (!via || !razza || !tribu || talenti.length !== TALENTI_DA_SCEGLIERE) {
+    if (!via || !razza || talenti.length !== TALENTI_DA_SCEGLIERE) {
       setNotice("Scelte casuali parziali: completa i campi mancanti.");
       return;
     }

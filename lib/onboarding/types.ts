@@ -9,27 +9,13 @@ type Row<T extends keyof Database["public"]["Tables"]> =
 
 // ──────────────────────────────── Catalogo ──────────────────────────────────
 
-/** Ogni talento è a scelta: razza, tribù e via non ne portano più uno. */
+/** Ogni talento è a scelta: né la razza né la via ne portano più uno. */
 export type Talento = Pick<Row<"talenti">, "key" | "name" | "description">;
-
-export type Tribu = Pick<
-  Row<"tribu">,
-  | "key"
-  | "razza_key"
-  | "name"
-  | "description"
-  | "base_hp"
-  | "base_mana"
-  | "base_speed"
-  | "sort_order"
->;
 
 export type Razza = Pick<
   Row<"razze">,
   "key" | "name" | "description" | "sort_order"
-> & {
-  tribu: Tribu[];
-};
+>;
 
 export type Via = Pick<
   Row<"vie">,
@@ -50,12 +36,12 @@ export type Catalog = {
 // ─────────────────────────────── Personaggio ────────────────────────────────
 
 /**
- * Un personaggio salvato, con i talenti scelti già uniti. La razza è una
- * colonna a sé: la tribù è facoltativa, quindi non basta a ricavarla.
+ * Un personaggio salvato, con i talenti scelti già uniti. La colonna
+ * `tribu_key` esiste ancora nel DB ma l'app non la sceglie né la legge più.
  */
 export type Personaggio = Pick<
   Row<"personaggi">,
-  "id" | "name" | "via_key" | "razza_key" | "tribu_key" | "created_at"
+  "id" | "name" | "via_key" | "razza_key" | "created_at"
 > & {
   /** Chiavi dei talenti scelti dall'utente. */
   talenti: string[];
@@ -69,9 +55,7 @@ export type Personaggio = Pick<
 export type PersonaggioDraft = {
   name: string;
   via_key: string | null;
-  /** La razza della card scelta: può esistere anche prima della tribù. */
   razza_key: string | null;
-  tribu_key: string | null;
   /** Chiavi dei talenti scelti: quanti ne servono lo dice `TALENTI_DA_SCEGLIERE`. */
   talenti: string[];
 };

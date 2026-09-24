@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
  * stretti la card si restringe invece di traboccare.
  *
  * Le altezze restano fisse come nel design: sono ciò che dà alla griglia il suo
- * ritmo, e la card aperta è alta perché ci sta dentro la scelta della tribù.
+ * ritmo.
  */
 const cardVariants = cva(
   "rounded-xl border bg-card text-card-foreground shadow",

@@ -15,7 +15,7 @@ import { parseDraft, validateDraft } from "./validate";
  * testo del select, e una concatenazione lo degrada a `string`.
  */
 const PERSONAGGIO_SELECT =
-  "id, name, via_key, razza_key, tribu_key, created_at, personaggio_talenti(talent_key)";
+  "id, name, via_key, razza_key, created_at, personaggio_talenti(talent_key)";
 
 type PersonaggioRow = Omit<Personaggio, "talenti"> & {
   personaggio_talenti: { talent_key: string }[];
@@ -119,7 +119,6 @@ export async function creaPersonaggio(
     p_name: draft.name,
     // validateDraft ha già scartato i null: qui i campi sono per forza pieni.
     p_via_key: draft.via_key!,
-    p_tribu_key: draft.tribu_key!,
     p_talenti: draft.talenti,
     p_razza_key: draft.razza_key!,
   });
@@ -146,9 +145,6 @@ const CONSTRAINT_MESSAGES: Record<string, string> = {
   personaggi_name_check: "Il nome del personaggio non è valido.",
   personaggi_user_id_fkey: "Il tuo account non è più valido. Accedi di nuovo.",
   personaggi_razza_key_fkey: "La razza scelta non esiste più. Ricarica la pagina.",
-  personaggi_tribu_key_fkey: "La tribù scelta non esiste più. Ricarica la pagina.",
-  personaggi_tribu_key_razza_key_fkey:
-    "La tribù scelta non appartiene alla razza. Ricarica la pagina.",
   personaggi_via_key_fkey: "La Via scelta non esiste più. Ricarica la pagina.",
 };
 

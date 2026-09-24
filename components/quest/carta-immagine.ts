@@ -1,6 +1,5 @@
 import type { QuestCarta } from "@/lib/quest/types";
 
-import { QUEST_COPY } from "./copy";
 import { coverCrop, fitFontSize } from "./share";
 
 /** Formato delle storie (9:16): la card è alta come lo schermo del telefono. */
@@ -115,21 +114,6 @@ export async function creaImmagineCarta({
     context.font = `700 76px ${fontFamily}`;
     context.fillText(carta.razza, MARGINE, y, larghezzaUtile);
     y += 96;
-  }
-
-  const statistiche: [string, number | null][] = [
-    [QUEST_COPY.carta.vita, carta.vita],
-    [QUEST_COPY.carta.mana, carta.mana],
-    [QUEST_COPY.carta.movimento, carta.movimento],
-  ];
-  for (const [label, value] of statistiche) {
-    context.font = `600 46px ${fontFamily}`;
-    context.globalAlpha = 0.85;
-    context.fillText(label, MARGINE, y);
-    context.globalAlpha = 1;
-    context.font = `800 46px ${fontFamily}`;
-    context.fillText(value === null ? "—" : String(value), MARGINE + 320, y);
-    y += 68;
   }
 
   if (logo) {

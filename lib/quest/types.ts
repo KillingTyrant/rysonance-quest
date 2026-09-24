@@ -8,11 +8,7 @@ export type QuestCarta = {
   /** Chiave della razza: servirà a scegliere l'illustrazione della card. */
   razzaKey: string;
   razza: string | null;
-  tribu: string | null;
   via: string | null;
-  vita: number | null;
-  mana: number | null;
-  movimento: number | null;
 };
 
 export type Quest = {

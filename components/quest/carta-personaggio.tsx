@@ -1,8 +1,7 @@
 "use client";
 
-import { Droplet, Footprints, Heart, type LucideIcon } from "lucide-react";
 import Image from "next/image";
-import { type CSSProperties, Fragment, type PointerEvent, useId, useRef } from "react";
+import { type CSSProperties, type PointerEvent, useId, useRef } from "react";
 
 import { CATALOG_IMAGES } from "@/assets/catalog";
 import { Logo } from "@/components/layout/logo";
@@ -39,12 +38,11 @@ type CartaPersonaggioProps = {
 /**
  * La card del personaggio, ultima schermata della quest e scheda dei personaggi nella
  * lobby: illustrazione della razza a
- * tutta card, nome, razza, statistiche, e i due pulsanti "Condividi Personaggio" e
+ * tutta card, nome, razza, e i due pulsanti "Condividi Personaggio" e
  * "Salva la scheda nel wallet".
  *
  * Entra girandosi (sul retro c'è il simbolo Rysonance), poi una banda di luce la
- * attraversa, il nome arriva lettera per lettera e le statistiche contano fino al
- * loro valore. Da lì è olografica: si inclina verso il dito e il riflesso lo segue.
+ * attraversa e il nome arriva lettera per lettera. Da lì è olografica: si inclina verso il dito e il riflesso lo segue.
  * Montata già `attivo` (la lobby) salta l'entrata ed è subito olografica.
  */
 export function CartaPersonaggio({
@@ -60,7 +58,6 @@ export function CartaPersonaggio({
   const bandaRef = useRef<HTMLDivElement>(null);
   const nomeRef = useRef<HTMLHeadingElement>(null);
   const razzaRef = useRef<HTMLParagraphElement>(null);
-  const statsRef = useRef<HTMLDListElement>(null);
   const azioniRef = useRef<HTMLDivElement>(null);
   const attivoPrecedenteRef = useRef(attivo);
   const inclinazioneRef = useRef<{ x: QuickTo; y: QuickTo } | null>(null);
@@ -98,7 +95,6 @@ export function CartaPersonaggio({
         }
 
         const nome = SplitText.create(nomeRef.current, { type: "words,chars" });
-        const statistiche = statsRef.current;
         gsap
           .timeline({ onComplete: olografica })
           // La dissolvenza sta sulla sezione e non sulla card: un'opacità sotto 1 su un
@@ -135,22 +131,6 @@ export function CartaPersonaggio({
             1.05,
           )
           .from(razzaRef.current, { opacity: 0, y: 12, duration: 0.4 }, 1.3)
-          .from(
-            statistiche?.querySelectorAll("dt, dd") ?? [],
-            { opacity: 0, x: -10, stagger: 0.05, duration: 0.35 },
-            1.35,
-          )
-          .from(
-            statistiche?.querySelectorAll("[data-conta]") ?? [],
-            {
-              textContent: 0,
-              snap: { textContent: 1 },
-              stagger: 0.1,
-              duration: 0.9,
-              ease: "power1.out",
-            },
-            1.35,
-          )
           .from(
             azioniRef.current?.children ?? [],
             { opacity: 0, y: 24, stagger: 0.2, duration: 0.5, ease: "back.out(1.7)" },
@@ -190,12 +170,6 @@ export function CartaPersonaggio({
     inclinazione.y(0);
     gsap.to(frontRef.current, { "--holo": 0, duration: 0.6, overwrite: "auto" });
   });
-
-  const statistiche: { icon: LucideIcon; label: string; value: number | null }[] = [
-    { icon: Heart, label: QUEST_COPY.carta.vita, value: carta.vita },
-    { icon: Droplet, label: QUEST_COPY.carta.mana, value: carta.mana },
-    { icon: Footprints, label: QUEST_COPY.carta.movimento, value: carta.movimento },
-  ];
 
   return (
     <section
@@ -264,32 +238,6 @@ export function CartaPersonaggio({
                 {carta.razza}
               </p>
             )}
-            <dl
-              ref={statsRef}
-              className="mt-3 grid w-fit grid-cols-[auto_auto] items-center gap-x-6 gap-y-2 text-sm"
-            >
-              {statistiche.map(({ icon: Icon, label, value }) => (
-                <Fragment key={label}>
-                  <dt className="flex items-center gap-2 font-medium">
-                    <Icon aria-hidden className="size-4 shrink-0" />
-                    {label}
-                  </dt>
-                  <dd className="font-extrabold tabular-nums">
-                    {value === null ? (
-                      "—"
-                    ) : (
-                      <>
-                        {/* Il numero che conta è solo visivo: gli screen reader leggono il valore. */}
-                        <span aria-hidden data-conta>
-                          {value}
-                        </span>
-                        <span className="sr-only">{value}</span>
-                      </>
-                    )}
-                  </dd>
-                </Fragment>
-              ))}
-            </dl>
           </div>
 
           <div

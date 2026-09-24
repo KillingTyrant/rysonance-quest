@@ -14,10 +14,6 @@ export function toQuestCarta(catalog: Catalog, personaggio: Personaggio): QuestC
     nome: resolved.name,
     razzaKey: personaggio.razza_key,
     razza: resolved.razza?.name ?? null,
-    tribu: resolved.tribu?.name ?? null,
     via: resolved.via?.name ?? null,
-    vita: resolved.hp,
-    mana: resolved.mana,
-    movimento: resolved.speed,
   };
 }

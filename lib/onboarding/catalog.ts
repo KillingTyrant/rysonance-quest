@@ -21,16 +21,16 @@ function catalogClient() {
 }
 
 /**
- * Legge il catalogo di gioco e lo ricompone secondo le relazioni del DB:
- * razza → tribù, più le vie e i talenti in elenchi piatti.
+ * Legge il catalogo di gioco: razze, vie e talenti in elenchi piatti. La
+ * tabella `tribu` non si legge: nell'app la tribù non si sceglie più.
  *
  * `"use cache"` + `cacheLife("max")`: viene risolto a build time e congelato
  * nelle pagine, quindi a runtime non parte nessuna query. La chiave di cache
  * include il build id, perciò ogni deploy rilegge il catalogo — il contenuto
  * cambia solo con un `db push --include-seed` seguito da un deploy.
  *
- * Quattro query piatte e una ricomposizione in memoria, invece di un embed
- * PostgREST. Il numero di round-trip è comunque irrilevante, gira a build time.
+ * Tre query piatte in parallelo. Il numero di round-trip è comunque
+ * irrilevante, gira a build time.
  *
  * Le colonne sono elencate una per una: quello che finisce qui dentro viene
  * serializzato nel payload del client.
@@ -41,7 +41,7 @@ export async function getCatalog(): Promise<Catalog> {
 
   const supabase = catalogClient();
 
-  const [talenti, razze, tribu, vie] = await Promise.all([
+  const [talenti, razze, vie] = await Promise.all([
     read(
       "talenti",
       supabase
@@ -57,13 +57,6 @@ export async function getCatalog(): Promise<Catalog> {
         .order("sort_order"),
     ),
     read(
-      "tribu",
-      supabase
-        .from("tribu")
-        .select("key, razza_key, name, description, base_hp, base_mana, base_speed, sort_order")
-        .order("sort_order"),
-    ),
-    read(
       "vie",
       supabase
         .from("vie")
@@ -72,18 +65,12 @@ export async function getCatalog(): Promise<Catalog> {
     ),
   ]);
 
-  // Una passata per raggruppare, invece di rifiltrare l'array dentro ogni map.
-  const tribuByRazza = groupBy(tribu, (t) => t.razza_key);
-
   return {
     // Le vie non dicono più quanti talenti si scelgono: quel numero è una
     // regola di prodotto del client (`TALENTI_DA_SCEGLIERE`, in
     // `lib/onboarding/validate.ts`), non una colonna del catalogo.
     vie,
-    razze: razze.map((row) => ({
-      ...row,
-      tribu: tribuByRazza.get(row.key) ?? [],
-    })),
+    razze,
     // Tutti i talenti sono a scelta. Nell'ordine di `sort_order`: è l'ordine
     // in cui lo step li mostra.
     talentiScelta: talenti,
@@ -101,14 +88,4 @@ async function read<T>(
   const { data, error } = await query;
   if (error) throw new Error(`Catalogo: lettura di "${table}" fallita: ${error.message}`);
   return data ?? [];
-}
-
-function groupBy<T>(rows: T[], key: (row: T) => string): Map<string, T[]> {
-  const groups = new Map<string, T[]>();
-  for (const row of rows) {
-    const group = groups.get(key(row));
-    if (group) group.push(row);
-    else groups.set(key(row), [row]);
-  }
-  return groups;
 }
