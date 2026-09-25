@@ -3,6 +3,12 @@ import localFont from "next/font/local";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 
+// Carichiamo il tuo file magico .otf
+const spratFont = localFont({
+  src: "./fonts/Sprat-CondensedLight.otf",
+  variable: "--font-sprat", // Questo è il nome che useremo in Tailwind!
+});
+
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
   : "http://localhost:3000";
@@ -27,7 +33,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${cabinetGrotesk.variable} font-sans antialiased`} suppressHydrationWarning>
+      <body
+        className={`${cabinetGrotesk.variable} ${spratFont.variable} font-sans antialiased`}
+        suppressHydrationWarning
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

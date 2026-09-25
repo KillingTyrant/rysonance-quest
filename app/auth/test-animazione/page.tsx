@@ -1,0 +1,369 @@
+"use client";
+
+import { useState, useRef } from "react";
+import { Logo } from "@/components/layout/logo";
+import gsap from "gsap";
+
+export default function SandboxPage() {
+  // --- STATO DEL WIZARD ---
+  const [wizardStep, setWizardStep] = useState(0);
+
+  const datiVie = [
+    {
+      nome: "VIANDANTE",
+      talento: "Giusta scelta",
+      descrizione:
+        "Alla creazione del personaggio puoi apprendere 4 talenti invece che 2. I talenti devono appartenere tutti a discipline diverse .",
+      colore: "#9333EA", // Viola
+    },
+    {
+      nome: "GUERRIERO",
+      talento: "Tecnicista",
+      descrizione:
+        "Una volta per turno, quando riesci a difenderti da un attacco, puoi effettuare un attacco contro il bersaglio da cui ti sei difeso.",
+      colore: "#FF4500", // Arancione
+    },
+    {
+      nome: "SAPIENTE",
+      talento: "Concentrazione Arcana",
+      descrizione:
+        "Puoi usare la tua azione di movimento per lanciare una magia di potenziamento su te stesso o un alleato",
+      colore: "#3B82F6", // Blu
+    },
+  ];
+
+  const [indiceVia, setIndiceVia] = useState(0);
+
+  // Memoria del Drag
+  const dragState = useRef({ startX: 0, isDragging: false });
+  // Memoria delle rotazioni (l'anello interno è un perno fisso e non ruota)
+  const baseRot = useRef({ r1: 0, r2: 0, r3: 0 });
+
+  const anelloEsterno = useRef(null);
+  const anelloMedioEst = useRef(null);
+  const anelloMedioInt = useRef(null);
+  const contenitoreTesti = useRef(null);
+
+  // --- GESTIONE TOUCH (DRAG FLUIDO RIPRISTINATO) ---
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (wizardStep !== 2) return;
+    dragState.current.startX = e.touches[0].clientX;
+    dragState.current.isDragging = true;
+
+    gsap.killTweensOf([
+      anelloEsterno.current,
+      anelloMedioEst.current,
+      anelloMedioInt.current,
+      contenitoreTesti.current,
+    ]);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!dragState.current.isDragging || wizardStep !== 2) return;
+
+    const currentX = e.touches[0].clientX;
+    const deltaX = dragState.current.startX - currentX;
+
+    // Progresso fluido e naturale senza blocchi meccanici
+    const progress = deltaX / 150;
+
+    gsap.set(anelloEsterno.current, {
+      rotation: baseRot.current.r1 + progress * 90,
+    });
+    gsap.set(anelloMedioEst.current, {
+      rotation: baseRot.current.r2 + progress * -120,
+    });
+    gsap.set(anelloMedioInt.current, {
+      rotation: baseRot.current.r3 + progress * 150,
+    });
+
+    gsap.set(contenitoreTesti.current, {
+      opacity: Math.max(0, 1 - Math.abs(progress) * 1.5),
+      x: -progress * 20,
+    });
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!dragState.current.isDragging || wizardStep !== 2) return;
+    dragState.current.isDragging = false;
+
+    const currentX = e.changedTouches[0].clientX;
+    const deltaX = dragState.current.startX - currentX;
+    const progress = deltaX / 150;
+
+    let step = 0;
+
+    if (progress > 0.4) step = 1;
+    else if (progress < -0.4) step = -1;
+
+    baseRot.current.r1 += step * 90;
+    baseRot.current.r2 += step * -120;
+    baseRot.current.r3 += step * 150;
+
+    // Scatto fluido con animazione power2
+    gsap.to(anelloEsterno.current, {
+      rotation: baseRot.current.r1,
+      duration: 0.6,
+      ease: "power2.out",
+    });
+    gsap.to(anelloMedioEst.current, {
+      rotation: baseRot.current.r2,
+      duration: 0.6,
+      ease: "power2.out",
+    });
+    gsap.to(anelloMedioInt.current, {
+      rotation: baseRot.current.r3,
+      duration: 0.6,
+      ease: "power2.out",
+    });
+
+    // Gestione Cambio Via Testuale
+    if (step !== 0) {
+      const prossimoIndice =
+        (indiceVia + step + datiVie.length) % datiVie.length;
+      setIndiceVia(prossimoIndice);
+      gsap.fromTo(
+        contenitoreTesti.current,
+        { opacity: 0, x: 30 * step },
+        { opacity: 1, x: 0, duration: 0.5, delay: 0.1 },
+      );
+    } else {
+      gsap.to(contenitoreTesti.current, { opacity: 1, x: 0, duration: 0.5 });
+    }
+  };
+
+  const viaAttiva = datiVie[indiceVia];
+
+  return (
+    <div className="fixed inset-0 w-full h-[100dvh] bg-white text-black flex flex-col font-sans overflow-hidden overscroll-none">
+      {/* --------------------------------------------------- */}
+      {/* LIVELLO 1: L'APP PRINCIPALE                         */}
+      {/* --------------------------------------------------- */}
+      <header className="flex items-center justify-between px-6 py-5">
+        <Logo iconOnly={false} className="h-9 w-auto text-black" />
+        <button
+          className="px-6 py-2 text-sm font-bold bg-[#FFBA30] text-black hover:bg-[#FFEDC9] hover:text-[#B2A68D] active:bg-[#FFEDC9] active:text-[#B2A68D] transition-colors uppercase tracking-wider"
+          style={{
+            clipPath:
+              "polygon(12px 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 12px 100%, 0 50%)",
+          }}
+        >
+          Seleziona
+        </button>
+      </header>
+
+      <div className="px-6 mt-2">
+        <h1 className="text-3xl font-extrabold tracking-tight">
+          Scelta della Via
+        </h1>
+      </div>
+
+      <div className="flex-1" />
+
+      <main
+        className="w-full flex flex-col items-center justify-center px-4 pb-4 touch-none"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        <div className="relative w-[320px] h-[320px] mb-6 flex items-center justify-center cursor-grab active:cursor-grabbing">
+          {/* SFUMATURE MAGICHE DINAMICHE (Crossfade tra le vie) */}
+          {datiVie.map((via, i) => (
+            <div
+              key={via.nome}
+              className={`absolute inset-0 z-10 pointer-events-none mix-blend-screen transition-opacity duration-700 ease-in-out ${
+                indiceVia === i ? "opacity-100" : "opacity-0"
+              }`}
+              style={{
+                background: `linear-gradient(to bottom, black 40%, ${via.colore})`,
+              }}
+            />
+          ))}
+
+          {/* 4. ANELLO ESTERNO */}
+          <div
+            ref={anelloEsterno}
+            className="absolute inset-0 flex items-center justify-center text-[#060606]"
+          >
+            <svg
+              width="278"
+              height="274"
+              viewBox="0 0 278 274"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="overflow-visible"
+            >
+              <path
+                d="M278 137C278 135.754 277.059 134.785 275.869 134.646C275.038 85.8777 248.633 43.2019 209.469 19.607C209.939 18.4993 209.552 17.1977 208.5 16.5607C207.421 15.9515 206.12 16.2561 205.372 17.2254C185.693 6.25874 163.052 0 139 0C114.948 0 92.3068 6.25874 72.6276 17.2254C71.908 16.2561 70.5795 15.9238 69.5 16.5607C68.4205 17.17 68.0607 18.4716 68.5313 19.607C29.3666 43.2019 2.96157 85.8777 2.13122 134.646C0.941059 134.785 0 135.781 0 137C0 138.219 0.941059 139.215 2.13122 139.354C2.96157 188.122 29.3666 230.798 68.5313 254.393C68.0607 255.501 68.4482 256.802 69.5 257.439C70.5795 258.049 71.908 257.744 72.6276 256.775C92.3068 267.741 114.948 274 139 274C163.052 274 185.693 267.741 205.372 256.775C206.092 257.744 207.421 258.076 208.5 257.439C209.579 256.83 209.939 255.528 209.469 254.393C248.606 230.77 275.038 188.122 275.869 139.354C277.059 139.215 278 138.219 278 137ZM209.109 253.839C208.362 252.953 207.116 252.676 206.092 253.258C205.068 253.839 204.68 255.085 205.068 256.165C185.499 267.077 162.969 273.308 139 273.308C115.031 273.308 92.5283 267.077 72.9321 256.165C73.3196 255.085 72.9321 253.867 71.908 253.258C70.8839 252.648 69.6107 252.953 68.8911 253.839C29.9201 230.327 3.65352 187.901 2.82318 139.354C3.95798 139.16 4.84369 138.219 4.84369 137.028C4.84369 135.837 3.95798 134.895 2.82318 134.701C3.65352 86.1546 29.9201 43.7004 68.8911 20.2163C69.6384 21.1025 70.8839 21.3794 71.908 20.7979C72.9321 20.2163 73.3196 18.9701 72.9321 17.89C92.5006 6.97878 115.031 0.747726 139 0.747726C162.969 0.747726 185.472 6.97878 205.068 17.89C204.68 18.9701 205.068 20.1886 206.092 20.7979C207.116 21.4071 208.389 21.1025 209.109 20.2163C248.08 43.7004 274.346 86.1546 275.177 134.701C274.042 134.895 273.156 135.837 273.156 137.028C273.156 138.219 274.042 139.16 275.177 139.354C274.346 187.901 248.08 230.355 209.109 253.839Z"
+                fill="currentColor"
+              />
+            </svg>
+          </div>
+
+          {/* 3. ANELLO MEDIO-ESTERNO */}
+          <div
+            ref={anelloMedioEst}
+            className="absolute inset-0 flex items-center justify-center text-[#060606]"
+          >
+            <svg
+              width="273"
+              height="316"
+              viewBox="0 0 273 316"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="overflow-visible"
+            >
+              <path
+                d="M263.87 217.138L267.661 214.925C265.447 214.953 263.539 215.091 261.353 214.842C260.578 214.759 260.136 213.819 259.693 213.238C257.757 210.667 254.437 209.865 251.394 210.445C250.951 210.445 250.536 210.528 250.149 210.611C257.646 194.544 261.879 176.652 261.879 157.793C261.879 138.933 257.452 119.99 249.54 103.591C253.69 104.117 257.978 105.14 261.049 103.923C262.128 103.481 263.317 102.513 264.119 101.932L261.021 98.5028L266.443 100.356L273 95.7651C270.538 96.1246 268.186 96.2629 266.001 95.4056C266.858 90.7598 268.878 86.7223 271.672 83.1273L268.795 78.4538C264.23 79.3664 259.665 79.2558 255.267 77.9284C255.599 75.4949 256.733 73.5868 258.116 71.5404L251.006 75.4119L250.315 81.2745L248.599 76.7117C247.603 77.2647 246.275 77.8455 245.445 78.5368C243.122 80.5279 242.043 84.593 240.742 88.2986C218.666 55.3076 181.345 33.3505 138.935 32.5209L138.796 32.4103C142.863 29.9214 146.681 26.9072 150.194 23.5334L151.882 22.7314C150.582 21.0722 149.309 19.5512 148.202 17.9473L142.918 10.2596L144.385 15.9562C140.65 11.8911 138.464 5.4478 136.445 0C134.425 5.42015 132.24 11.8635 128.505 15.9562L129.971 10.2596L124.687 17.9473C123.58 19.5512 122.308 21.0722 121.008 22.7314L122.695 23.5334C126.209 26.9072 130.026 29.8938 134.093 32.4103L133.955 32.5209C92.6507 33.3228 56.188 54.2015 33.9175 85.7821C33.8069 85.4226 33.6685 85.0908 33.5025 84.7313C32.5066 81.7723 30.1274 79.3388 26.9459 78.924C26.2266 78.841 25.203 78.924 24.7327 78.2879C23.4324 76.5181 22.6025 74.8035 21.5235 72.8678V77.2371C21.5235 78.2603 21.2469 79.477 20.2232 79.8918C17.5397 80.998 15.4372 82.1871 14.9115 85.1184C13.3346 84.6759 11.813 84.2611 10.2638 83.9569L6.88863 83.2656L9.18484 85.8651C10.2361 87.0542 11.3427 88.1603 12.5047 89.3218C10.2361 91.2299 10.2638 93.6911 10.6234 96.5394C10.7618 97.6456 9.84881 98.4752 8.96352 99.0006L5.17339 101.213C7.3866 101.185 9.2955 101.047 11.4811 101.296C12.2557 101.379 12.6983 102.319 13.141 102.9C15.0775 105.472 18.3973 106.274 21.4405 105.693C21.8278 105.693 22.2151 105.61 22.5748 105.527C15.2158 121.456 11.0937 139.154 11.0937 157.82C11.0937 176.487 15.5478 195.706 23.5154 212.16C19.3656 211.635 15.0222 210.584 11.9514 211.828C10.8724 212.271 9.68281 213.238 8.88052 213.819L11.979 217.248L6.55665 215.395L0 219.986C2.4622 219.626 4.81374 219.488 6.99929 220.346C6.14167 224.991 4.12211 229.029 1.32793 232.624L4.20511 237.297C8.76986 236.385 13.3346 236.495 17.7334 237.823C17.4014 240.256 16.2671 242.164 14.8839 244.211L21.9938 240.339L22.6854 234.477L24.4007 239.039C25.3966 238.486 26.7246 237.906 27.5545 237.214C29.9061 235.223 30.985 231.103 32.2853 227.37C54.2791 260.222 91.4058 282.096 133.595 283.092L134.204 283.59C130.137 286.079 126.319 289.093 122.806 292.467L121.118 293.269C122.418 294.928 123.691 296.449 124.798 298.053L130.082 305.74L128.615 300.044C132.35 304.109 134.536 310.552 136.555 316C138.575 310.58 140.76 304.137 144.495 300.044L143.029 305.74L148.313 298.053C149.42 296.449 150.692 294.928 151.993 293.269L150.305 292.467C146.791 289.093 142.974 286.106 138.907 283.59L139.516 283.092C180.515 282.124 216.701 261.439 238.889 230.135C239.027 230.55 239.165 230.992 239.387 231.407C240.383 234.366 242.762 236.8 245.943 237.214C246.663 237.297 247.686 237.214 248.157 237.85C249.457 239.62 250.287 241.335 251.366 243.27V238.901C251.366 237.878 251.642 236.661 252.666 236.246C255.35 235.14 257.452 233.951 257.978 231.02C259.555 231.462 261.076 231.877 262.626 232.181L266.001 232.873L263.704 230.273C262.653 229.084 261.547 227.978 260.385 226.816C262.653 224.908 262.626 222.447 262.266 219.599C262.128 218.493 263.041 217.663 263.926 217.138H263.87ZM136.472 279.027C69.6056 279.027 15.2158 224.66 15.2158 157.82C15.2158 90.981 69.6056 36.6136 136.472 36.6136C203.339 36.6136 257.729 90.981 257.729 157.82C257.729 224.66 203.339 279.027 136.472 279.027ZM243.786 222.641C243.786 222.641 243.813 222.585 243.841 222.558C243.841 222.585 243.841 222.668 243.841 222.668C243.841 222.668 243.813 222.668 243.786 222.641ZM245.943 218.852C245.943 218.852 245.971 218.797 245.999 218.742C245.999 218.742 246.026 218.769 246.054 218.797C246.054 218.797 245.971 218.825 245.943 218.852Z"
+                fill="currentColor"
+              />
+            </svg>
+          </div>
+
+          {/* 2. ANELLO MEDIO-INTERNO */}
+          <div
+            ref={anelloMedioInt}
+            className="absolute inset-0 flex items-center justify-center text-[#060606]"
+          >
+            <svg
+              width="226"
+              height="231"
+              viewBox="0 0 226 231"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="overflow-visible"
+            >
+              <path
+                d="M213.352 169.845C221.406 154.286 226 136.679 226 117.964C226 57.3347 178.038 7.724 118.065 5.06628L113 0L107.935 5.06628C47.962 7.724 0 57.3347 0 117.964C0 136.651 4.59417 154.286 12.6478 169.845L10.9042 177.209L17.8785 178.87C37.9988 210.181 73.0916 231 113 231C152.908 231 188.001 210.181 208.121 178.87L215.096 177.209L213.352 169.845ZM113 228.232C74.0049 228.232 39.687 207.856 20.0926 177.181L21.6701 170.565L15.3877 169.07C7.36174 153.788 2.79525 136.402 2.79525 117.964C2.79525 58.7743 49.6503 10.354 108.212 7.83473L113.028 12.6518L117.843 7.83473C176.405 10.354 223.26 58.802 223.26 117.964C223.26 136.402 218.694 153.788 210.668 169.07L204.385 170.565L205.963 177.181C186.368 207.828 152.05 228.232 113.055 228.232H113Z"
+                fill="currentColor"
+              />
+            </svg>
+          </div>
+
+          {/* 1. CORE INTERNO (FISSO - NESSUNA ROTAZIONE) */}
+          <div className="absolute inset-0 flex items-center justify-center text-[#1D1D1B]">
+            <svg
+              width="188"
+              height="189"
+              viewBox="0 0 188 189"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="overflow-visible"
+            >
+              <g clipPath="url(#clip0_3967_320)">
+                <path
+                  d="M188 91.8731C188.269 101.707 187.192 111.676 184.768 121.24C182.478 129.862 178.573 138.079 173.321 145.353C165.51 156.939 155.41 166.773 143.828 174.451C136.96 178.897 129.284 181.995 121.338 183.746C118.779 184.285 116.086 184.959 113.527 185.767C99.7908 190.347 84.977 190.212 71.3753 185.228C63.6991 183.073 56.0229 180.244 48.8853 176.876C45.2492 174.99 41.8825 172.7 38.6504 170.275C28.4154 162.327 19.6618 152.763 12.7936 141.716C6.5988 132.421 2.82803 121.779 1.61599 110.598C1.07731 104.267 0.403958 97.8004 0.269287 91.4689C0.269287 77.0548 4.17473 63.0449 11.5816 50.6514C16.4297 42.1646 21.9512 34.2166 28.2807 26.9422C35.6876 17.9166 45.3839 11.0463 56.4269 7.13965C68.1432 2.55946 80.9369 0.269372 93.8653 -5.02989e-05C102.619 -0.134762 111.507 0.942929 119.857 3.50244C124.301 4.98427 128.88 6.33138 133.324 7.6785C143.963 11.4504 153.39 18.186 160.392 27.0769C166.587 34.2166 171.974 42.0299 176.553 50.2473C184.094 62.7754 188.135 77.0548 187.865 91.7384L188 91.8731ZM70.702 67.625C68.9512 71.1275 67.4699 74.3606 65.7191 77.459C63.4297 81.7697 62.4871 86.6193 63.1604 91.4689C64.2378 101.168 69.2206 109.924 76.8968 115.852C84.3037 122.183 94.404 123.934 103.562 120.701C108.679 118.95 113.123 115.582 116.355 111.272C128.88 97.531 128.341 82.9821 117.971 68.4333L116.355 70.9928C109.891 81.2309 103.292 91.4689 96.828 101.707C94.808 104.805 93.8653 104.805 91.9799 101.707C85.381 91.1995 78.9168 80.692 72.318 70.1846C71.914 69.511 71.51 68.7027 70.702 67.625ZM22.4899 140.369C44.5759 127.706 48.0773 99.6863 37.169 85.4069L8.61886 98.7434C10.1002 113.427 14.8137 127.706 22.4899 140.369ZM165.779 141.177C167.53 137.54 169.685 134.038 171.166 130.266C174.802 121.105 177.496 111.676 179.246 101.976C179.246 101.168 179.246 100.36 179.246 99.4169L151.37 86.0805C139.923 104.671 145.848 129.053 164.433 140.369C164.837 140.639 165.375 140.908 165.779 141.177ZM79.3209 180.783L81.2063 173.778C82.8223 167.716 83.4957 161.384 82.8223 155.187C82.4183 150.338 80.9369 145.623 78.7822 141.312C77.8395 139.157 75.5501 137.81 73.2607 138.348C71.2406 138.483 69.2206 138.887 67.2005 139.426C60.063 141.177 54.6762 146.97 53.3295 154.244C52.9254 157.747 53.3295 161.249 54.5415 164.482C55.8882 169.197 58.9856 173.239 63.1604 175.933C68.1432 178.627 73.6647 180.378 79.3209 180.917V180.783ZM105.851 180.244C107.063 180.513 107.467 180.648 107.736 180.648C114.47 180.109 120.934 177.415 126.052 173.104C126.321 172.7 126.725 172.43 127.264 172.161C130.9 171.218 132.112 168.254 133.189 165.291C135.882 159.633 135.478 152.897 131.977 147.778C127.802 141.986 121.069 138.483 113.931 138.483C112.18 138.214 110.564 139.157 109.891 140.773C108.544 143.198 107.467 145.892 106.524 148.452C104.1 156.939 104.235 166.099 106.659 174.586C107.602 176.472 107.198 178.897 105.582 180.378L105.851 180.244ZM33.9369 71.5317C33.5329 66.9515 32.9942 62.3713 32.7249 57.7911C32.4555 53.3456 32.9942 48.9002 34.3409 44.5894C35.553 40.2786 36.8997 36.1026 38.1117 31.7918C36.4956 32.4654 35.0143 33.4084 33.6676 34.6208C28.5501 40.1439 24.106 46.3406 20.6045 53.0762C18.3151 56.8481 16.5644 61.0242 14.5444 65.0655C11.1776 71.397 9.02287 78.4019 8.48419 85.6764L33.6676 71.6664L33.9369 71.5317ZM155.41 72.4746L179.92 86.4846C179.246 82.1739 178.169 77.9978 176.822 73.8218C172.378 62.1019 166.587 51.0555 159.45 40.6828C157.295 37.4497 154.602 34.7555 151.37 32.6001C153.39 38.9315 154.871 45.3977 155.948 51.9985C156.218 58.8688 155.948 65.7391 155.41 72.6094V72.4746ZM124.57 14.1446C124.57 14.1446 124.166 14.8182 124.166 14.9529C123.627 23.305 123.089 31.5224 122.685 39.7398C122.685 41.3563 123.089 42.9729 123.897 44.4547C127.129 50.5167 130.496 56.5787 133.862 62.506C134.401 63.3143 134.94 63.9878 135.478 64.6614C138.845 58.8688 140.731 52.4027 141.135 45.8018C141.808 39.6051 140.327 33.4084 136.96 28.2893C134.536 24.5174 132.112 20.7455 129.688 17.1083C128.341 15.4918 126.59 14.5488 124.57 14.1446ZM53.5988 64.6614C57.7736 57.387 61.4097 50.7861 65.3151 44.32C66.3925 42.434 66.7965 40.2786 66.5272 38.1233C66.1232 33.8125 65.9885 29.5017 65.7191 25.0563C65.5845 21.2843 65.3151 17.5124 65.1805 13.4711C62.7564 13.7405 60.6017 15.0876 59.3896 17.1083C58.1776 19.129 56.8309 20.8802 55.4842 22.7662C50.0974 29.367 47.404 37.8538 48.0773 46.3406C48.616 52.6721 50.5014 59.0035 53.5988 64.5267V64.6614Z"
+                  fill="currentColor"
+                />
+              </g>
+              <defs>
+                <clipPath id="clip0_3967_320">
+                  <rect width="188" height="189" fill="white" />
+                </clipPath>
+              </defs>
+            </svg>
+          </div>
+        </div>
+
+        <div className="relative w-full flex justify-center mb-6 px-2">
+          <div className="absolute bottom-0 w-[80%] h-[1px] bg-[#999999]" />
+          <span className="text-[#999999] text-[10px] relative top-[4px] bg-white px-2">
+            ▲
+          </span>
+        </div>
+
+        {/* CONTENITORE TESTI ANIMATI */}
+        <div
+          ref={contenitoreTesti}
+          className="flex flex-col items-center w-full h-[180px]"
+        >
+          <h2 className="font-sprat text-7xl tracking-[-0.07em] leading-none uppercase text-center mb-3 text-black">
+            {viaAttiva.nome}
+          </h2>
+
+          <div className="text-center w-full max-w-sm flex flex-col gap-1 px-4">
+            <p className="font-extrabold text-[15px] text-black">
+              Talento di via: {viaAttiva.talento}
+            </p>
+            <p className="text-[14px] text-gray-700 leading-tight">
+              {viaAttiva.descrizione}
+            </p>
+          </div>
+        </div>
+      </main>
+
+      {/* --------------------------------------------------- */}
+      {/* LIVELLO 2: OVERLAY TUTORIAL                         */}
+      {/* --------------------------------------------------- */}
+      <div
+        className={`absolute inset-0 z-40 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center text-white transition-opacity duration-700 ${wizardStep === 1 ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        onClick={() => setWizardStep(2)}
+      >
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+          @keyframes swipeHand {
+            0% { transform: translateX(30px); opacity: 0; }
+            30% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { transform: translateX(-30px); opacity: 0; }
+          }
+          .animate-swipe { animation: swipeHand 2s infinite ease-in-out; }
+        `,
+          }}
+        />
+
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+          stroke="currentColor"
+          className="w-16 h-16 animate-swipe mb-4"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zm-7.518-.267A8.25 8.25 0 1120.25 10.5M8.288 14.212A5.25 5.25 0 1117.25 10.5"
+          />
+        </svg>
+        <p className="text-lg font-bold text-center px-8">
+          Scorri col dito verso destra o sinistra per esplorare le Vie.
+        </p>
+      </div>
+
+      {/* --------------------------------------------------- */}
+      {/* LIVELLO 3: SCHERMATA INTRO                          */}
+      {/* --------------------------------------------------- */}
+      <div
+        className={`absolute inset-0 z-50 bg-[#FAFAFA] flex flex-col transition-opacity duration-700 ${wizardStep === 0 ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+      >
+        <header className="px-6 py-5">
+          <Logo iconOnly={false} className="h-9 w-auto text-black" />
+        </header>
+
+        <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
+          <h2 className="font-sans text-[24px] font-extrabold leading-[19.6px] tracking-normal text-black mb-4">
+            Scelta della via
+          </h2>
+          <p className="text-[15px] text-gray-600">
+            Spiegazione delle vie e a cosa servono
+          </p>
+        </div>
+
+        <div className="pb-12 px-6 flex justify-center">
+          <button
+            onClick={() => setWizardStep(1)}
+            className="w-full max-w-[280px] py-4 font-sans text-[24px] font-extrabold leading-[19.6px] tracking-normal bg-[#FFBA30] text-black transition-transform active:scale-95"
+            style={{
+              clipPath:
+                "polygon(12px 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 12px 100%, 0 50%)",
+            }}
+          >
+            Ho capito
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

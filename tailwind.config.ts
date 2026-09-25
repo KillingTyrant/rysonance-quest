@@ -14,7 +14,9 @@ export default {
     extend: {
       fontFamily: {
         sans: ["var(--font-cabinet)", ...defaultTheme.fontFamily.sans],
+        sprat: ["var(--font-sprat)"], // <--- ECCO LA MAGIA
       },
+
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
