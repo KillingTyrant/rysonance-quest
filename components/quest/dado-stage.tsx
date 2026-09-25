@@ -54,9 +54,9 @@ type DadoStageProps = {
 /**
  * "Lancia il dado": titolo, suggerimento del gesto e il d12 3D.
  *
- * Il numero lo estrae il server al rilascio del gesto; nell'attesa il dado si
- * carica verso l'alto e freme, e quando il numero arriva parte il lancio 3D che
- * atterra proprio lì. Lo stato del lancio sta nel reducer della quest: questo
+ * Il numero lo estrae il database al rilascio del gesto, tramite la server
+ * action; nell'attesa il dado si carica verso l'alto e freme, e quando il
+ * numero arriva parte il lancio 3D che atterra proprio lì. Lo stato del lancio sta nel reducer della quest: questo
  * componente traduce i gesti in eventi e gli stati in animazioni.
  *
  * Tre contenitori annidati, ognuno con un solo padrone delle trasformazioni:

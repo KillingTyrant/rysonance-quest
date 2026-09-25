@@ -1,33 +1,40 @@
 import "server-only";
 
-import { cookies } from "next/headers";
+import type { PostgrestError } from "@supabase/supabase-js";
 
-import { isValidD12Value, randomD12 } from "@/components/dice/dice-utils";
 import { getCatalog } from "@/lib/onboarding/catalog";
 import { getPersonaggio } from "@/lib/onboarding/personaggi";
+import { createClient } from "@/lib/supabase/server";
 import { isUuid } from "@/lib/utils";
 
 import { toQuestCarta } from "./carta";
+import { getQuestKey } from "./config";
 import type { LancioResult, Quest } from "./types";
 
 /**
- * ⚠️ Soluzione provvisoria: il numero della canzone vive in un cookie per
- * personaggio, finché non avrà un campo nel database. Questo modulo è l'unico
- * che lo sa — quando arriverà il campo cambiano solo `leggiNumero` e
- * `eseguiLancio`, non le rotte né i componenti.
+ * Il numero della canzone sta in `personaggio_quest.numero_dado`, sulla riga
+ * che lega il personaggio alla quest di questo deploy (`getQuestKey`). Lo
+ * estrae il database, nella RPC `lancia_dado`, e non l'app: così il client non
+ * può scegliersi il numero, e il personaggio ha lo stesso numero su ogni
+ * browser e dispositivo. L'owner la riga la può solo leggere.
  *
- * Il cookie è `httpOnly`, quindi il JavaScript della pagina non lo legge né lo
- * scrive; ma non è firmato, e chi cancella i cookie o cambia browser può
- * rilanciare. Per ora è accettato.
+ * Un personaggio senza riga per questa quest (creato prima delle quest, senza
+ * `QUEST_KEY` o per un altro evento) non ha numero e non può lanciare.
  */
-const COOKIE_PREFIX = "rq_numero_";
-const COOKIE_MAX_AGE = 60 * 60 * 24 * 90;
+async function leggiNumero(personaggioId: string): Promise<number | null> {
+  const questKey = getQuestKey();
+  if (!questKey) return null;
 
-type CookieStore = Awaited<ReturnType<typeof cookies>>;
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("personaggio_quest")
+    .select("numero_dado")
+    .eq("personaggio_id", personaggioId)
+    .eq("quest_key", questKey)
+    .maybeSingle();
 
-function leggiNumero(store: CookieStore, personaggioId: string): number | null {
-  const value = Number(store.get(COOKIE_PREFIX + personaggioId)?.value);
-  return isValidD12Value(value) ? value : null;
+  if (error) throw new Error(error.message);
+  return data?.numero_dado ?? null;
 }
 
 /**
@@ -35,56 +42,66 @@ function leggiNumero(store: CookieStore, personaggioId: string): number | null {
  * dell'utente corrente (lo decide RLS).
  */
 export async function getQuest(personaggioId: string): Promise<Quest | null> {
-  const [personaggio, catalog, store] = await Promise.all([
+  // Prima delle query: un id che non è un uuid farebbe fallire quella del
+  // numero, e la pagina mostrerebbe un errore invece del 404.
+  if (!isUuid(personaggioId)) return null;
+
+  const [personaggio, catalog, numero] = await Promise.all([
     getPersonaggio(personaggioId),
     getCatalog(),
-    cookies(),
+    leggiNumero(personaggioId),
   ]);
   if (!personaggio) return null;
 
   return {
     carta: toQuestCarta(catalog, personaggio),
-    numero: leggiNumero(store, personaggio.id),
+    numero,
   };
 }
 
 /**
- * Estrae il numero della canzone, una volta sola per personaggio: se c'è già,
- * restituisce quello. Così un doppio tap, un retry dopo un errore di rete o due
- * schede aperte danno sempre lo stesso numero.
+ * Lancia il dado: `lancia_dado` estrae il numero una volta sola per personaggio
+ * e quest, e se c'è già restituisce quello. Così un doppio tap, un retry dopo un
+ * errore di rete, due schede aperte o due dispositivi danno sempre lo stesso
+ * numero.
  *
- * L'estrazione avviene qui, sul server, e non nel browser. Scrivere il cookie
- * fa ri-renderizzare la pagina nella stessa risposta: il client deve ignorare
- * il numero che gli arriva dalle props dopo il mount.
+ * Non scrive cookie né rivalida la pagina: il numero arriva al client solo come
+ * risultato di questa action, ed è il reducer della quest a usarlo.
  */
 export async function eseguiLancio(personaggioId: unknown): Promise<LancioResult> {
   if (!isUuid(personaggioId)) {
     return { ok: false, message: "Personaggio non valido. Ricarica la pagina." };
   }
 
-  try {
-    const personaggio = await getPersonaggio(personaggioId);
-    if (!personaggio) {
-      return {
-        ok: false,
-        message: "Non troviamo il tuo personaggio: forse la sessione è scaduta. Ricarica la pagina.",
-      };
-    }
+  const questKey = getQuestKey();
+  if (!questKey) {
+    return {
+      ok: false,
+      message: "La quest di questo evento non è configurata. Avvisa gli organizzatori.",
+    };
+  }
 
-    const store = await cookies();
-    const esistente = leggiNumero(store, personaggio.id);
-    if (esistente !== null) return { ok: true, numero: esistente };
+  const supabase = await createClient();
+  const { data: numero, error } = await supabase.rpc("lancia_dado", {
+    p_personaggio_id: personaggioId,
+    p_quest_key: questKey,
+  });
 
-    const numero = randomD12();
-    store.set(COOKIE_PREFIX + personaggio.id, String(numero), {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: COOKIE_MAX_AGE,
-    });
-    return { ok: true, numero };
-  } catch {
-    return { ok: false, message: "Il dado non ha risposto. Riprova tra poco." };
+  if (error) return { ok: false, message: describeError(error) };
+
+  return { ok: true, numero };
+}
+
+function describeError(error: PostgrestError): string {
+  switch (error.code) {
+    case "PT404": // lancia_dado: personaggio inesistente, di un altro utente o
+      // senza riga per questa quest. Per chi chiama sono la stessa cosa.
+      return "Questo personaggio non partecipa alla quest di questo evento. Avvisa gli organizzatori.";
+    case "42501": // insufficient_privilege: lancia_dado senza sessione.
+      return "Sessione scaduta: accedi di nuovo per lanciare il dado.";
+    case "PGRST202":
+      return "L'app non è allineata al database. Ricarica la pagina.";
+    default:
+      return "Il dado non ha risposto. Riprova tra poco.";
   }
 }

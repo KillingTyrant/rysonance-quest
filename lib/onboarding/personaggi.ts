@@ -2,6 +2,7 @@ import "server-only";
 
 import type { PostgrestError } from "@supabase/supabase-js";
 
+import { getQuestKey } from "@/lib/quest/config";
 import { createClient } from "@/lib/supabase/server";
 import { isUuid } from "@/lib/utils";
 
@@ -115,12 +116,16 @@ export async function creaPersonaggio(
     };
   }
 
+  const questKey = getQuestKey();
   const { data: id, error } = await supabase.rpc("crea_personaggio", {
     p_name: draft.name,
     // validateDraft ha già scartato i null: qui i campi sono per forza pieni.
     p_via_key: draft.via_key!,
     p_talenti: draft.talenti,
     p_razza_key: draft.razza_key!,
+    // Senza quest configurata il parametro non va proprio mandato: la RPC lo
+    // tratta come assente e il personaggio nasce senza quest.
+    ...(questKey ? { p_quest_key: questKey } : {}),
   });
 
   if (error) return { ok: false, message: describeError(error) };
@@ -146,6 +151,10 @@ const CONSTRAINT_MESSAGES: Record<string, string> = {
   personaggi_user_id_fkey: "Il tuo account non è più valido. Accedi di nuovo.",
   personaggi_razza_key_fkey: "La razza scelta non esiste più. Ricarica la pagina.",
   personaggi_via_key_fkey: "La Via scelta non esiste più. Ricarica la pagina.",
+  // Non è una pagina vecchia ma la configurazione: `QUEST_KEY` non è nel
+  // catalogo `quest`. Ricaricare non serve.
+  personaggio_quest_quest_key_fkey:
+    "La quest di questo evento non esiste nel catalogo. Avvisa gli organizzatori.",
 };
 
 function describeError(error: PostgrestError): string {

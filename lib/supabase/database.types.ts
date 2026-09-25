@@ -96,6 +96,39 @@ export type Database = {
           },
         ]
       }
+      personaggio_quest: {
+        Row: {
+          numero_dado: number | null
+          personaggio_id: string
+          quest_key: string
+        }
+        Insert: {
+          numero_dado?: number | null
+          personaggio_id: string
+          quest_key: string
+        }
+        Update: {
+          numero_dado?: number | null
+          personaggio_id?: string
+          quest_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personaggio_quest_personaggio_id_fkey"
+            columns: ["personaggio_id"]
+            isOneToOne: false
+            referencedRelation: "personaggi"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personaggio_quest_quest_key_fkey"
+            columns: ["quest_key"]
+            isOneToOne: false
+            referencedRelation: "quest"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
       personaggio_talenti: {
         Row: {
           personaggio_id: string
@@ -125,6 +158,24 @@ export type Database = {
             referencedColumns: ["key"]
           },
         ]
+      }
+      quest: {
+        Row: {
+          description: string
+          key: string
+          name: string
+        }
+        Insert: {
+          description?: string
+          key: string
+          name: string
+        }
+        Update: {
+          description?: string
+          key?: string
+          name?: string
+        }
+        Relationships: []
       }
       razze: {
         Row: {
@@ -336,12 +387,17 @@ export type Database = {
       crea_personaggio: {
         Args: {
           p_name: string
+          p_quest_key?: string
           p_razza_key: string
           p_talenti: string[]
           p_tribu_key?: string
           p_via_key: string
         }
         Returns: string
+      }
+      lancia_dado: {
+        Args: { p_personaggio_id: string; p_quest_key: string }
+        Returns: number
       }
     }
     Enums: {

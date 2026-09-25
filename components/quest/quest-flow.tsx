@@ -26,9 +26,9 @@ import { initialQuestState, questReducer } from "./quest-machine";
  * - la card, dalle istruzioni: montata invisibile, così è pronta prima del giro.
  */
 export function QuestFlow({ carta, numero }: Quest) {
-  // Il numero delle props conta solo al mount. Dopo il lancio la server action
-  // scrive il cookie e la pagina si ri-renderizza con il numero nelle props, ma a
-  // quel punto è il reducer a sapere a che step siamo.
+  // Il numero delle props conta solo al mount: è quello già estratto, se c'è. Il
+  // numero di un lancio arriva al reducer dal risultato della server action, e
+  // un eventuale ri-render della pagina non sposta lo step.
   const [state, dispatch] = useReducer(questReducer, numero, initialQuestState);
   const { step } = state;
   const stageRef = useRef<HTMLDivElement>(null);
