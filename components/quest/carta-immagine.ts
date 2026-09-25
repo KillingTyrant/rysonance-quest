@@ -49,7 +49,7 @@ type ImmagineCartaOptions = {
   carta: QuestCarta;
   /** URL della stessa origine (il canvas altrimenti si "sporca" e non esporta). */
   illustrazione: string | null;
-  /** La `font-family` calcolata della pagina: il canvas usa lo stesso font dell'app. */
+  /** La `font-family` di Sprat (`--font-sprat`): il canvas usa lo stesso font della card. */
   fontFamily: string;
   logo: SVGSVGElement | null;
 };
@@ -72,8 +72,8 @@ export async function creaImmagineCarta({
   if (!context) throw new Error("Canvas 2D non disponibile");
 
   await Promise.all([
-    document.fonts.load(`800 200px ${fontFamily}`),
-    document.fonts.load(`700 60px ${fontFamily}`),
+    document.fonts.load(`400 200px ${fontFamily}`),
+    document.fonts.load(`400 60px ${fontFamily}`),
   ]);
 
   context.fillStyle = "#57534e";
@@ -96,14 +96,14 @@ export async function creaImmagineCarta({
   const larghezzaUtile = LARGHEZZA - MARGINE * 2;
   const nomeSize = fitFontSize(
     (size) => {
-      context.font = `800 ${size}px ${fontFamily}`;
+      context.font = `400 ${size}px ${fontFamily}`;
       return context.measureText(nome).width;
     },
     larghezzaUtile,
     260,
     96,
   );
-  context.font = `800 ${nomeSize}px ${fontFamily}`;
+  context.font = `400 ${nomeSize}px ${fontFamily}`;
   context.textAlign = "center";
   let y = MARGINE + nomeSize * 0.8;
   context.fillText(nome, LARGHEZZA / 2, y, larghezzaUtile);
@@ -111,7 +111,7 @@ export async function creaImmagineCarta({
   context.textAlign = "left";
   y += 110;
   if (carta.razza) {
-    context.font = `700 76px ${fontFamily}`;
+    context.font = `400 76px ${fontFamily}`;
     context.fillText(carta.razza, MARGINE, y, larghezzaUtile);
     y += 96;
   }

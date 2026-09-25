@@ -13,7 +13,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-sprat)", ...defaultTheme.fontFamily.serif],
+        sprat: ["var(--font-sprat)", ...defaultTheme.fontFamily.serif],
+        sans: ["var(--font-cabinet)", ...defaultTheme.fontFamily.sans],
       },
       colors: {
         background: "hsl(var(--background))",

@@ -39,7 +39,18 @@ export const viewport: Viewport = {
 };
 
 /**
- * Sprat Condensed, il font dell'intera app (utility `font-sans`, default del body).
+ * Cabinet Grotesk, il font dell'intera app (utility `font-sans`, default del body).
+ */
+const cabinetGrotesk = localFont({
+  src: "./fonts/CabinetGrotesk-Variable.woff2",
+  variable: "--font-cabinet",
+  display: "swap",
+  weight: "100 900",
+});
+
+/**
+ * Sprat Condensed, il serif display (utility `font-sprat`): solo sui titoli
+ * aspirazionali e sui nomi di lore nelle card (razze, vie, talenti).
  * Light sta su 200 perché è il peso "extralight" del design delle card razza.
  */
 const sprat = localFont({
@@ -63,7 +74,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="it" suppressHydrationWarning>
-      <body className={`${sprat.variable} font-sans antialiased`} suppressHydrationWarning>
+      <body className={`${cabinetGrotesk.variable} ${sprat.variable} font-sans antialiased`} suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

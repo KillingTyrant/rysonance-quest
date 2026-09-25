@@ -43,7 +43,7 @@ export function TalentoCard({
         disabled && "cursor-not-allowed opacity-50 hover:translate-y-0 hover:shadow",
       )}
     >
-      <span className="relative flex flex-col align-bottom h-52 w-full shrink-0 overflow-hidden bg-muted justify-end p-2">
+      <span className="relative flex flex-col align-bottom h-52 w-full shrink-0 overflow-hidden bg-muted justify-end p-2 font-sprat">
         {/* {image ? (
           <Image
             src={image}

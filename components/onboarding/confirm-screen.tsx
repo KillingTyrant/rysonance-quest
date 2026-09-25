@@ -99,7 +99,7 @@ export function ConfirmScreen({
         <Sigillo className="w-[min(68vw,17rem)]" />
 
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold leading-tight sm:text-4xl">
+          <h1 className="font-sprat text-3xl font-normal leading-tight sm:text-4xl">
             Stai per far nascere
             <span className="block">{name}</span>
           </h1>

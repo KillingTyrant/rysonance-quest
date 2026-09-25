@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 
 import { CondividiCarta } from "./condividi-carta";
 import { QUEST_COPY } from "./copy";
+import { Esagono } from "./esagono";
 
 const MOTION_OK = "(prefers-reduced-motion: no-preference)";
 const RIDOTTO = "(prefers-reduced-motion: reduce)";
@@ -32,14 +33,16 @@ type CartaPersonaggioProps = {
    * dove le card sono una lista sotto il titolo della pagina.
    */
   titolo?: "h1" | "h2";
+  /** Il numero estratto, nell'esagono sull'illustrazione. Lo passa solo la quest. */
+  numero?: number | null;
   className?: string;
 };
 
 /**
  * La card del personaggio, ultima schermata della quest e scheda dei personaggi nella
- * lobby: illustrazione della razza a
- * tutta card, nome, razza, e i due pulsanti "Condividi Personaggio" e
- * "Salva la scheda nel wallet".
+ * lobby: in alto una fascia blu notte con nome e razza, sotto l'illustrazione della
+ * razza con il numero estratto, il pulsante "Condividi Personaggio" e il badge
+ * "Aggiungi a Apple Wallet".
  *
  * Entra girandosi (sul retro c'è il simbolo Rysonance), poi una banda di luce la
  * attraversa e il nome arriva lettera per lettera. Da lì è olografica: si inclina verso il dito e il riflesso lo segue.
@@ -49,6 +52,7 @@ export function CartaPersonaggio({
   carta,
   attivo,
   titolo: Titolo = "h1",
+  numero = null,
   className,
 }: CartaPersonaggioProps) {
   const nomeId = useId();
@@ -58,6 +62,7 @@ export function CartaPersonaggio({
   const bandaRef = useRef<HTMLDivElement>(null);
   const nomeRef = useRef<HTMLHeadingElement>(null);
   const razzaRef = useRef<HTMLParagraphElement>(null);
+  const numeroRef = useRef<HTMLParagraphElement>(null);
   const azioniRef = useRef<HTMLDivElement>(null);
   const attivoPrecedenteRef = useRef(attivo);
   const inclinazioneRef = useRef<{ x: QuickTo; y: QuickTo } | null>(null);
@@ -95,7 +100,7 @@ export function CartaPersonaggio({
         }
 
         const nome = SplitText.create(nomeRef.current, { type: "words,chars" });
-        gsap
+        const entrata = gsap
           .timeline({ onComplete: olografica })
           // La dissolvenza sta sulla sezione e non sulla card: un'opacità sotto 1 su un
           // elemento `preserve-3d` lo appiattisce, e il retro smetterebbe di nascondere il fronte.
@@ -136,6 +141,13 @@ export function CartaPersonaggio({
             { opacity: 0, y: 24, stagger: 0.2, duration: 0.5, ease: "back.out(1.7)" },
             1.55,
           );
+        if (numeroRef.current) {
+          entrata.from(
+            numeroRef.current,
+            { opacity: 0, scale: 0.4, duration: 0.5, ease: "back.out(2)" },
+            1.4,
+          );
+        }
       });
 
       mm.add(RIDOTTO, () => {
@@ -192,80 +204,102 @@ export function CartaPersonaggio({
           onPointerMove={inclina}
           onPointerLeave={raddrizza}
           onPointerCancel={raddrizza}
-          className="absolute inset-0 isolate flex touch-pan-y flex-col overflow-hidden rounded-[1.75rem] bg-stone-500 text-white shadow-2xl [backface-visibility:hidden] [container-type:inline-size]"
+          className="absolute inset-0 isolate flex touch-pan-y flex-col overflow-hidden rounded-2xl bg-numero text-numero-foreground shadow-2xl [backface-visibility:hidden] [container-type:inline-size]"
         >
-          {illustrazione && (
-            <Image
-              src={illustrazione}
-              alt=""
-              fill
-              loading="eager"
-              sizes="(min-width: 448px) 408px, 90vw"
-              className="-z-10 object-cover"
-            />
-          )}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-3/5 bg-gradient-to-b from-black/70 via-black/25 to-transparent"
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-2/5 bg-gradient-to-t from-stone-100 via-stone-100/80 to-transparent"
-          />
-          <div aria-hidden className="carta-holo-iride pointer-events-none absolute inset-0" />
-          <div aria-hidden className="carta-holo-riflesso pointer-events-none absolute inset-0" />
-          <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-            {/* Parte appena fuori a sinistra (`left`, non un transform: quello è di GSAP). */}
-            <div ref={bandaRef} className="carta-holo-banda absolute inset-y-0 -left-full w-full" />
-          </div>
-
-          <div className="relative flex flex-col px-5 pt-6">
+          {/* La fascia del titolo non ha uno sfondo suo: è il blu notte della card, così
+              gli strati olografici (dichiarati dopo) ci passano sopra e il testo, con
+              `z-10`, resta sopra di loro. */}
+          <div className="relative z-10 flex flex-col px-5 pb-5 pt-6 text-center">
             {/* Il nome riempie la larghezza: la dimensione scala con la card (cqi) e
-                con il numero di lettere. Nel mockup è un serif display che il
-                progetto non ha ancora. */}
+                con il numero di lettere. Il nome è in Sprat, il serif display della
+                lore: Sprat arriva al Medium, quindi niente pesi bold. */}
             <Titolo
               id={nomeId}
               ref={nomeRef}
               data-quest-titolo
               tabIndex={-1}
               style={{ "--lettere": Math.max(carta.nome.length, 4) } as CSSProperties}
-              className="text-balance text-center text-[min(5.5rem,calc(150cqi/var(--lettere)))] font-extrabold uppercase leading-[0.9] tracking-tight outline-none [overflow-wrap:anywhere]"
+              className="text-balance text-[min(5.5rem,calc(150cqi/var(--lettere)))] font-sprat font-normal uppercase leading-[0.9] tracking-tight outline-none [overflow-wrap:anywhere]"
             >
               {carta.nome}
             </Titolo>
+            {/* Sottotitolo provvisorio: per ora la sola razza. */}
             {carta.razza && (
-              <p ref={razzaRef} className="mt-5 text-2xl font-extrabold">
+              <p ref={razzaRef} className="mt-3 text-sm leading-snug">
                 {carta.razza}
               </p>
             )}
           </div>
 
-          <div
-            ref={azioniRef}
-            className="relative mt-auto flex flex-col items-center gap-3 px-5 pb-6"
-          >
-            <div className="w-full max-w-72">
-              <CondividiCarta
-                carta={carta}
-                illustrazione={illustrazione?.src ?? null}
-                className="w-full"
+          <div className="relative flex flex-1 flex-col bg-stone-500">
+            {illustrazione && (
+              <Image
+                src={illustrazione}
+                alt=""
+                fill
+                loading="eager"
+                sizes="(min-width: 448px) 432px, 100vw"
+                className="object-cover"
               />
-            </div>
-            {/* `<a>` e non `<Link>`: la risposta è un download `.pkpass`, e su iOS la
-                schermata "Aggiungi" si apre solo da una navigazione vera. */}
-            <a
-              href={`/api/personaggi/${carta.personaggioId}/pkpass`}
-              aria-label={QUEST_COPY.carta.walletLabel(carta.nome)}
-              className="rounded-sm text-sm font-semibold text-stone-900 underline underline-offset-4 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            )}
+
+            {numero !== null && (
+              <p
+                ref={numeroRef}
+                className="absolute right-4 top-4 z-10 grid place-items-center text-2xl [&>*]:[grid-area:1/1]"
+              >
+                <Esagono />
+                <span className="font-extrabold leading-none tabular-nums text-numero-foreground">
+                  <span className="sr-only">{QUEST_COPY.carta.numero} </span>
+                  {numero}
+                </span>
+              </p>
+            )}
+
+            <div
+              ref={azioniRef}
+              className="relative z-10 mt-auto flex flex-col items-center gap-3 px-5 pb-6"
             >
-              {QUEST_COPY.carta.wallet}
-            </a>
+              <div className="w-full max-w-72">
+                <CondividiCarta
+                  carta={carta}
+                  illustrazione={illustrazione?.src ?? null}
+                  className="w-full"
+                />
+              </div>
+              {/* `<a>` e non `<Link>`: la risposta è un download `.pkpass`, e su iOS la
+                  schermata "Aggiungi" si apre solo da una navigazione vera. Il badge è
+                  l'SVG ufficiale Apple in italiano: le linee guida chiedono di usare solo
+                  quello, senza ridisegnarlo, deformarlo, coprirlo o aggiungergli effetti
+                  (per questo sta sopra gli strati olografici). */}
+              <a
+                href={`/api/personaggi/${carta.personaggioId}/pkpass`}
+                aria-label={QUEST_COPY.carta.walletLabel(carta.nome)}
+                className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              >
+                <Image
+                  src="/IT_Add_to_Apple_Wallet_RGB_101821.svg"
+                  alt=""
+                  width={111}
+                  height={35}
+                  unoptimized
+                  className="h-10 w-auto"
+                />
+              </a>
+            </div>
+          </div>
+
+          <div aria-hidden className="carta-holo-iride pointer-events-none absolute inset-0" />
+          <div aria-hidden className="carta-holo-riflesso pointer-events-none absolute inset-0" />
+          <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+            {/* Parte appena fuori a sinistra (`left`, non un transform: quello è di GSAP). */}
+            <div ref={bandaRef} className="carta-holo-banda absolute inset-y-0 -left-full w-full" />
           </div>
         </div>
 
         <div
           aria-hidden
-          className="absolute inset-0 flex items-center justify-center rounded-[1.75rem] bg-stone-900 text-white shadow-2xl [backface-visibility:hidden] [transform:rotateY(180deg)]"
+          className="absolute inset-0 flex items-center justify-center rounded-2xl bg-numero text-numero-foreground shadow-2xl [backface-visibility:hidden] [transform:rotateY(180deg)]"
         >
           <Logo className="h-auto w-24" />
         </div>

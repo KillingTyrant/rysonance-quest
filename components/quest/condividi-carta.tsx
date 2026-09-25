@@ -46,7 +46,9 @@ export function CondividiCarta({ carta, illustrazione, className }: CondividiCar
     creaImmagineCarta({
       carta,
       illustrazione,
-      fontFamily: getComputedStyle(document.body).fontFamily,
+      // Il nome della famiglia generato da next/font sta nella variabile che il
+      // root layout mette sul body.
+      fontFamily: getComputedStyle(document.body).getPropertyValue("--font-sprat").trim(),
       logo: logoRef.current,
     })
       .then((blob) => {

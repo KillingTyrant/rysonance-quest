@@ -31,8 +31,10 @@ export const QUEST_COPY = {
     condividi: "Condividi Personaggio",
     condividiTitolo: (nome: string) => `${nome} · Rysonance`,
     condividiTesto: "Il mio eroe per la quest di Prince Doji.",
-    wallet: "Salva la scheda nel wallet",
-    walletLabel: (nome: string) => `Salva la scheda di ${nome} in Apple Wallet`,
+    /** Letto dagli screen reader prima del numero nell'esagono. */
+    numero: "Il tuo numero:",
+    // Comincia con il testo del badge Apple, così il nome accessibile contiene quello visibile.
+    walletLabel: (nome: string) => `Aggiungi a Apple Wallet la scheda di ${nome}`,
   },
   caricamento: {
     rysonance: "Il tuo eroe è pronto…",

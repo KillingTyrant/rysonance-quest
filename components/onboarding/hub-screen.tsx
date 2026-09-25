@@ -108,7 +108,7 @@ export function HubScreen({
         <div className="absolute inset-0" />
       </div>
 
-      <h1 className="text-4xl font-bold">Genesi dell&apos;eroe</h1>
+      <h1 className="font-sprat text-4xl font-normal">Genesi dell&apos;eroe</h1>
 
       <ol className="flex flex-col gap-8 mt-4">
         {WIZARD_GROUPS.map((group) => {

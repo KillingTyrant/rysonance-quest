@@ -102,7 +102,13 @@ export function QuestFlow({ carta, numero }: Quest) {
 
         {(step === "istruzioni" || step === "carta") && (
           <Schermata attiva={step === "carta"}>
-            <CartaPersonaggio carta={carta} attivo={step === "carta"} />
+            {/* `-mx-3`: la card esce dal margine della colonna e arriva quasi ai bordi. */}
+            <CartaPersonaggio
+              carta={carta}
+              numero={state.numero}
+              attivo={step === "carta"}
+              className="-mx-3"
+            />
           </Schermata>
         )}
       </div>

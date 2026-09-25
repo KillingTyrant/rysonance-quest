@@ -100,7 +100,7 @@ export function ViaStep({ catalog, draft, onChange }: StepProps) {
                     <span aria-hidden className="text-[0.55rem] text-muted-foreground">
                       ▲
                     </span>
-                    <h4 className="w-full text-4xl font-black uppercase tracking-tight sm:text-5xl">
+                    <h4 className="w-full font-sprat text-4xl font-normal uppercase tracking-tight sm:text-5xl">
                       {via.name}
                     </h4>
                     <div aria-hidden className="mt-1 h-px w-full bg-border" />

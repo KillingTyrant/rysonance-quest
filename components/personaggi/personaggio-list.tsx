@@ -62,7 +62,7 @@ export function PersonaggioListSkeleton() {
       {[0, 1, 2].map((index) => (
         <div
           key={index}
-          className="aspect-[5/8] animate-pulse rounded-[1.75rem] bg-muted shadow"
+          className="aspect-[5/8] animate-pulse rounded-2xl bg-muted shadow"
         />
       ))}
     </div>

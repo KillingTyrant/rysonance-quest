@@ -76,7 +76,7 @@ export function RazzaCard({
                 razza lunga esce dalla card sul telefono. */}
             <span
               className={cn(
-                "uppercase leading-none tracking-[-0.08em] text-white",
+                "font-sprat uppercase leading-none tracking-[-0.08em] text-white",
                 selected
                   ? "font-extralight text-6xl sm:text-8xl lg:text-[120px]"
                   : "text-right font-normal text-4xl sm:text-5xl lg:text-[72px]",

@@ -61,7 +61,7 @@ export function SignUpForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="border-0">
         <CardHeader>
-          <CardTitle className="text-5xl font-bold">Di vuoto e draghi</CardTitle>
+          <CardTitle className="font-sprat text-5xl font-normal">Di vuoto e draghi</CardTitle>
           <CardDescription className="text-xl">
             Registrati e crea un eroe di Rysonance per completare la quest di Prince Doji e ottenere la ricompensa.
           </CardDescription>
