@@ -1,5 +1,17 @@
 {
+  "name": "rysonance-quest",
+  "description": "Web app di Rysonance RPG per le quest dal vivo: creazione del personaggio, lancio del D12 in 3D e scheda condivisibile.",
   "private": true,
+  "license": "UNLICENSED",
+  "homepage": "https://quest.rysonancerpg.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KillingTyrant/rysonance.git"
+  },
+  "bugs": "https://github.com/KillingTyrant/rysonance/issues",
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
