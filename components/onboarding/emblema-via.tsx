@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import { cn } from "@/lib/utils";
+
 /** Il lato del riquadro su cui sono disegnati gli anelli, in px. */
 const LATO = 320;
 
@@ -48,11 +50,12 @@ function larghezza(width: number) {
 /**
  * L'emblema della scelta della Via: tre anelli che girano intorno a un nucleo
  * fisso. I `children` stanno sopra gli anelli: lo step li usa per le
- * sfumature di colore delle vie.
+ * sfumature di colore delle vie. La larghezza la decide chi lo usa, con
+ * `className`: l'emblema è quadrato e i livelli scalano con lui.
  */
-export function EmblemaVia({ children }: { children?: ReactNode }) {
+export function EmblemaVia({ className, children }: { className?: string; children?: ReactNode }) {
   return (
-    <div aria-hidden className="relative flex aspect-square w-80 max-w-full items-center justify-center">
+    <div aria-hidden className={cn("relative flex aspect-square items-center justify-center", className)}>
       {children}
 
       {ANELLI.map((anello) => (

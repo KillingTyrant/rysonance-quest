@@ -1,7 +1,6 @@
+import { safeNextPath } from "@/lib/auth/next";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse, type NextRequest } from "next/server";
-
-const DEFAULT_NEXT = "/onboarding";
 
 function errorRedirect(origin: string, message: string) {
   return NextResponse.redirect(
@@ -13,12 +12,7 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
 
-  // Solo path relativi: evita che un `next` manipolato diventi un open redirect.
-  const nextParam = searchParams.get("next");
-  const next =
-    nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//")
-      ? nextParam
-      : DEFAULT_NEXT;
+  const next = safeNextPath(searchParams.get("next"));
 
   // Il provider annulla il flusso (es. consenso negato) rimandando qui con un errore.
   const providerError =

@@ -1,5 +1,6 @@
 "use client";
 
+import { nextFromLocation } from "@/lib/auth/next";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
@@ -39,10 +40,11 @@ export function LoginForm({
         password,
       });
       if (error) throw error;
-      // Update this route to redirect to an authenticated route. The user already has an active session.
+      // Chi arriva con `?next=` (lo staff, rimandato qui dal proxy) torna lì;
+      // tutti gli altri vanno all'onboarding.
       // TODO: verificare se l'utente ha già completato la prima creazione personaggio
       // Se sì, reindirizzare a /lobby, altrimenti a /onboarding
-      router.push("/onboarding");
+      router.push(nextFromLocation());
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {

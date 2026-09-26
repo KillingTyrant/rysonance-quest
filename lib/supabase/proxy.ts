@@ -14,6 +14,11 @@ function isPublicPath(pathname: string): boolean {
   );
 }
 
+/** L'area dello staff: senza sessione si va al login, e poi si torna qui. */
+function isStaffPath(pathname: string): boolean {
+  return pathname === "/staff" || pathname.startsWith("/staff/");
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -59,7 +64,18 @@ export async function updateSession(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const user = data?.claims;
 
-  if (!user && !isPublicPath(request.nextUrl.pathname)) {
+  const { pathname, search } = request.nextUrl;
+  if (!user && isStaffPath(pathname)) {
+    // Lo staff apre lo scanner o un pass da un link diretto: il login deve
+    // riportarlo lì, non all'onboarding dei giocatori.
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth/login";
+    url.search = "";
+    url.searchParams.set("next", pathname + search);
+    return NextResponse.redirect(url);
+  }
+
+  if (!user && !isPublicPath(pathname)) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone();
     url.pathname = "/";

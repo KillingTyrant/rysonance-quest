@@ -1,5 +1,6 @@
 "use client";
 
+import { nextFromLocation } from "@/lib/auth/next";
 import { createClient } from "@/lib/supabase/client";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -30,7 +31,7 @@ function GoogleLogo() {
 }
 
 export function GoogleSignInButton({
-  next = "/onboarding",
+  next,
   className,
   label = "Continua con Google",
   showLogo = false,
@@ -38,6 +39,7 @@ export function GoogleSignInButton({
   size,
   buttonClassName,
 }: {
+  /** Dove tornare dopo il login. Senza, vale il `?next=` della pagina, poi /onboarding. */
   next?: string;
   className?: string;
   /** Testo del bottone: la home usa "Sign up with Google", le form di auth il default. */
@@ -61,7 +63,7 @@ export function GoogleSignInButton({
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next ?? nextFromLocation())}`,
       },
     });
 

@@ -19,6 +19,7 @@ import {
   problemsForStep,
   stepIndex,
   WIZARD_STEPS,
+  type StepDef,
   type StepId,
 } from "@/lib/onboarding/steps";
 import type { Catalog, PersonaggioDraft } from "@/lib/onboarding/types";
@@ -27,6 +28,7 @@ import {
   TALENTI_DA_SCEGLIERE,
   validateDraft,
 } from "@/lib/onboarding/validate";
+import { cn } from "@/lib/utils";
 
 import { ConfirmScreen } from "./confirm-screen";
 import { GroupIntro } from "./group-intro";
@@ -243,6 +245,7 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
 
   const step = view.step;
   const Step = STEP_COMPONENTS[step];
+  const { schermoIntero }: StepDef = WIZARD_STEPS[stepIndex(step)];
   const position = stepPositionInGroup(step);
   const missing = problemsForStep(problems, step).map((problem) => problem.label);
 
@@ -263,7 +266,7 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
       <div
         ref={viewRef}
         tabIndex={-1}
-        className="flex w-full flex-col outline-none"
+        className={cn("flex w-full flex-col outline-none", schermoIntero && "flex-1")}
       >
         <header className="flex flex-col gap-1">
           <h1 className="text-4xl font-bold">
@@ -278,7 +281,12 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
         </header>
 
         {/* <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]"> */}
-        <div className="flex flex-col">
+        {/*
+          A schermo intero lo step prende l'altezza che resta sotto l'header e
+          "Indietro" scende in fondo. L'altezza viene da `min-h-dvh` del layout:
+          su iOS è quella visibile, barre di Safari escluse.
+        */}
+        <div className={cn("flex flex-col", schermoIntero && "flex-1")}>
           <div role="status" aria-live="polite">
             {notice && (
               <p className="rounded-xl border bg-secondary/40 p-3 text-sm text-muted-foreground">
@@ -313,7 +321,12 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
             </NavAction>
           )}
 
-          <nav className="flex flex-wrap items-center justify-center gap-3 border-t pt-6">
+          <nav
+            className={cn(
+              "flex flex-wrap items-center justify-center gap-3 border-t pt-6",
+              schermoIntero && "mt-auto pb-4",
+            )}
+          >
             {position && (
               <Link
                 href="#"

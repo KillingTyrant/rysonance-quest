@@ -198,6 +198,21 @@ export type Database = {
         }
         Relationships: []
       }
+      staff: {
+        Row: {
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       talenti: {
         Row: {
           description: string
@@ -384,6 +399,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      conta_personaggi: {
+        Args: never
+        Returns: {
+          personaggi_con_pass: number
+          personaggi_nel_wallet: number
+          personaggi_totali: number
+        }[]
+      }
       crea_personaggio: {
         Args: {
           p_name: string
@@ -395,10 +418,12 @@ export type Database = {
         }
         Returns: string
       }
+      is_staff: { Args: never; Returns: boolean }
       lancia_dado: {
         Args: { p_personaggio_id: string; p_quest_key: string }
         Returns: number
       }
+      scansiona_pass: { Args: { p_serial: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never
