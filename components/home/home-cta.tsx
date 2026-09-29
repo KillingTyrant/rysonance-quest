@@ -4,9 +4,13 @@ import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 
-/** Pillola scura della home: stessa forma per Google e per il rientro in lobby. */
+/**
+ * Pillola scura della home: stessa forma per Google e per il rientro in lobby.
+ * Larghezza fissa e non dal testo, così non cambia quando l'etichetta diventa
+ * "Reindirizzamento...".
+ */
 const PILL =
-  "h-14 w-full rounded-full bg-[#272727] text-base font-bold text-[#f6f6f6] hover:bg-[#3a3a3a] active:bg-[#272727] flex flex-row";
+  "h-11 w-[13.5rem] rounded-full bg-[#272727] text-base font-bold text-[#f6f6f6] hover:bg-[#3a3a3a] active:bg-[#272727] flex flex-row";
 
 export async function HomeCta() {
   const supabase = await createClient();
@@ -30,15 +34,16 @@ export async function HomeCta() {
   return (
     <div className="flex w-full max-w-xs flex-col items-center gap-4 pt-4">
       <GoogleSignInButton
-        className="w-full"
+        className="w-full items-center"
         label="Registrati con Google"
         showLogo
         variant="default"
-        buttonClassName={PILL}
+        // Icona più grande del `size-4` di base del Button, come nel mockup.
+        buttonClassName={`${PILL} [&_svg]:size-[22px]`}
       />
       <Link
         href="/auth/sign-up"
-        className="text-sm underline underline-offset-4 opacity-70 hover:opacity-100"
+        className="text-sm font-medium underline underline-offset-4 opacity-70 hover:opacity-100"
       >
         Registrati via mail
       </Link>
@@ -48,5 +53,5 @@ export async function HomeCta() {
 
 /** Stesso ingombro del blocco vero, così la pagina non salta quando arriva la sessione. */
 export function HomeCtaFallback() {
-  return <div className="h-[6.25rem] w-full max-w-xs" />;
+  return <div className="h-24 w-full max-w-xs" />;
 }

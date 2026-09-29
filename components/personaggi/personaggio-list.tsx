@@ -28,13 +28,7 @@ export async function PersonaggioList() {
   if (personaggi.length === 0) {
     return (
       <div className="flex flex-col items-start gap-4 rounded-xl border bg-card p-8 shadow">
-        <div className="flex flex-col gap-1">
-          <h2 className="font-semibold">Nessun personaggio</h2>
-          <p className="text-sm text-muted-foreground">
-            Non hai ancora creato nessun personaggio. Il wizard richiede un paio di
-            minuti.
-          </p>
-        </div>
+        <h2 className="font-semibold">Nessun personaggio</h2>
         <Button asChild variant="ticket" className="w-full">
           <Link href="/onboarding">Crea il primo personaggio</Link>
         </Button>

@@ -1,6 +1,8 @@
-export async function Footer() {
+import { cn } from "@/lib/utils";
+
+export async function Footer({ className }: { className?: string }) {
     return (
-        <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs bg-card/60 backdrop-blur-sm gap-4 h-6">
+        <footer className={cn("w-full flex items-center justify-center border-t mx-auto text-center text-xs bg-card/60 backdrop-blur-sm gap-4 h-6", className)}>
             <p>&copy; Rysonance 2026</p>
             <a
                 href="https://www.iubenda.com/privacy-policy/62133351"

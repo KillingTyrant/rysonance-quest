@@ -38,13 +38,7 @@ async function StaffContent() {
       return (
         <div className="flex flex-col gap-8 pb-8">
           <header className="flex flex-col items-center gap-6 text-center">
-            <div className="flex flex-col gap-1">
-              <h1 className="text-3xl font-bold">Staff</h1>
-              <p className="text-muted-foreground">
-                Scansiona i pass dei giocatori e tieni d&apos;occhio i numeri
-                dell&apos;evento.
-              </p>
-            </div>
+            <h1 className="text-3xl font-bold">Staff</h1>
             <Button asChild variant="ticket">
               <Link href={STAFF_SCANSIONA}>Scansiona un pass</Link>
             </Button>

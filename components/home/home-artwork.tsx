@@ -22,6 +22,12 @@ import voidMonster from "../../assets/layout/VoidMonster.webp";
  * Niente fondo né sfumatura: il bordo frastagliato dei denti è trasparente e si
  * apre direttamente sul fondo chiaro della pagina, quindi l'immagine è ancorata
  * in basso e il ritaglio mangia la parte alta.
+ *
+ * Su mobile l'altezza segue la larghezza (`100vw + 3.5rem`): con l'immagine
+ * ancorata in basso è l'unico modo perché l'occhio principale cada sempre alla
+ * stessa distanza dal bordo alto, con il logo nella fascia blu subito sopra.
+ * Un'altezza in `svh` lo spostava a seconda del rapporto dello schermo, fino a
+ * farlo finire sotto il logo.
  */
 // const placeholder = voidMonster.blurDataURL?.startsWith("data:image/")
 //   ? (voidMonster.blurDataURL as `data:image/${string}`)
@@ -29,7 +35,7 @@ import voidMonster from "../../assets/layout/VoidMonster.webp";
 
 export function HomeArtwork() {
   return (
-    <div className="relative h-[46svh] min-h-[280px] w-full overflow-hidden sm:h-[52svh]">
+    <div className="relative h-[calc(100vw+3.5rem)] min-h-[280px] w-full overflow-hidden sm:h-[52svh]">
       <Image
         src={voidMonster}
         alt=""
@@ -43,7 +49,7 @@ export function HomeArtwork() {
 
       <Logo
         iconOnly={false}
-        className="absolute left-1/2 top-8 h-10 w-auto -translate-x-1/2 text-white sm:top-10 sm:h-10"
+        className="absolute left-1/2 top-10 h-10 w-auto -translate-x-1/2 text-white"
       />
     </div>
   );

@@ -1,37 +1,39 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import { Plus } from "lucide-react";
 
 import {
   PersonaggioList,
   PersonaggioListSkeleton,
 } from "@/components/personaggi/personaggio-list";
 import { HeaderAnimation } from "@/components/personaggi/header-animation";
-import { Button } from "@/components/ui/button";
 
 export const metadata = {
-  title: "I tuoi personaggi · Rysonance",
+  title: "I tuoi eroi · Rysonance",
 };
 
 export default function LobbyPage() {
   return (
     <div className="flex w-full flex-col gap-8">
       <HeaderAnimation>
-        <header className="flex flex-wrap items-end justify-between gap-4">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-4xl font-bold">I tuoi personaggi</h1>
-            <p className="text-muted-foreground">
-              Tutti i personaggi che hai creato con il wizard.
-            </p>
-          </div>
-          <Button asChild variant="ticketSecondary">
-            <Link href="/onboarding">Crea un personaggio</Link>
-          </Button>
-        </header>
+        <h1 className="text-4xl font-bold">I tuoi eroi</h1>
       </HeaderAnimation>
 
       <Suspense fallback={<PersonaggioListSkeleton />}>
         <PersonaggioList />
       </Suspense>
+
+      {/* Fisso a 8px dal bordo destro e da quello basso, sopra la lista mentre si
+          scorre. `fixed` si aggancia al viewport solo finché nessun antenato ha un
+          `transform`: regge perché il template esclude la lobby dalla transizione
+          d'ingresso. Lo spazio per non coprire il footer lo lascia il layout. */}
+      <Link
+        href="/onboarding"
+        className="fixed bottom-2 right-2 z-40 inline-flex h-8 items-center gap-2 rounded-full border border-foreground bg-background px-6 text-xs font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        Crea nuovo eroe
+        <Plus aria-hidden className="size-3.5" />
+      </Link>
     </div>
   );
 }

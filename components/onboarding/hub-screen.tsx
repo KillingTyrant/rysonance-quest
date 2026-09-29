@@ -70,8 +70,9 @@ type HubScreenProps = {
  * La hub "Genesi dell'eroe": lo stato di avanzamento come lista di
  * macro-passi. Le righe bloccate si sbloccano completando le precedenti;
  * quelle completate restano cliccabili per rivedere le scelte (ripassando
- * dall'intro). Qui si scrive anche il nome, e la CTA salva l'eroe: si
- * abilita solo quando tutti i macro-passi sono completi e il nome è valido.
+ * dall'intro). Il campo del nome compare solo quando tutti i macro-passi
+ * sono completi, scelti a mano o con l'eroe random; la CTA salva l'eroe e si
+ * abilita quando c'è anche un nome valido.
  */
 export function HubScreen({
   catalog,
@@ -108,7 +109,7 @@ export function HubScreen({
         <div className="absolute inset-0" />
       </div>
 
-      <h1 className="font-sprat text-4xl font-normal">Genesi dell&apos;eroe</h1>
+      <h1 className="text-4xl font-extrabold">Genesi dell&apos;eroe</h1>
 
       <ol className="flex flex-col gap-8 mt-4">
         {WIZARD_GROUPS.map((group) => {
@@ -137,9 +138,14 @@ export function HubScreen({
                   qui era quasi invisibile (bianco su muted in chiaro, scuro su
                   muted in scuro), e il quadrato sembrava senza bordo.
                 */}
+                {/* Da completato il quadrato cresce: 56px contro i 48 di quello
+                    attivo e di quello bloccato. `mx-1` fa occupare anche a questi
+                    56px di larghezza: i quadrati restano centrati sullo stesso asse
+                    e le etichette allineate fra loro. */}
                 <span
                   className={cn(
-                    "relative isolate flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-sm",
+                    "relative isolate flex shrink-0 items-center justify-center overflow-hidden rounded-sm",
+                    isDone ? "size-14" : "size-12 mx-1",
                     image
                       ? isDone
                         ? "text-white"
@@ -157,7 +163,7 @@ export function HubScreen({
                         src={image}
                         alt=""
                         fill
-                        sizes="3rem"
+                        sizes="3.5rem"
                         // Icone quasi quadrate (60×56): il ritaglio toglie
                         // solo qualche pixel ai lati.
                         className="-z-10 object-cover rounded-xl"
@@ -206,7 +212,7 @@ export function HubScreen({
                 */}
             <span
               className={cn(
-                "flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-primary text-white"
+                "flex size-14 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-primary text-white"
               )}
             >
               {/* random icon */}
@@ -223,21 +229,23 @@ export function HubScreen({
       </ol>
 
       <div className="mt-auto flex flex-col gap-3 pt-6 justify-center items-center">
-        <div className="flex flex-col gap-2 w-full">
-          <Label htmlFor="nome-personaggio" className="text-white font-bold text-xl">Nome dell&apos;eroe</Label>
-          <Input
-            id="nome-personaggio"
-            value={draft.name}
-            maxLength={NAME_MAX_LENGTH}
-            autoComplete="off"
-            placeholder="Es. Aurel"
-            disabled={pending}
-            aria-invalid={draft.name.length > 0 && nameProblems.length > 0}
-            aria-describedby={nameProblems.length > 0 ? "nome-personaggio-hint" : undefined}
-            onChange={(event) => onNameChange(event.target.value)}
-            className="w-full bg-primary text-background rounded-md"
-          />
-        </div>
+        {allComplete && (
+          <div className="flex flex-col gap-2 w-full">
+            <Label htmlFor="nome-personaggio" className="text-white font-bold text-xl">Nome dell&apos;eroe</Label>
+            <Input
+              id="nome-personaggio"
+              value={draft.name}
+              maxLength={NAME_MAX_LENGTH}
+              autoComplete="off"
+              placeholder="Es. Aurel"
+              disabled={pending}
+              aria-invalid={draft.name.length > 0 && nameProblems.length > 0}
+              aria-describedby={nameProblems.length > 0 ? "nome-personaggio-hint" : undefined}
+              onChange={(event) => onNameChange(event.target.value)}
+              className="w-full bg-primary text-background rounded-md"
+            />
+          </div>
+        )}
 
         {saveError && (
           <div

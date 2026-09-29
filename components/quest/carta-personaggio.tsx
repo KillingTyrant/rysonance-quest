@@ -21,6 +21,20 @@ const INCLINAZIONE_X = 7;
 
 type QuickTo = ReturnType<typeof gsap.quickTo>;
 
+/**
+ * Colore della card per razza, per chiave del DB come `CATALOG_IMAGES.razze`. Fisso
+ * e non un token del tema: è il colore della razza, uguale ovunque. Una razza senza
+ * colore resta sul blu notte di `--numero`.
+ */
+const COLORI_RAZZA: Record<string, string | undefined> = {
+  umani: "#1E1E39",
+  nani: "#1E1E39",
+  elfi: "#112E29",
+  orchi: "#350C0C",
+  gata_ari: "#2A0B31",
+  ulu_ari: "#0B312D",
+};
+
 type CartaPersonaggioProps = {
   carta: QuestCarta;
   /**
@@ -40,7 +54,7 @@ type CartaPersonaggioProps = {
 
 /**
  * La card del personaggio, ultima schermata della quest e scheda dei personaggi nella
- * lobby: in alto una fascia blu notte con nome e razza, sotto l'illustrazione della
+ * lobby: in alto una fascia nel colore della razza con nome e razza, sotto l'illustrazione della
  * razza con il numero estratto, il pulsante "Condividi Personaggio" e il badge
  * "Aggiungi a Apple Wallet".
  *
@@ -68,6 +82,7 @@ export function CartaPersonaggio({
   const inclinazioneRef = useRef<{ x: QuickTo; y: QuickTo } | null>(null);
 
   const illustrazione = CATALOG_IMAGES.razze[carta.razzaKey];
+  const colore = COLORI_RAZZA[carta.razzaKey];
 
   const { contextSafe } = useGSAP(
     () => {
@@ -200,13 +215,15 @@ export function CartaPersonaggio({
           ref={frontRef}
           // Valori di partenza delle variabili dell'effetto olografico, così GSAP ha
           // qualcosa da cui interpolare (vedi `.carta-holo-*` in globals.css).
-          style={{ "--px": "50%", "--py": "30%", "--holo": 0 } as CSSProperties}
+          style={
+            { "--px": "50%", "--py": "30%", "--holo": 0, backgroundColor: colore } as CSSProperties
+          }
           onPointerMove={inclina}
           onPointerLeave={raddrizza}
           onPointerCancel={raddrizza}
           className="absolute inset-0 isolate flex touch-pan-y flex-col overflow-hidden rounded-2xl bg-numero text-numero-foreground shadow-2xl [backface-visibility:hidden] [container-type:inline-size]"
         >
-          {/* La fascia del titolo non ha uno sfondo suo: è il blu notte della card, così
+          {/* La fascia del titolo non ha uno sfondo suo: è il colore della card, così
               gli strati olografici (dichiarati dopo) ci passano sopra e il testo, con
               `z-10`, resta sopra di loro. */}
           <div className="relative z-10 flex flex-col px-5 pb-5 pt-6 text-center">
@@ -299,6 +316,7 @@ export function CartaPersonaggio({
 
         <div
           aria-hidden
+          style={{ backgroundColor: colore }}
           className="absolute inset-0 flex items-center justify-center rounded-2xl bg-numero text-numero-foreground shadow-2xl [backface-visibility:hidden] [transform:rotateY(180deg)]"
         >
           <Logo className="h-auto w-24" />
