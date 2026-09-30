@@ -12,6 +12,8 @@ export default function ProtectedLayout({
     <main className="min-h-dvh flex flex-col items-center pb-[env(safe-area-inset-bottom)]">
       <div className="flex-1 w-full flex flex-col items-center">
         <Nav hideAuthButton={true} sticky />
+        {/* Niente `px-gutter` qui: i margini li mette ogni schermata del wizard,
+            perché la hub ha lo sfondo a tutta larghezza. */}
         <div className="flex-1 w-full flex flex-col max-w-5xl">
           {children}
         </div>

@@ -22,10 +22,9 @@ export function GroupIntro({ group, disabled, onContinue, onBack }: GroupIntroPr
         <p className="text-muted-foreground">{group.introDescription}</p>
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col items-center gap-3">
         <Button
           variant="ticket"
-          className="w-full"
           disabled={disabled}
           onClick={onContinue}
         >

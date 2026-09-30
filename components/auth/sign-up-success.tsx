@@ -29,7 +29,7 @@ export function SignUpSuccess({
               direttamente alla creazione del tuo eroe. Se non la trovi, controlla
               anche la cartella spam.
             </p>
-            <Button asChild variant="ticket" className="w-full">
+            <Button asChild variant="ticket" className="self-center">
               <Link href="/auth/login">Accedi</Link>
             </Button>
           </div>

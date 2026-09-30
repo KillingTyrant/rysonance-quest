@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 
 /**
- * Pillola scura della home: stessa forma per Google e per il rientro in lobby.
- * Larghezza fissa e non dal testo, così non cambia quando l'etichetta diventa
- * "Reindirizzamento...".
+ * Pillola scura di "Registrati con Google", come nel mockup: resta fuori dalla
+ * CTA standard. Larghezza fissa e non dal testo, così non cambia quando
+ * l'etichetta diventa "Reindirizzamento...". `min-w-0 px-0` tolgono il minimo di
+ * 240px e il padding della misura standard del Button; `font-medium` è il peso
+ * dell'etichetta nel mockup. L'icona è più grande del `size-4` di base.
  */
 const PILL =
-  "h-11 w-[13.5rem] rounded-full bg-[#272727] text-base font-bold text-[#f6f6f6] hover:bg-[#3a3a3a] active:bg-[#272727] flex flex-row";
+  "h-11 w-[13.5rem] min-w-0 px-0 rounded-full bg-[#272727] text-base font-medium text-[#f6f6f6] hover:bg-[#3a3a3a] active:bg-[#272727] [&_svg]:size-[22px]";
 
 export async function HomeCta() {
   const supabase = await createClient();
@@ -21,7 +23,7 @@ export async function HomeCta() {
   if (user) {
     return (
       <div className="flex w-full max-w-xs flex-col items-center gap-4 pt-4">
-        <Button asChild variant="default" className={PILL} showDots={false}>
+        <Button asChild variant="ticket">
           <Link href="/lobby">Vai alla Lobby</Link>
         </Button>
         <Link href="/dado" className="text-sm underline underline-offset-4 opacity-70 hover:opacity-100">
@@ -34,12 +36,11 @@ export async function HomeCta() {
   return (
     <div className="flex w-full max-w-xs flex-col items-center gap-4 pt-4">
       <GoogleSignInButton
-        className="w-full items-center"
+        className="w-full"
         label="Registrati con Google"
         showLogo
         variant="default"
-        // Icona più grande del `size-4` di base del Button, come nel mockup.
-        buttonClassName={`${PILL} [&_svg]:size-[22px]`}
+        buttonClassName={PILL}
       />
       <Link
         href="/auth/sign-up"

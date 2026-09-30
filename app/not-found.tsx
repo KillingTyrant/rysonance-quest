@@ -23,7 +23,7 @@ export default function NotFound() {
     <main className="min-h-dvh flex flex-col items-center pb-[env(safe-area-inset-bottom)]">
       <div className="flex-1 w-full flex flex-col gap-20 items-center">
         <Nav />
-        <div className="flex-1 flex flex-col justify-center w-full p-5 items-center">
+        <div className="flex-1 flex flex-col justify-center w-full px-gutter py-5 items-center">
           <div className="flex flex-col gap-10 items-center max-w-xl w-full text-center">
             <div className="w-full p-[1px] bg-gradient-to-r from-transparent via-foreground/10 to-transparent my-8" />
 
@@ -55,7 +55,7 @@ export default function NotFound() {
               </p>
             </div>
 
-            <Button asChild variant="ticket" size="lg" className="w-52">
+            <Button asChild variant="ticket">
               <Link href="/">Torna all&apos;inizio</Link>
             </Button>
 

@@ -16,24 +16,26 @@ export async function Nav({
     return (
         <nav
             className={cn(
-                "w-full flex justify-center bg-card/60 backdrop-blur-sm",
+                "w-full flex justify-center bg-white",
                 sticky && "sticky top-0 z-40",
             )}
         >
             {/*
-              L'altezza è un minimo, non una misura: quando nello slot c'è un
-              bottone la barra cresce per contenerlo invece di tagliarlo.
+              Alta sempre 60px, con o senza bottone: la CTA dello slot (40px)
+              ci sta dentro. I margini laterali sono quelli della pagina.
             */}
-            <div className="w-full min-h-8 max-w-5xl flex justify-between items-center gap-3 px-2 py-1 text-sm">
-                <div className="h-full flex gap-5 items-center font-semibold">
+            <div className="w-full h-nav max-w-5xl flex justify-between items-center gap-3 px-gutter text-sm">
+                <div className="h-full flex shrink-0 gap-5 items-center font-semibold">
                     <Link href={"/"} >
                         <Logo iconOnly={false} className="h-5 w-auto shrink-0" />
                     </Link>
                 </div>
-                <div className="w-full flex justify-end items-center gap-3">
+                {/* `min-w-0`: sui telefoni stretti la CTA può restringersi invece
+                    di spingere fuori il logo. */}
+                <div className="min-w-0 flex-1 flex justify-end items-center gap-3">
                     {/* Slot dell'azione della schermata corrente: ci scrive
                         dentro <NavAction> (components/layout/nav-action.tsx). */}
-                    <div id="nav-action" className="flex items-center" />
+                    <div id="nav-action" className="flex min-w-0 items-center" />
                     {!hideAuthButton && (
                         <Suspense>
                             <AuthButton />

@@ -7,6 +7,7 @@ import {
   PersonaggioListSkeleton,
 } from "@/components/personaggi/personaggio-list";
 import { HeaderAnimation } from "@/components/personaggi/header-animation";
+import { Button } from "@/components/ui/button";
 
 export const metadata = {
   title: "I tuoi eroi · Rysonance",
@@ -23,17 +24,16 @@ export default function LobbyPage() {
         <PersonaggioList />
       </Suspense>
 
-      {/* Fisso a 8px dal bordo destro e da quello basso, sopra la lista mentre si
-          scorre. `fixed` si aggancia al viewport solo finché nessun antenato ha un
-          `transform`: regge perché il template esclude la lobby dalla transizione
-          d'ingresso. Lo spazio per non coprire il footer lo lascia il layout. */}
-      <Link
-        href="/onboarding"
-        className="fixed bottom-2 right-2 z-40 inline-flex h-8 items-center gap-2 rounded-full border border-foreground bg-background px-6 text-xs font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      >
-        Crea nuovo eroe
-        <Plus aria-hidden className="size-3.5" />
-      </Link>
+      {/* La CTA della lobby, fissa a 16px (il margine della pagina) dal bordo destro
+          e da quello basso, sopra la lista mentre si scorre. `fixed` si aggancia al
+          viewport solo finché nessun antenato ha un `transform`: regge perché il
+          template esclude la lobby dalla transizione d'ingresso. */}
+      <Button asChild variant="ticket" className="fixed bottom-gutter right-gutter z-40">
+        <Link href="/onboarding">
+          Crea nuovo eroe
+          <Plus aria-hidden />
+        </Link>
+      </Button>
     </div>
   );
 }

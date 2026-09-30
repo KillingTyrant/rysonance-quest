@@ -22,7 +22,8 @@ export function LogoutButton() {
       aria-label="Esci"
       title="Esci"
     >
-      <LogOut />
+      {/* 16×16 per il design, anche fuori dal `[&_svg]:size-4` del Button. */}
+      <LogOut size={16} />
     </Button>
   );
 }

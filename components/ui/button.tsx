@@ -16,8 +16,10 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground rounded-md",
         link: "text-primary underline-offset-4 hover:underline",
 
+        // La CTA principale. Da inattiva non si sbiadisce: ha un colore suo (fondo
+        // #FFD787, testo #797979), sia `disabled` sia `aria-disabled`.
         ticket:
-          "btn-ticket text-brand-foreground [--ticket-bg:hsl(var(--brand))] [--ticket-border-width:0px] hover:text-[#272727] hover:[--ticket-bg:#f4f4f4] hover:[--ticket-border:#272727] hover:[--ticket-border-width:3px] active:text-brand-foreground active:[--ticket-bg:hsl(var(--brand))] active:[--ticket-border-width:0px]",
+          "btn-ticket text-brand-foreground [--ticket-bg:hsl(var(--brand))] [--ticket-border-width:0px] hover:text-[#272727] hover:[--ticket-bg:#f4f4f4] hover:[--ticket-border:#272727] hover:[--ticket-border-width:3px] active:text-brand-foreground active:[--ticket-bg:hsl(var(--brand))] active:[--ticket-border-width:0px] disabled:opacity-100 disabled:text-[#797979] disabled:[--ticket-bg:#FFD787] aria-disabled:pointer-events-none aria-disabled:text-[#797979] aria-disabled:[--ticket-bg:#FFD787]",
         ticketSecondary:
           "btn-ticket [--notch-scale:0.5] text-[#f4f4f4] [--ticket-bg:#272727] [--ticket-border-width:0px] hover:text-[#272727] hover:[--ticket-bg:#f4f4f4] hover:[--ticket-border:#272727] hover:[--ticket-border-width:3px] active:text-[#f4f4f4] active:[--ticket-bg:#272727] active:[--ticket-border-width:0px]",
 
@@ -29,15 +31,24 @@ const buttonVariants = cva(
         default: "h-9 px-4 py-2",
         lg: "w-[336px] h-[56px] text-[32px]/[32px] font-black tracking-normal flex items-center justify-center [--ticket-notch:18.6px]",
         md: "w-[288px] h-[48px] text-[26px]/[29px] font-extrabold tracking-normal flex items-center justify-center [--ticket-notch:16px]",
-        sm: "w-[240px] h-[40px] text-[24px]/[27px] font-extrabold tracking-normal flex items-center justify-center [--ticket-notch:13.3px]",
-        // Misura da barra: larghezza dal testo, altezza quella della nav.
-        nav: "h-8 px-6 text-[16px]/[19px] font-extrabold tracking-normal flex items-center justify-center [--ticket-notch:10.6px]",
+        // "Small" del design system: la misura di ogni CTA di primo livello, 240×40 con
+        // testo a 20px. `min-w` e non `w`, così un'etichetta lunga allunga un po' il
+        // bottone invece di uscirne; `w-fit` impedisce a un contenitore flex o grid di
+        // stirarlo a tutta larghezza.
+        sm: "w-fit min-w-[240px] h-[40px] px-8 text-[20px]/[23px] font-extrabold tracking-normal flex items-center justify-center [--ticket-notch:13.3px]",
+        // La stessa CTA dentro la nav: 240 di base, ma sui telefoni più stretti si
+        // restringe per stare accanto al logo.
+        nav: "w-[240px] min-w-0 shrink h-[40px] px-8 text-[20px]/[23px] font-extrabold tracking-normal flex items-center justify-center [--ticket-notch:13.3px]",
         icon: "h-9 w-9 rounded-md",
+      },
+      // Etichetta troppo lunga per i 20px della CTA: scende a 16px.
+      longLabel: {
+        true: "text-[16px]/[19px]",
       },
     },
     defaultVariants: {
       variant: "ticket",
-      size: "md",
+      size: "sm",
     },
     // Le regole sottostanti sovrascrivono w, h, font-size e line-height se usi ticketSmall + md/sm
     compoundVariants: [
@@ -49,7 +60,7 @@ const buttonVariants = cva(
       {
         variant: "ticketSmall",
         size: "sm",
-        className: "w-[200px] h-[32px] text-[16px]/[19px]",
+        className: "w-[200px] min-w-0 h-[32px] text-[16px]/[19px]",
       },
     ],
   },
@@ -72,7 +83,7 @@ const dotSizes = {
 };
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, showDots, children, ...props }, ref) => {
+  ({ className, variant, size, longLabel, asChild = false, showDots, children, ...props }, ref) => {
 
     // Logica speciale per la variante ticketSmall
     const isTicketSmall = variant === "ticketSmall";
@@ -118,7 +129,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     return (
       <Comp
-        className={cn("group relative", buttonVariants({ variant, size, className }))}
+        className={cn("group relative", buttonVariants({ variant, size, longLabel, className }))}
         ref={ref}
         {...props}
       >

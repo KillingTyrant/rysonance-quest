@@ -29,7 +29,7 @@ export async function PersonaggioList() {
     return (
       <div className="flex flex-col items-start gap-4 rounded-xl border bg-card p-8 shadow">
         <h2 className="font-semibold">Nessun personaggio</h2>
-        <Button asChild variant="ticket" className="w-full">
+        <Button asChild variant="ticket" longLabel>
           <Link href="/onboarding">Crea il primo personaggio</Link>
         </Button>
       </div>

@@ -221,8 +221,7 @@ export function PassScanner() {
       {stato.tipo === "errore" && (
         <Button
           type="button"
-          variant="outline"
-          size="default"
+          variant="ticketSecondary"
           className="self-center"
           onClick={riprova}
         >

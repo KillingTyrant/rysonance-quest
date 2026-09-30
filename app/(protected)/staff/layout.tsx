@@ -17,7 +17,7 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
   return (
     <main className="flex min-h-dvh flex-col items-center">
       <Nav sticky />
-      <div className="flex w-full max-w-md flex-1 flex-col px-4 pt-6">{children}</div>
+      <div className="flex w-full max-w-md flex-1 flex-col px-gutter pt-6">{children}</div>
     </main>
   );
 }

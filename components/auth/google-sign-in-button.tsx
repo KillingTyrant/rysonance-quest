@@ -74,18 +74,23 @@ export function GoogleSignInButton({
   };
 
   return (
-    <div className={cn("flex flex-col gap-2", className)}>
+    <div className={cn("flex flex-col items-center gap-2", className)}>
+      {/* Le etichette ("Continua con Google", "Reindirizzamento...") sono lunghe
+          per i 20px della CTA: sempre `longLabel`. */}
       <Button
         type="button"
         variant={variant}
         size={size}
-        className={cn("w-full", buttonClassName)}
+        longLabel
+        className={buttonClassName}
         onClick={handleSignIn}
         disabled={isLoading}
       >
         {/* Il preflight di Tailwind rende gli svg `display:block`: senza questo
-            flex l'icona finirebbe sopra il testo invece che accanto. */}
-        <span className="w-full inline-flex items-center justify-center gap-2.5 font-medium">
+            flex l'icona finirebbe sopra il testo invece che accanto. `flex` e non
+            `inline-flex`: inline starebbe sulla baseline di una riga di testo, e lo
+            spazio dei discendenti sotto spingerebbe logo ed etichetta ~3px in su. */}
+        <span className="flex items-center justify-center gap-2.5">
           {showLogo && <GoogleLogo />}
           {isLoading ? "Reindirizzamento..." : label}
         </span>

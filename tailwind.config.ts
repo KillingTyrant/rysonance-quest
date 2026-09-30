@@ -12,6 +12,13 @@ export default {
   ],
   theme: {
     extend: {
+      spacing: {
+        // Griglia di ogni pagina: il margine dai bordi dello schermo, uguale a destra e a
+        // sinistra (`px-gutter`, `-mx-gutter` per uscirne a tutta larghezza).
+        gutter: "16px",
+        // Altezza fissa della barra in cima (Nav e header della quest): `h-nav`.
+        nav: "60px",
+      },
       fontFamily: {
         sprat: ["var(--font-sprat)", ...defaultTheme.fontFamily.serif],
         sans: ["var(--font-cabinet)", ...defaultTheme.fontFamily.sans],

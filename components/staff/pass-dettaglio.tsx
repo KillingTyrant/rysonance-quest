@@ -123,7 +123,7 @@ export function PassDettaglio({
         )}
       </Sezione>
 
-      <div className="sticky bottom-0 -mx-4 mt-auto flex justify-center border-t bg-background/90 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 backdrop-blur-sm">
+      <div className="sticky bottom-0 -mx-gutter mt-auto flex justify-center border-t bg-background/90 px-gutter pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 backdrop-blur-sm">
         <NuovaScansione />
       </div>
     </div>

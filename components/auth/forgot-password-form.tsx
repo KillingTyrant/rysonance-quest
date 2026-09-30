@@ -83,8 +83,8 @@ export function ForgotPasswordForm({
                   />
                 </div>
                 {error && <p className="text-sm text-destructive">{error}</p>}
-                <Button type="submit" className="w-full" disabled={isLoading} variant="ticket">
-                  {isLoading ? "Invio in corso..." : "Invia email per reimpostare la password"}
+                <Button type="submit" className="self-center" disabled={isLoading} longLabel={isLoading} variant="ticket">
+                  {isLoading ? "Invio in corso..." : "Invia il link"}
                 </Button>
               </div>
               <div className="mt-4 text-center text-sm">

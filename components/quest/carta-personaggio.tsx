@@ -277,13 +277,7 @@ export function CartaPersonaggio({
               ref={azioniRef}
               className="relative z-10 mt-auto flex flex-col items-center gap-3 px-5 pb-6"
             >
-              <div className="w-full max-w-72">
-                <CondividiCarta
-                  carta={carta}
-                  illustrazione={illustrazione?.src ?? null}
-                  className="w-full"
-                />
-              </div>
+              <CondividiCarta carta={carta} illustrazione={illustrazione?.src ?? null} />
               {/* `<a>` e non `<Link>`: la risposta è un download `.pkpass`, e su iOS la
                   schermata "Aggiungi" si apre solo da una navigazione vera. Il badge è
                   l'SVG ufficiale Apple in italiano: le linee guida chiedono di usare solo

@@ -235,8 +235,7 @@ function TestiPasso({ attivo, variante, numero, titolo, testo, cta, onCta }: Tes
         ref={ctaRef}
         type="button"
         variant="ticket"
-        size="lg"
-        className="mt-6 w-full"
+        className="mt-6"
         onClick={onCta}
       >
         {cta}

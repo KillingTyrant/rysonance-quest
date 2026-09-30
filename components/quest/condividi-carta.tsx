@@ -94,7 +94,7 @@ export function CondividiCarta({ carta, illustrazione, className }: CondividiCar
       <Button
         type="button"
         variant="ticket"
-        size="sm"
+        longLabel
         className={className}
         disabled={inPreparazione}
         aria-busy={inPreparazione}

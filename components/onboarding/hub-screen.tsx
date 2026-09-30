@@ -91,7 +91,7 @@ export function HubScreen({
   const resolved = resolveDraft(catalog, draft);
 
   return (
-    <div className="relative isolate flex flex-1 flex-col p-4">
+    <div className="relative isolate flex flex-1 flex-col px-gutter py-4">
       {/*
         Arte di sfondo: lo squarcio ha la metà alta trasparente e la materia in
         basso, quindi resta ancorato al fondo. Sta prima del velo che tiene

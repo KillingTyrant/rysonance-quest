@@ -210,7 +210,7 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
         <div
           ref={viewRef}
           tabIndex={-1}
-          className="flex w-full flex-1 flex-col outline-none"
+          className="flex w-full flex-1 flex-col px-gutter outline-none"
         >
           <GroupIntro
             group={group}
@@ -229,7 +229,7 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
         <div
           ref={viewRef}
           tabIndex={-1}
-          className="flex w-full flex-1 flex-col outline-none"
+          className="flex w-full flex-1 flex-col px-gutter outline-none"
         >
           <ConfirmScreen
             name={draft.name.trim()}
@@ -266,7 +266,7 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
       <div
         ref={viewRef}
         tabIndex={-1}
-        className={cn("flex w-full flex-col outline-none", schermoIntero && "flex-1")}
+        className={cn("flex w-full flex-col px-gutter outline-none", schermoIntero && "flex-1")}
       >
         <header className="flex flex-col gap-1">
           <h1 className="text-4xl font-bold">

@@ -25,7 +25,7 @@ export const viewport: Viewport = {
  */
 export default function DadoPage() {
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-[max(1.25rem,env(safe-area-inset-top))]">
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-gutter pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-[var(--quest-top)] [--quest-top:max(1.25rem,env(safe-area-inset-top))]">
       <QuestHeader />
       <DadoLibero />
     </main>

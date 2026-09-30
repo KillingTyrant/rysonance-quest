@@ -105,7 +105,7 @@ export function SignUpForm({
                 />
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
-              <Button type="submit" className="w-full" disabled={isLoading} variant={'ticket'}>
+              <Button type="submit" className="self-center" disabled={isLoading} longLabel={isLoading} variant="ticket">
                 {isLoading ? "Creazione in corso..." : "Registrati"}
               </Button>
               <div className="text-center text-sm">

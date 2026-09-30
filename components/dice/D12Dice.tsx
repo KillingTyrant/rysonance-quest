@@ -260,8 +260,9 @@ export function D12Dice({
           variant={'ticket'}
           onClick={handleRoll}
           disabled={disabled}
+          // Mentre rotola prende il colore da inattivo della variante ticket
+          // (`aria-disabled:` in button.tsx), senza sbiadirsi.
           aria-disabled={disabled || rolling}
-          className={cn("w-full", rolling && "pointer-events-none opacity-60")}
         >
           Lancia il d12
         </Button>

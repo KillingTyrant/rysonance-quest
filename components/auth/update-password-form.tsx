@@ -66,7 +66,7 @@ export function UpdatePasswordForm({
                 />
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
-              <Button type="submit" className="w-full" disabled={isLoading} variant="ticket">
+              <Button type="submit" className="self-center" disabled={isLoading} longLabel variant="ticket">
                 {isLoading ? "Salvataggio in corso..." : "Salva nuova password"}
               </Button>
             </div>
