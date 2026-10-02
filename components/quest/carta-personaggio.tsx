@@ -226,7 +226,7 @@ export function CartaPersonaggio({
           {/* La fascia del titolo non ha uno sfondo suo: è il colore della card, così
               gli strati olografici (dichiarati dopo) ci passano sopra e il testo, con
               `z-10`, resta sopra di loro. */}
-          <div className="relative z-10 flex flex-col px-5 pb-5 pt-6 text-center">
+          <div className="relative z-10 flex flex-col px-3 pb-3 pt-4 text-center">
             {/* Il nome riempie la larghezza: la dimensione scala con la card (cqi) e
                 con il numero di lettere. Il nome è in Sprat, il serif display della
                 lore: Sprat arriva al Medium, quindi niente pesi bold. */}
@@ -259,13 +259,19 @@ export function CartaPersonaggio({
                 className="object-cover"
               />
             )}
+            {/* Sfumatura bianca sul fondo dell'illustrazione: sta sotto le azioni (`z-10`),
+                così non copre il badge Wallet. */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-white/40 to-transparent"
+            />
 
             {numero !== null && (
               <p
                 ref={numeroRef}
-                className="absolute right-4 top-4 z-10 grid place-items-center text-2xl [&>*]:[grid-area:1/1]"
+                className="absolute right-4 top-4 z-10 grid place-items-center text-4xl [&>*]:[grid-area:1/1]"
               >
-                <Esagono />
+                <Esagono bordo />
                 <span className="font-extrabold leading-none tabular-nums text-numero-foreground">
                   <span className="sr-only">{QUEST_COPY.carta.numero} </span>
                   {numero}

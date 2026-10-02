@@ -3,29 +3,30 @@
  * nei componenti.
  *
  * ⚠️ Provvisori dove il mockup non si legge (i testi grigi, i messaggi di
- * caricamento, le istruzioni per l'evento): da sostituire con quelli definitivi.
+ * caricamento): da sostituire con quelli definitivi.
  */
 export const QUEST_COPY = {
   dado: {
-    titolo: "La quest sta per iniziare, che canzone dovrai indovinare?",
-    sottotitolo: "Lancia il dado per scoprirlo",
+    titolo: "La quest sta per iniziare",
+    sottotitolo: "Lancia il dado per scoprirla",
     gesto: "Lancia il dado",
     suggerimento: "Scorri verso l'alto sul dado, oppure toccalo",
     inCorso: "Lancio del dado in corso…",
     riprova: "Riprova",
   },
   risultato: {
-    titolo: "E ora che si fa?",
-    testo:
-      "Salva o condividi la scheda del personaggio e torna al bancone di Rysonance dopo aver seguito attentamente la scaletta del Principe per ricevere la tua ricompensa unica.",
-    cta: "Goditi l'evento",
+    // Il titolo finisce con "numero": lo completa il numero nell'esagono, sotto.
+    titolo: "Fai attenzione alla scaletta del concerto e ricorda il titolo della canzone numero",
+    cta: "Continua",
     annuncio: (numero: number) => `È uscito il ${numero}`,
   },
   istruzioni: {
-    titolo: "E ora che si fa?",
-    testo:
-      "Porta il tuo personaggio all'evento. Quando sarà il tuo turno ascolta la canzone con il tuo numero e prova a indovinarla: se ci riesci, la ricompensa di Prince Doji è tua.",
-    cta: "Godi l'evento",
+    titolo: "Dopo il concerto, torna al banchetto di Rysonance per riscuotere il premio.",
+    testi: [
+      "Mostra il cellulare con il numero e comunica il titolo della canzone associata.",
+      "Potrai conservare la scheda del tuo personaggio e portarlo anche in gioco all'uscita di Rysonance!",
+    ],
+    cta: "Goditi l'evento",
   },
   carta: {
     condividi: "Condividi Personaggio",
@@ -37,7 +38,7 @@ export const QUEST_COPY = {
     walletLabel: (nome: string) => `Aggiungi a Apple Wallet la scheda di ${nome}`,
   },
   caricamento: {
-    rysonance: "Il tuo eroe è pronto…",
-    partner: "Stiamo preparando la tua quest…",
+    rysonance: "Attendo la risposta da un eco lontano...",
+    partner: "Attendo la risposta da un eco lontano...",
   },
 } as const;

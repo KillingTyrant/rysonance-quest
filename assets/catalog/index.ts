@@ -15,6 +15,12 @@ import nani_icon from "./razze/nani_icon.png";
 import orchi_icon from "./razze/orchi_icon.png";
 import ulu_ari_icon from "./razze/ulu_ari_icon.png";
 import umani_icon from "./razze/umani_icon.png";
+import elfi_bg from "./razze/elfi_bg.svg";
+import gata_ari_bg from "./razze/gata_ari_bg.svg";
+import nani_bg from "./razze/nani_bg.svg";
+import orchi_bg from "./razze/orchi_bg.svg";
+import ulu_ari_bg from "./razze/ulu_ari_bg.svg";
+import umani_bg from "./razze/umani_bg.svg";
 import armi_a_distanza from "./talenti/armi-a-distanza.svg";
 import armi_corpo_a_corpo from "./talenti/armi-corpo-a-corpo.svg";
 import magia_ancestrale from "./talenti/magia-ancestrale.svg";
@@ -23,6 +29,9 @@ import magia_elementale from "./talenti/magia-elementale.svg";
 import combattente_icon from "./vie/combattente_icon.png";
 import sapiente_icon from "./vie/sapiente_icon.png";
 import viandante_icon from "./vie/viandante_icon.png";
+import combattente_bg from "./vie/combattente_bg.svg";
+import sapiente_bg from "./vie/sapiente_bg.svg";
+import viandante_bg from "./vie/viandante_bg.svg";
 
 /**
  * Illustrazioni del catalogo, per chiave del DB. Import statici e non `public/`:
@@ -36,6 +45,10 @@ import viandante_icon from "./vie/viandante_icon.png";
  * Razze e vie hanno anche un'icona quadrata (60×56), mostrata nel riepilogo della hub
  * quando sono scelte, con il nome della chiave come le altre.
  *
+ * Razze e vie hanno poi un emblema SVG monocromo (`<chiave>_bg.svg`), la sagoma che
+ * riempie il sigillo sul fondo della hub: conta solo la forma, il colore lo decide chi
+ * lo disegna (vedi `components/onboarding/sigillo-eroe.tsx`).
+ *
  * I talenti a scelta hanno per ora illustrazioni SVG segnaposto, disegnate a mano
  * (640×360). Per sostituirle con l'arte definitiva basta cambiare l'import: la card
  * le ritaglia con `object-cover`, quindi va bene qualunque formato ~16:9.
@@ -47,6 +60,8 @@ export const CATALOG_IMAGES: {
   razze: Record<string, StaticImageData | undefined>;
   razzeIcone: Record<string, StaticImageData | undefined>;
   vieIcone: Record<string, StaticImageData | undefined>;
+  razzeEmblemi: Record<string, StaticImageData | undefined>;
+  vieEmblemi: Record<string, StaticImageData | undefined>;
   talenti: Record<string, StaticImageData | undefined>;
 } = {
   razze: { elfi, gata_ari, nani, orchi, ulu_ari, umani },
@@ -62,6 +77,19 @@ export const CATALOG_IMAGES: {
     combattente: combattente_icon,
     sapiente: sapiente_icon,
     viandante: viandante_icon,
+  },
+  razzeEmblemi: {
+    elfi: elfi_bg,
+    gata_ari: gata_ari_bg,
+    nani: nani_bg,
+    orchi: orchi_bg,
+    ulu_ari: ulu_ari_bg,
+    umani: umani_bg,
+  },
+  vieEmblemi: {
+    combattente: combattente_bg,
+    sapiente: sapiente_bg,
+    viandante: viandante_bg,
   },
   // Le chiavi dei talenti hanno il trattino: qui vanno scritte fra virgolette.
   talenti: {

@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import type { Catalog, PersonaggioDraft } from "@/lib/onboarding/types";
 import { NAME_MAX_LENGTH } from "@/lib/onboarding/validate";
 
+import { SigilloEroe } from "./sigillo-eroe";
 import type { SaveError } from "./wizard-steps";
 
 /** Il riepilogo della riga, con i nomi del catalogo al posto delle chiavi. */
@@ -91,7 +92,9 @@ export function HubScreen({
   const resolved = resolveDraft(catalog, draft);
 
   return (
-    <div className="relative isolate flex flex-1 flex-col px-gutter py-4">
+    // `overflow-x-clip`: il sigillo esce dal bordo destro, e senza la pagina
+    // scorrerebbe di lato. `clip` e non `hidden`, che farebbe da contenitore di scroll.
+    <div className="relative isolate flex flex-1 flex-col overflow-x-clip px-gutter py-4">
       {/*
         Arte di sfondo: lo squarcio ha la metà alta trasparente e la materia in
         basso, quindi resta ancorato al fondo. Sta prima del velo che tiene
@@ -111,122 +114,135 @@ export function HubScreen({
 
       <h1 className="text-4xl font-extrabold">Genesi dell&apos;eroe</h1>
 
-      <ol className="flex flex-col gap-8 mt-4">
-        {WIZARD_GROUPS.map((group) => {
-          const isDone = completed(group.id);
-          const isUnlocked = unlocked(group.id);
-          const selectedValue = selectionValue(group.id, resolved);
-          const image = selectionImage(group.id, draft);
-          const [labelHead, labelTail] = labelLines(group.label);
-          return (
-            <li key={group.id}>
-              <button
-                type="button"
-                disabled={!isUnlocked || pending}
-                onClick={() => onOpenGroup(group.id)}
-                className={cn(
-                  "relative isolate flex w-full items-center gap-4 overflow-hidden rounded-md text-left",
-                  "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-                  isDone && "text-primary-900",
-                  !isUnlocked && "opacity-50",
-                )}
-              >
-                {/*
-                  Il quadrato dell'icona. La riga bloccata tiene la stessa
-                  forma e lo stesso spessore di quella attiva, ma con il bordo
-                  tratteggiato in grigio di testo: `border-primary-foreground`
-                  qui era quasi invisibile (bianco su muted in chiaro, scuro su
-                  muted in scuro), e il quadrato sembrava senza bordo.
-                */}
-                {/* Da completato il quadrato cresce: 56px contro i 48 di quello
-                    attivo e di quello bloccato. `mx-1` fa occupare anche a questi
-                    56px di larghezza: i quadrati restano centrati sullo stesso asse
-                    e le etichette allineate fra loro. */}
-                <span
+      <div className="relative mt-4">
+        {/*
+          Il sigillo delle scelte, dietro le righe e sotto lo squarcio (-z-20 contro
+          -z-10). Come nel mockup il centro sta 122px sotto l'inizio della lista e
+          66px dal bordo dello schermo, cioè 50 dentro il margine: il sigillo è
+          largo 334, quindi esce di 167 - 50 = 117px e il resto lo taglia la hub.
+        */}
+        <SigilloEroe
+          razzaKey={draft.razza_key}
+          viaKey={draft.via_key}
+          className="pointer-events-none absolute -right-[117px] -top-[45px] -z-20"
+        />
+        <ol className="flex flex-col gap-8">
+          {WIZARD_GROUPS.map((group) => {
+            const isDone = completed(group.id);
+            const isUnlocked = unlocked(group.id);
+            const selectedValue = selectionValue(group.id, resolved);
+            const image = selectionImage(group.id, draft);
+            const [labelHead, labelTail] = labelLines(group.label);
+            return (
+              <li key={group.id}>
+                <button
+                  type="button"
+                  disabled={!isUnlocked || pending}
+                  onClick={() => onOpenGroup(group.id)}
                   className={cn(
-                    "relative isolate flex shrink-0 items-center justify-center overflow-hidden rounded-sm",
-                    isDone ? "size-14" : "size-12 mx-1",
-                    image
-                      ? isDone
-                        ? "text-white"
-                        : "border-primary text-white "
-                      : isDone
-                        ? "bg-primary text-white"
-                        : isUnlocked
-                          ? "bg-brand text-primary border-primary rounded-sm border-2"
-                          : "bg-muted/60 text-muted-foreground rounded-sm border-2",
+                    "relative isolate flex w-full items-center gap-4 overflow-hidden rounded-md text-left",
+                    "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                    isDone && "text-primary-900",
+                    !isUnlocked && "opacity-50",
                   )}
                 >
-                  {image && (
-                    <>
-                      <Image
-                        src={image}
-                        alt=""
-                        fill
-                        sizes="3.5rem"
-                        // Icone quasi quadrate (60×56): il ritaglio toglie
-                        // solo qualche pixel ai lati.
-                        className="-z-10 object-cover rounded-xl"
-                      />
-                      {/*
-                        Il velo tiene leggibile l'icona sopra l'illustrazione,
-                        che è chiara o scura a seconda della razza.
-                      */}
-                      {/* <span aria-hidden className="absolute inset-0 -z-10 bg-black/35" /> */}
-                    </>
-                  )}
-                  {!isDone ? <Plus /> : !image ? <Check /> : null}
-                </span>
-                <span className={cn("w-full font-medium leading-snug", isDone && "")}>
-                  {!selectedValue && <span className="block">{labelHead}</span>}
-                  {!selectedValue && <span className="block">{labelTail}</span>}
-                  {selectedValue && group.id === 'razza' ? (
-                    <>
-                      <span className="block font-bold text-xl"> {selectedValue.split(" ")[0]} </span>
-                      {/* <span className="block"> {selectedValue.split(" ")[1]} </span> */}
-                    </>
-                  ) : (
-                    <span className="block font-bold text-xl"> {selectedValue} </span>
-                  )}
-                </span>
-              </button>
-            </li>
-          );
-        })}
-        {/* Crea random */}
-        <li key={'create-random'}>
-          <button
-            type="button"
-            onClick={onRandomize}
-            className={cn(
-              "relative isolate flex w-full items-center gap-4 overflow-hidden rounded-full text-left",
-              "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-            )}
-          >
-            {/*
-                  Il quadrato dell'icona. La riga bloccata tiene la stessa
-                  forma e lo stesso spessore di quella attiva, ma con il bordo
-                  tratteggiato in grigio di testo: `border-primary-foreground`
-                  qui era quasi invisibile (bianco su muted in chiaro, scuro su
-                  muted in scuro), e il quadrato sembrava senza bordo.
-                */}
-            <span
+                  {/*
+                    Il quadrato dell'icona. La riga bloccata tiene la stessa
+                    forma e lo stesso spessore di quella attiva, ma con il bordo
+                    tratteggiato in grigio di testo: `border-primary-foreground`
+                    qui era quasi invisibile (bianco su muted in chiaro, scuro su
+                    muted in scuro), e il quadrato sembrava senza bordo.
+                  */}
+                  {/* Da completato il quadrato cresce: 56px contro i 48 di quello
+                      attivo e di quello bloccato. `mx-1` fa occupare anche a questi
+                      56px di larghezza: i quadrati restano centrati sullo stesso asse
+                      e le etichette allineate fra loro. */}
+                  <span
+                    className={cn(
+                      "relative isolate flex shrink-0 items-center justify-center overflow-hidden rounded-sm",
+                      isDone ? "size-14" : "size-12 mx-1",
+                      image
+                        ? isDone
+                          ? "text-white"
+                          : "border-primary text-white "
+                        : isDone
+                          ? "bg-primary text-white"
+                          : isUnlocked
+                            ? "bg-brand text-primary border-primary rounded-sm border-2"
+                            : "bg-muted/60 text-muted-foreground rounded-sm border-2",
+                    )}
+                  >
+                    {image && (
+                      <>
+                        <Image
+                          src={image}
+                          alt=""
+                          fill
+                          sizes="3.5rem"
+                          // Icone quasi quadrate (60×56): il ritaglio toglie
+                          // solo qualche pixel ai lati.
+                          className="-z-10 object-cover rounded-xl"
+                        />
+                        {/*
+                          Il velo tiene leggibile l'icona sopra l'illustrazione,
+                          che è chiara o scura a seconda della razza.
+                        */}
+                        {/* <span aria-hidden className="absolute inset-0 -z-10 bg-black/35" /> */}
+                      </>
+                    )}
+                    {!isDone ? <Plus /> : !image ? <Check /> : null}
+                  </span>
+                  <span className={cn("w-full font-medium leading-snug", isDone && "")}>
+                    {!selectedValue && <span className="block">{labelHead}</span>}
+                    {!selectedValue && <span className="block">{labelTail}</span>}
+                    {selectedValue && group.id === 'razza' ? (
+                      <>
+                        <span className="block font-bold text-xl"> {selectedValue.split(" ")[0]} </span>
+                        {/* <span className="block"> {selectedValue.split(" ")[1]} </span> */}
+                      </>
+                    ) : (
+                      <span className="block font-bold text-xl"> {selectedValue} </span>
+                    )}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+          {/* Crea random */}
+          <li key={'create-random'}>
+            <button
+              type="button"
+              onClick={onRandomize}
               className={cn(
-                "flex size-14 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-primary text-white"
+                "relative isolate flex w-full items-center gap-4 overflow-hidden rounded-full text-left",
+                "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
               )}
             >
-              {/* random icon */}
-              <RefreshCcw />
+              {/*
+                    Il quadrato dell'icona. La riga bloccata tiene la stessa
+                    forma e lo stesso spessore di quella attiva, ma con il bordo
+                    tratteggiato in grigio di testo: `border-primary-foreground`
+                    qui era quasi invisibile (bianco su muted in chiaro, scuro su
+                    muted in scuro), e il quadrato sembrava senza bordo.
+                  */}
+              <span
+                className={cn(
+                  "flex size-14 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-primary text-white"
+                )}
+              >
+                {/* random icon */}
+                <RefreshCcw />
 
-            </span>
-            <span className={cn("w-full font-medium leading-snug ")}>
-              <span className="block">Crea</span>
-              <span className="block">un eroe random</span>
-            </span>
-          </button>
-        </li>
+              </span>
+              <span className={cn("w-full font-medium leading-snug ")}>
+                <span className="block">Crea</span>
+                <span className="block">un eroe random</span>
+              </span>
+            </button>
+          </li>
 
-      </ol>
+        </ol>
+      </div>
 
       <div className="mt-auto flex flex-col gap-3 pt-6 justify-center items-center">
         {allComplete && (

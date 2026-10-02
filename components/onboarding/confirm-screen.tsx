@@ -99,13 +99,13 @@ export function ConfirmScreen({
         <Sigillo className="w-[min(68vw,17rem)]" />
 
         <div className="flex flex-col gap-2">
-          <h1 className="font-sprat text-3xl font-normal leading-tight sm:text-4xl">
-            Stai per far nascere
+          <h1 className="text-3xl font-extrabold leading-tight sm:text-4xl">
+            Stai per far evocare
             <span className="block">{name}</span>
           </h1>
-          <p className="text-muted-foreground">
+          {/* <p className="text-muted-foreground">
             Sei ancora in tempo per modificarne i valori.
-          </p>
+          </p> */}
         </div>
       </div>
 
@@ -145,7 +145,7 @@ export function ConfirmScreen({
             if (!pending) onBack();
           }}
         >
-          Torna indietro
+          Voglio modificarlo
         </Link>
       </div>
     </div>
