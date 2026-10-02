@@ -6,10 +6,16 @@ export type StepDef = {
   /** I campi del draft che questo step raccoglie. */
   fields: readonly DraftField[];
   /**
-   * La schermata riempie l'altezza della pagina e "Indietro" sta in fondo,
-   * invece di seguire il contenuto: per gli step che non scorrono.
+   * La schermata riempie l'altezza della pagina e "Indietro", se c'è, sta in
+   * fondo invece di seguire il contenuto: per gli step che non scorrono.
    */
   schermoIntero?: boolean;
+  /**
+   * Lo step non ha "Indietro": se ne esce solo con "Seleziona". Va bene solo
+   * per uno step che parte con una scelta già fatta, così "Seleziona" non è
+   * mai disattivato.
+   */
+  senzaIndietro?: boolean;
 };
 
 /**
@@ -35,7 +41,13 @@ export const WIZARD_STEPS = [
     title: "Identità",
     fields: ["razza_key"],
   },
-  { id: "via", title: "La Via", fields: ["via_key"], schermoIntero: true },
+  {
+    id: "via",
+    title: "La Via",
+    fields: ["via_key"],
+    schermoIntero: true,
+    senzaIndietro: true,
+  },
   { id: "talenti", title: "Talenti", fields: ["talenti"] },
 ] as const satisfies readonly StepDef[];
 

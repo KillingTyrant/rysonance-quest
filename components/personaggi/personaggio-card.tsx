@@ -14,14 +14,18 @@ import { toQuestCarta } from "@/lib/quest/carta";
 export function PersonaggioCard({
   personaggio,
   catalog,
+  numero,
 }: {
   personaggio: Personaggio;
   catalog: Catalog;
+  /** Il numero estratto nella quest, se il personaggio ha già lanciato il dado. */
+  numero: number | null;
 }) {
   return (
     <article className="flex flex-col gap-4">
       <CartaPersonaggio
         carta={toQuestCarta(catalog, personaggio)}
+        numero={numero}
         attivo
         titolo="h2"
         className="aspect-[5/8] min-h-0 flex-none"

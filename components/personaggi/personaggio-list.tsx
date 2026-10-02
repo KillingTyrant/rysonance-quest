@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { getCatalog } from "@/lib/onboarding/catalog";
 import { listPersonaggi } from "@/lib/onboarding/personaggi";
+import { getNumeri } from "@/lib/quest/quest";
 
 import { CardAnimation } from "./card-animation";
 import { PersonaggioCard } from "./personaggio-card";
@@ -14,9 +15,9 @@ import { PersonaggioCard } from "./personaggio-card";
 export async function PersonaggioList() {
   const catalog = await getCatalog();
 
-  let personaggi;
+  let personaggi, numeri;
   try {
-    personaggi = await listPersonaggi();
+    [personaggi, numeri] = await Promise.all([listPersonaggi(), getNumeri()]);
   } catch {
     return (
       <p className="text-sm text-destructive">
@@ -41,7 +42,11 @@ export async function PersonaggioList() {
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {personaggi.map((personaggio, index) => (
           <CardAnimation key={personaggio.id} index={index}>
-            <PersonaggioCard personaggio={personaggio} catalog={catalog} />
+            <PersonaggioCard
+              personaggio={personaggio}
+              catalog={catalog}
+              numero={numeri.get(personaggio.id) ?? null}
+            />
           </CardAnimation>
         ))}
       </div>

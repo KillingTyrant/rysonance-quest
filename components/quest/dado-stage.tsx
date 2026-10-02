@@ -357,6 +357,7 @@ export function DadoStage({
                 rollButton={false}
                 announce={false}
                 appearance={DADO_APPEARANCE}
+                framing="tight"
                 onRollEnd={(_, landing) => onAtterrato(landing)}
                 className="max-w-none"
               />
@@ -376,16 +377,16 @@ export function DadoStage({
           </p>
         </div>
 
-        <div className="flex min-h-24 flex-col items-center justify-center">
-          {state.lancio === "errore" && state.errore && (
-            <div role="alert" className="flex flex-col items-center gap-3 text-center text-sm">
-              <p className="text-destructive">{state.errore}</p>
-              <Button type="button" variant="ticketSecondary" onClick={() => lancia(null)}>
-                {QUEST_COPY.dado.riprova}
-              </Button>
-            </div>
-          )}
-        </div>
+        {/* Nessuno spazio riservato: la scena arriva in fondo e il dado sta in basso. Se il
+            lancio fallisce, il messaggio la accorcia e il dado (fermo) si ridimensiona. */}
+        {state.lancio === "errore" && state.errore && (
+          <div role="alert" className="flex flex-col items-center gap-3 pt-4 text-center text-sm">
+            <p className="text-destructive">{state.errore}</p>
+            <Button type="button" variant="ticketSecondary" onClick={() => lancia(null)}>
+              {QUEST_COPY.dado.riprova}
+            </Button>
+          </div>
+        )}
       </div>
     </section>
   );

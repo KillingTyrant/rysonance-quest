@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 import { cardVariants } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,8 @@ type RazzaCardProps = {
 /**
  * La card di scelta della razza, nei suoi due stati: chiusa mostra copertina e
  * nome in piccolo, aperta — quando è la razza scelta — li mostra in grande.
+ * Senza bordo in entrambi: la scelta si legge dall'altezza della card. Un
+ * tocco la apre e la porta al centro dello schermo, un secondo la richiude.
  */
 export function RazzaCard({
   razza,
@@ -27,12 +29,31 @@ export function RazzaCard({
   media,
   onSelect,
 }: RazzaCardProps) {
+  // Un nome composto ("Gata-Ari") sul telefono non sta su una riga a 120px e
+  // va a capo dopo il trattino: su due righe il design lo vuole a 105px. Da
+  // `sm` la card aperta è larga almeno due colonne e ogni nome ci sta intero.
+  const nomeComposto = /[\s-]/.test(razza.name);
+
+  const cardRef = useRef<HTMLDivElement>(null);
+  // Si centra solo la card appena aperta da un tocco: rientrando nello step con
+  // la razza già scelta la pagina resta in cima, dove la porta il wizard.
+  const centraAllaApertura = useRef(false);
+
+  useEffect(() => {
+    if (!selected || !centraAllaApertura.current) return;
+    centraAllaApertura.current = false;
+    const movimento = window.matchMedia("(prefers-reduced-motion: no-preference)").matches;
+    cardRef.current?.scrollIntoView({ block: "center", behavior: movimento ? "smooth" : "auto" });
+  }, [selected]);
+
   return (
     <div
+      ref={cardRef}
       className={cn(
         cardVariants({ size: selected ? "expanded" : "compact" }),
-        "flex flex-col overflow-hidden",
-        selected && "border-primary ring-1 ring-primary",
+        // `scroll-mt-nav`: centrata nello spazio sotto la nav sticky, non
+        // nell'intera finestra, dove la nav ne coprirebbe la cima.
+        "flex scroll-mt-nav flex-col overflow-hidden border-0",
         disabled && "opacity-50",
       )}
     >
@@ -45,7 +66,10 @@ export function RazzaCard({
         type="button"
         aria-pressed={selected}
         disabled={disabled}
-        onClick={onSelect}
+        onClick={() => {
+          centraAllaApertura.current = !selected;
+          onSelect();
+        }}
         className={cn(
           "relative flex min-h-0 flex-1 overflow-hidden bg-muted text-left",
           "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-ring",
@@ -55,13 +79,15 @@ export function RazzaCard({
         {media}
 
         {/*
-          Il velo parte da nero e non da `background`: sotto c'è sempre
-          un'illustrazione, non la superficie della card, quindi il nome è bianco
-          in entrambi i temi e il contrasto non deve dipendere dal tema.
+          Il velo serve solo al nome: sta nei 150px in fondo, alta uguale
+          aperta e chiusa, e non scurisce il resto dell'illustrazione. Parte da
+          nero e non da `background`: sotto c'è sempre un'illustrazione, non la
+          superficie della card, quindi il nome è bianco in entrambi i temi e il
+          contrasto non deve dipendere dal tema.
         */}
         <span
           aria-hidden
-          className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
+          className="absolute inset-x-0 bottom-0 h-[150px] bg-gradient-to-t from-black/70 to-transparent"
         />
 
         <span className="relative flex h-full w-full flex-col p-4">
@@ -71,15 +97,17 @@ export function RazzaCard({
               selected ? "justify-center pb-4" : "justify-end",
             )}
           >
-            {/* I corpi del mockup — 72px chiusa, 120px aperta
-                — valgono da `lg` in su: sotto scalano, altrimenti il nome di una
-                razza lunga esce dalla card sul telefono. */}
+            {/* I corpi del mockup valgono su ogni schermo, telefono compreso:
+                72px chiusa, 120px aperta (105px per i nomi su due righe). */}
             <span
               className={cn(
                 "font-sprat uppercase leading-none tracking-[-0.08em] text-white",
                 selected
-                  ? "font-extralight text-6xl sm:text-8xl lg:text-[120px]"
-                  : "text-right font-normal text-4xl sm:text-5xl lg:text-[72px]",
+                  ? cn(
+                      "text-center font-extralight",
+                      nomeComposto ? "text-[105px] sm:text-[120px]" : "text-[120px]",
+                    )
+                  : "text-right font-normal text-[72px]",
               )}
             >
               {razza.name}

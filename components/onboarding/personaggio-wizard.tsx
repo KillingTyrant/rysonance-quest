@@ -233,6 +233,8 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
         >
           <ConfirmScreen
             name={draft.name.trim()}
+            razzaKey={draft.razza_key}
+            viaKey={draft.via_key}
             pending={pending}
             saveError={saveError}
             onConfirm={handleSave}
@@ -245,7 +247,7 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
 
   const step = view.step;
   const Step = STEP_COMPONENTS[step];
-  const { schermoIntero }: StepDef = WIZARD_STEPS[stepIndex(step)];
+  const { schermoIntero, senzaIndietro }: StepDef = WIZARD_STEPS[stepIndex(step)];
   const position = stepPositionInGroup(step);
   const missing = problemsForStep(problems, step).map((problem) => problem.label);
 
@@ -268,8 +270,9 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
         tabIndex={-1}
         className={cn("flex w-full flex-col px-gutter outline-none", schermoIntero && "flex-1")}
       >
-        <header className="flex flex-col gap-1">
-          <h1 className="text-4xl font-bold">
+        {/* 40px dalla nav, dal design della scelta della razza. */}
+        <header className="flex flex-col gap-1 pt-10">
+          <h1 className="text-[20px] font-bold">
             {position?.group.introTitle ?? WIZARD_STEPS[stepIndex(step)].title}
           </h1>
           {position && position.count > 1 && (
@@ -305,13 +308,13 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
           {/*
             Il bottone che manda avanti sta nella nav, in alto: le schermate di
             scelta sono lunghe e su telefono il fondo pagina è lontano. Qui
-            resta solo il ritorno indietro.
+            resta solo il ritorno indietro, per gli step che lo hanno.
           */}
           {position && (
             <NavAction>
               <Button
                 type="button"
-                variant="ticket"
+                variant="ticketSmallBrand"
                 size="nav"
                 disabled={missing.length > 0 || pending}
                 onClick={avanti}
@@ -321,25 +324,27 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
             </NavAction>
           )}
 
-          <nav
-            className={cn(
-              "flex flex-wrap items-center justify-center gap-3 border-t pt-6",
-              schermoIntero && "mt-auto pb-4",
-            )}
-          >
-            {position && (
-              <Link
-                href="#"
-                className="self-center w-full text-center text-muted-foreground underline"
-                onClick={(e) => {
-                  e.preventDefault();
-                  indietro();
-                }}
-              >
-                Indietro
-              </Link>
-            )}
-          </nav>
+          {!senzaIndietro && (
+            <nav
+              className={cn(
+                "flex flex-wrap items-center justify-center gap-3 border-t pt-6",
+                schermoIntero && "mt-auto pb-4",
+              )}
+            >
+              {position && (
+                <Link
+                  href="#"
+                  className="self-center w-full text-center text-muted-foreground underline"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    indietro();
+                  }}
+                >
+                  Indietro
+                </Link>
+              )}
+            </nav>
+          )}
         </div>
 
         {/* <PersonaggioSheet

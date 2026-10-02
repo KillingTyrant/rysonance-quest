@@ -60,7 +60,7 @@ export async function getCatalog(): Promise<Catalog> {
       "vie",
       supabase
         .from("vie")
-        .select("key, name, description, sort_order")
+        .select("key, name, title, description, sort_order")
         .order("sort_order"),
     ),
   ]);

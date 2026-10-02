@@ -73,6 +73,7 @@ export function D12Dice({
   framed = true,
   announce = true,
   appearance,
+  framing = "reference",
   ref,
 }: D12DiceProps & { ref?: Ref<D12DiceHandle> }) {
   const mountedRef = useRef(false);
@@ -240,6 +241,7 @@ export function D12Dice({
                 onRollComplete={settleAt}
                 orbitControls={orbitControls}
                 appearance={mergedAppearance}
+                framing={framing}
               />
             </SceneErrorBoundary>
           </div>

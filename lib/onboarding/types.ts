@@ -19,7 +19,7 @@ export type Razza = Pick<
 
 export type Via = Pick<
   Row<"vie">,
-  "key" | "name" | "description" | "sort_order"
+  "key" | "name" | "title" | "description" | "sort_order"
 >;
 
 /**

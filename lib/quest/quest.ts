@@ -38,6 +38,29 @@ async function leggiNumero(personaggioId: string): Promise<number | null> {
 }
 
 /**
+ * I numeri già estratti dai personaggi dell'utente corrente in questa quest, per
+ * id del personaggio: li mostra la lobby. Il filtro per proprietario lo fa RLS.
+ * Chi non ha ancora lanciato, o non ha la riga per questa quest, non c'è.
+ */
+export async function getNumeri(): Promise<Map<string, number>> {
+  const numeri = new Map<string, number>();
+  const questKey = getQuestKey();
+  if (!questKey) return numeri;
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("personaggio_quest")
+    .select("personaggio_id, numero_dado")
+    .eq("quest_key", questKey);
+
+  if (error) throw new Error(error.message);
+  for (const { personaggio_id, numero_dado } of data) {
+    if (numero_dado !== null) numeri.set(personaggio_id, numero_dado);
+  }
+  return numeri;
+}
+
+/**
  * La quest del personaggio, o `null` se il personaggio non esiste o non è
  * dell'utente corrente (lo decide RLS).
  */

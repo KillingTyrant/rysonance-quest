@@ -10,13 +10,20 @@ import {
   ATLAS_FACE_FILL,
   ATLAS_ROWS,
   createD12Geometry,
+  D12_INRADIUS,
   D12_RADIUS,
   type DiceFaceMap,
   restQuaternion,
   toVector3,
 } from "./dice-geometry";
-import { evaluateRollPose, fitCameraDistance, LANDING_RADIUS } from "./dice-utils";
-import type { DiceAppearance, DiceFloor, RollPlan, Vec2Tuple } from "./types";
+import {
+  APEX_HEIGHT_RANGE,
+  evaluateRollPose,
+  fitCameraDistance,
+  fitFlightFrame,
+  LANDING_RADIUS,
+} from "./dice-utils";
+import type { DiceAppearance, DiceFloor, DiceFraming, RollPlan, Vec2Tuple } from "./types";
 
 export type D12SceneProps = {
   /** Piano del lancio in corso; `null` quando il dado è fermo. */
@@ -32,6 +39,7 @@ export type D12SceneProps = {
   onRollComplete: (planId: number, landing: Vec2Tuple) => void;
   orbitControls: boolean;
   appearance: DiceAppearance;
+  framing: DiceFraming;
 };
 
 // Inquadratura quasi a piombo (~74°): la faccia superiore riempie il frame, il piano si legge
@@ -41,6 +49,8 @@ const CAMERA_TARGET = new Vector3(0, 1.2, 0);
 const CAMERA_OFFSET = new Vector3(...CAMERA.position).sub(CAMERA_TARGET);
 /** Area di atterraggio più il raggio del dado e un margine: non deve mai uscire dai bordi laterali. */
 const MIN_VISIBLE_HALF_WIDTH = LANDING_RADIUS + D12_RADIUS + 0.3;
+/** Margine attorno al volo nell'inquadratura `"tight"`, in frazione del semi-lato. */
+const TIGHT_MARGIN = 0.04;
 const GL_OPTIONS = { antialias: true, alpha: true };
 // Misure da offsetWidth/offsetHeight e non da getBoundingClientRect: se un genitore
 // viene scalato o spostato da un'animazione CSS/GSAP il canvas non si ridimensiona.
@@ -59,6 +69,7 @@ export function D12Scene({
   onRollComplete,
   orbitControls,
   appearance,
+  framing,
 }: D12SceneProps) {
   return (
     <Canvas
@@ -70,7 +81,7 @@ export function D12Scene({
       resize={RESIZE_OPTIONS}
       style={{ background: "transparent" }}
     >
-      <CameraRig />
+      <CameraRig framing={framing} />
       <ambientLight intensity={0.6} />
       <directionalLight
         position={[3.5, 6, 4]}
@@ -105,8 +116,12 @@ export function D12Scene({
 
 export default D12Scene;
 
-/** Tiene la camera puntata sul bersaglio e la allontana quando il canvas è stretto e alto. */
-function CameraRig() {
+/**
+ * Tiene la camera puntata sul bersaglio a una distanza che dipende dal canvas:
+ * con `"reference"` la allontana solo quando il canvas è stretto e alto, con
+ * `"tight"` la avvicina al volo del dado e sposta l'immagine perché ci stia tutto.
+ */
+function CameraRig({ framing }: { framing: DiceFraming }) {
   const camera = useThree((state) => state.camera);
   const width = useThree((state) => state.size.width);
   const height = useThree((state) => state.size.height);
@@ -114,16 +129,37 @@ function CameraRig() {
 
   useLayoutEffect(() => {
     if (width <= 0 || height <= 0) return;
-    const distance = fitCameraDistance({
-      aspect: width / height,
-      fov: CAMERA.fov,
-      baseDistance: CAMERA_OFFSET.length(),
-      minHalfWidth: MIN_VISIBLE_HALF_WIDTH,
-    });
+    const aspect = width / height;
+    let distance: number;
+    if (framing === "tight") {
+      const frame = fitFlightFrame({
+        aspect,
+        fov: CAMERA.fov,
+        target: CAMERA_TARGET.toArray(),
+        direction: CAMERA_OFFSET.toArray(),
+        dieRadius: D12_RADIUS,
+        restHeight: D12_INRADIUS,
+        apexHeight: APEX_HEIGHT_RANGE[1],
+        landingRadius: LANDING_RADIUS,
+        margin: TIGHT_MARGIN,
+      });
+      distance = frame.distance;
+      // Una finestra spostata in su di `shiftY` semi-altezze: il volo resta centrato e
+      // la proiezione (anche quella dell'atterraggio in `Die`) ne tiene conto da sé.
+      camera.setViewOffset(width, height, 0, (-frame.shiftY * height) / 2, width, height);
+    } else {
+      distance = fitCameraDistance({
+        aspect,
+        fov: CAMERA.fov,
+        baseDistance: CAMERA_OFFSET.length(),
+        minHalfWidth: MIN_VISIBLE_HALF_WIDTH,
+      });
+      camera.clearViewOffset();
+    }
     camera.position.copy(CAMERA_OFFSET).setLength(distance).add(CAMERA_TARGET);
     camera.lookAt(CAMERA_TARGET);
     invalidate();
-  }, [camera, width, height, invalidate]);
+  }, [camera, framing, width, height, invalidate]);
 
   return null;
 }
@@ -169,7 +205,7 @@ function createAnimationState(): AnimationState {
   };
 }
 
-type DieProps = Omit<D12SceneProps, "orbitControls">;
+type DieProps = Omit<D12SceneProps, "orbitControls" | "framing">;
 
 function Die({ plan, restValue, restPosition, onRollComplete, appearance }: DieProps) {
   const meshRef = useRef<Mesh>(null);

@@ -47,7 +47,7 @@ type CartaPersonaggioProps = {
    * dove le card sono una lista sotto il titolo della pagina.
    */
   titolo?: "h1" | "h2";
-  /** Il numero estratto, nell'esagono sull'illustrazione. Lo passa solo la quest. */
+  /** Il numero estratto, nell'esagono sull'illustrazione: nella quest e nella lobby. */
   numero?: number | null;
   className?: string;
 };

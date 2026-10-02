@@ -16,6 +16,8 @@ import type { Vec3Tuple } from "./types";
 
 /** Raggio circoscritto del dado in unità mondo. */
 export const D12_RADIUS = 0.8;
+/** Raggio inscritto (centro-faccia) del dado: l'altezza del centro quando è appoggiato. */
+export const D12_INRADIUS = D12_RADIUS * Math.sqrt((5 + 2 * Math.sqrt(5)) / 15);
 export const ATLAS_COLUMNS = 4;
 export const ATLAS_ROWS = 3;
 /**

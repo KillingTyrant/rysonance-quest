@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { type ReactNode, useRef, useState } from "react";
 
 import { PartnerLogo } from "@/components/brand/partner-logo";
 import { Logo } from "@/components/layout/logo";
@@ -9,25 +9,59 @@ import { gsap, useGSAP } from "@/components/motion/gsap";
 import { QUEST_COPY } from "./copy";
 
 /** Quando lo splash passa da Rysonance al partner (secondi). */
-const CAMBIO_S = 1;
-/** Durata della barra: coincide con l'attesa minima della quest (SPLASH_MIN_MS). */
-const DURATA_S = 2;
+const CAMBIO_S = 2;
+/** Durata della barra, e quindi dello splash: la quest compare solo dopo (vedi `SplashGate`). */
+const DURATA_S = 4;
+
+/**
+ * Lo splash fa da sipario alla quest: resta per tutta l'animazione, contata da
+ * quando compare sul client, e solo dopo lascia il posto a `children`. Se a quel
+ * punto la quest non è ancora arrivata, lo splash resta fermo sullo stato finale
+ * (il fallback di Suspense dentro `children`) finché non arriva.
+ *
+ * L'attesa minima non sta sul server: un `setTimeout` accanto alla query parte
+ * con la richiesta, l'animazione solo quando lo splash compare, e fra i due passa
+ * un tempo variabile (navigazione senza prefetch, idratazione, compilazione in
+ * dev). Bastava poco perché la quest arrivasse prima del cambio al partner.
+ */
+export function SplashGate({ children }: { children: ReactNode }) {
+  const [finito, setFinito] = useState(false);
+  if (!finito) return <SplashFrame onFine={() => setFinito(true)} />;
+  return children;
+}
+
+type SplashFrameProps = {
+  /** Chiamata a barra piena; con "riduci movimento", dopo la stessa durata. */
+  onFine?: () => void;
+  /** Lo stato finale da subito, senza animazione: logo del partner e barra piena. */
+  finale?: boolean;
+};
 
 /**
  * Il caricamento della quest, in due fasi: prima logo e testo di Rysonance,
  * dopo `CAMBIO_S` quelli del partner, mentre la barra si riempie in `DURATA_S`.
- * Fa da fallback di Suspense per `/quest` e `/quest/[id]`.
+ * Fa da fallback di Suspense per `/quest` e, dentro `SplashGate`, per `/quest/[id]`.
  *
  * Le due fasi stanno sovrapposte nella stessa cella della griglia, così il
  * cambio non sposta nulla. Con "riduci movimento" si vede solo lo stato
  * finale: logo del partner e barra piena (il CSS nasconde la fase partner solo
  * quando il movimento è ammesso, vedi `.splash-partner` in globals.css).
  */
-export function SplashFrame() {
+export function SplashFrame({ onFine, finale = false }: SplashFrameProps) {
   const root = useRef<HTMLDivElement>(null);
 
   useGSAP(
     () => {
+      if (finale) {
+        gsap.set(".splash-rysonance", { autoAlpha: 0 });
+        gsap.set(".splash-partner", { autoAlpha: 1 });
+        gsap.set(".splash-bar", { scaleX: 1 });
+        return;
+      }
+
+      // Fuori da matchMedia: la durata vale anche con "riduci movimento".
+      if (onFine) gsap.delayedCall(DURATA_S, onFine);
+
       gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
         gsap.fromTo(
           ".splash-bar",

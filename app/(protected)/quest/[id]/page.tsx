@@ -2,12 +2,9 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { QuestFlow } from "@/components/quest/quest-flow";
-import { SplashFrame } from "@/components/quest/splash-frame";
+import { SplashFrame, SplashGate } from "@/components/quest/splash-frame";
 import { getQuest } from "@/lib/quest/quest";
 import type { Quest } from "@/lib/quest/types";
-
-/** Tempo minimo di permanenza dello splash, anche se la quest arriva prima. */
-const SPLASH_MIN_MS = 2200;
 
 export const metadata = {
   title: "Quest · Rysonance",
@@ -19,13 +16,17 @@ export const metadata = {
  * pagina. Chi apre l'id di un altro utente trova un 404: lo decide RLS.
  *
  * Senza `generateStaticParams` l'id è un dato di runtime: si legge dentro
- * Suspense, e intanto si vede lo splash (Rysonance, poi il partner).
+ * Suspense. Intanto lo splash (Rysonance, poi il partner) fa tutta la sua
+ * animazione, e la quest compare solo dopo, anche se è arrivata prima: lo
+ * decide `SplashGate` sul client. Se la quest tarda, resta lo splash finale.
  */
 export default function QuestPage({ params }: { params: Promise<{ id: string }> }) {
   return (
-    <Suspense fallback={<SplashFrame />}>
-      <QuestContent params={params} />
-    </Suspense>
+    <SplashGate>
+      <Suspense fallback={<SplashFrame finale />}>
+        <QuestContent params={params} />
+      </Suspense>
+    </SplashGate>
   );
 }
 
@@ -34,11 +35,7 @@ async function QuestContent({ params }: { params: Promise<{ id: string }> }) {
 
   let quest: Quest | null;
   try {
-    // In parallelo: l'attesa totale è max(query, SPLASH_MIN_MS), non la somma.
-    [quest] = await Promise.all([
-      getQuest(id),
-      new Promise((resolve) => setTimeout(resolve, SPLASH_MIN_MS)),
-    ]);
+    quest = await getQuest(id);
   } catch {
     return <QuestErrore id={id} />;
   }

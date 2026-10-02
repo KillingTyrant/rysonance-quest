@@ -8,6 +8,7 @@ import {
   ATLAS_ROWS,
   buildD12FaceMap,
   createD12Geometry,
+  D12_INRADIUS,
   D12_RADIUS,
   restQuaternion,
 } from "./dice-geometry.ts";
@@ -50,6 +51,10 @@ describe("buildD12FaceMap", () => {
 
   it("calcola l'inraggio del dodecaedro", () => {
     assert.ok(Math.abs(faceMap.inradius - INRADIUS_RATIO) < 1e-4);
+  });
+
+  it("fa coincidere D12_INRADIUS con l'inraggio della geometria del dado", () => {
+    assert.ok(Math.abs(createD12Geometry().faceMap.inradius - D12_INRADIUS) < 1e-6);
   });
 
   it("rifiuta geometrie che non sono un dodecaedro a detail 0", () => {

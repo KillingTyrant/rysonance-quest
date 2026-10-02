@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it, mock } from "node:test";
+import { PerspectiveCamera, Vector3 } from "three";
 
 import {
   APEX_HEIGHT_RANGE,
@@ -7,6 +8,7 @@ import {
   createRollPlan,
   evaluateRollPose,
   fitCameraDistance,
+  fitFlightFrame,
   isValidD12Value,
   POWER_NOISE,
   randomD12,
@@ -165,6 +167,96 @@ describe("fitCameraDistance", () => {
 
     const halfWidth = Math.tan((options.fov * Math.PI) / 360) * aspect * distance;
     assert.ok(Math.abs(halfWidth - options.minHalfWidth) < 1e-9);
+  });
+});
+
+describe("fitFlightFrame", () => {
+  const options = {
+    fov: 38,
+    target: [0, 1.2, 0] as const,
+    direction: [0, 6.8, 2] as const,
+    dieRadius: 0.8,
+    restHeight: 0.636,
+    apexHeight: 1.8,
+    landingRadius: 0.55,
+    margin: 0.04,
+  };
+
+  /** La camera di three con l'inquadratura calcolata, su un canvas alto 1000 px. */
+  function frameCamera(aspect: number): PerspectiveCamera {
+    const frame = fitFlightFrame({ ...options, aspect });
+    const height = 1000;
+    const camera = new PerspectiveCamera(options.fov, aspect, 0.1, 60);
+    const target = new Vector3(...options.target);
+    camera.position.set(...options.direction).setLength(frame.distance).add(target);
+    camera.lookAt(target);
+    camera.setViewOffset(
+      aspect * height,
+      height,
+      0,
+      (-frame.shiftY * height) / 2,
+      aspect * height,
+      height,
+    );
+    camera.updateMatrixWorld();
+    return camera;
+  }
+
+  /** Punti sulla superficie del dado ovunque sul disco, a riposo e all'apice, in NDC. */
+  function flightNdc(camera: PerspectiveCamera): Vector3[] {
+    const points: Vector3[] = [];
+    const golden = Math.PI * (3 - Math.sqrt(5));
+    for (const height of [options.restHeight, options.restHeight + options.apexHeight]) {
+      for (let i = 0; i < 24; i += 1) {
+        const angle = (i / 24) * Math.PI * 2;
+        const center = new Vector3(
+          Math.cos(angle) * options.landingRadius,
+          height,
+          Math.sin(angle) * options.landingRadius,
+        );
+        for (let k = 0; k < 400; k += 1) {
+          const y = 1 - (2 * (k + 0.5)) / 400;
+          const ring = Math.sqrt(1 - y * y);
+          points.push(
+            new Vector3(Math.cos(golden * k) * ring, y, Math.sin(golden * k) * ring)
+              .multiplyScalar(options.dieRadius)
+              .add(center)
+              .project(camera),
+          );
+        }
+      }
+    }
+    return points;
+  }
+
+  it("tiene tutto il volo nel canvas, centrato e stretto fino al margine", () => {
+    const limit = 1 - options.margin;
+    for (const aspect of [0.5, 0.8, 1, 1.4, 2.2]) {
+      const points = flightNdc(frameCamera(aspect));
+      const maxX = Math.max(...points.map((p) => Math.abs(p.x)));
+      const maxY = Math.max(...points.map((p) => p.y));
+      const minY = Math.min(...points.map((p) => p.y));
+      assert.ok(maxX <= limit + 1e-3, `aspect ${aspect}: x ${maxX}`);
+      assert.ok(maxY <= limit + 1e-3, `aspect ${aspect}: alto ${maxY}`);
+      assert.ok(minY >= -limit - 1e-3, `aspect ${aspect}: basso ${minY}`);
+      assert.ok(Math.abs(maxY + minY) < 0.02, `aspect ${aspect}: centro ${(maxY + minY) / 2}`);
+      // Stretta: almeno su un lato il volo arriva al margine.
+      const reach = Math.max(maxX, (maxY - minY) / 2);
+      assert.ok(reach > limit - 0.02, `aspect ${aspect}: arriva a ${reach}`);
+    }
+  });
+
+  it("lascia lo spazio del salto sopra: a riposo il dado sta sotto il centro", () => {
+    for (const aspect of [0.5, 1, 2.2]) {
+      const rest = new Vector3(0, options.restHeight, 0).project(frameCamera(aspect));
+      assert.ok(rest.y < -0.1, `aspect ${aspect}: ${rest.y}`);
+    }
+  });
+
+  it("arretra quando il canvas si stringe", () => {
+    const wide = fitFlightFrame({ ...options, aspect: 1.4 }).distance;
+    const narrow = fitFlightFrame({ ...options, aspect: 0.6 }).distance;
+    assert.ok(narrow > wide);
   });
 });
 

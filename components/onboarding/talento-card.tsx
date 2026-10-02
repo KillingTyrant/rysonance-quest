@@ -5,7 +5,6 @@ import type { Talento } from "@/lib/onboarding/types";
 type TalentoCardProps = {
   talento: Talento;
   selected: boolean;
-  disabled?: boolean;
   /** L'illustrazione del talento (vedi `CATALOG_IMAGES.talenti`). */
   // image?: StaticImageData;
   onSelect: () => void;
@@ -14,15 +13,17 @@ type TalentoCardProps = {
 };
 
 /**
- * La card di un talento a scelta: copertina illustrata con il nome sopra, e
- * sotto la descrizione di atmosfera. È un solo bottone — non ha scelte annidate
- * come la card della razza — e lo stato scelto si legge dal bordo e dal segno
- * di spunta nell'angolo, non solo dal colore.
+ * La card di un talento a scelta, con i due stati della card della razza:
+ * chiusa è la copertina con il nome, aperta — quando è il talento scelto —
+ * prende l'altezza piena. A differenza della razza il nome non si sposta e non
+ * cresce: resta in basso a sinistra, allo stesso corpo, aperta o chiusa.
+ *
+ * Sotto la copertina può stare la descrizione di atmosfera. È un solo bottone,
+ * e lo stato scelto si legge dall'altezza e dal bordo, non solo dal colore.
  */
 export function TalentoCard({
   talento,
   selected,
-  disabled = false,
   // image = undefined,
   onSelect,
   hideDescription = false,
@@ -31,19 +32,15 @@ export function TalentoCard({
     <button
       type="button"
       aria-pressed={selected}
-      disabled={disabled}
       onClick={onSelect}
       className={cn(
-        cardVariants(),
-        "group flex h-full flex-col overflow-hidden text-left transition",
+        cardVariants({ size: selected ? "expanded" : "compact" }),
+        "group flex flex-col overflow-hidden text-left",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        selected
-          ? "border-primary ring-2 ring-primary"
-          : "hover:-translate-y-0.5 hover:border-foreground/30 hover:shadow-md",
-        disabled && "cursor-not-allowed opacity-50 hover:translate-y-0 hover:shadow",
+        selected && "border-primary ring-1 ring-primary",
       )}
     >
-      <span className="relative flex flex-col align-bottom h-52 w-full shrink-0 overflow-hidden bg-muted justify-end p-2 font-sprat">
+      <span className="relative flex min-h-0 w-full flex-1 flex-col justify-end overflow-hidden bg-muted p-2 font-sprat">
         {/* {image ? (
           <Image
             src={image}
@@ -52,7 +49,7 @@ export function TalentoCard({
             sizes="(min-width: 1024px) 22rem, (min-width: 640px) 50vw, 100vw"
             className={cn(
               "object-cover transition-transform duration-500",
-              !disabled && "motion-safe:group-hover:scale-105",
+              "motion-safe:group-hover:scale-105",
             )}
           />
         ) : (
@@ -85,8 +82,10 @@ export function TalentoCard({
         {/* <span className="absolute inset-x-0 bottom-0 px-4 pb-2 text-2xl font-medium uppercase leading-none tracking-tight">
           {talento.name}
         </span> */}
-        <span className="block text-5xl">{talento.name.split(" ")[0]}</span>
-        <span className="block text-5xl">{talento.name.split(" ").slice(1).join(" ")}</span>
+        {/* Aperta o chiusa, le stesse classi: il nome resta ancorato in basso a
+            sinistra e non cambia corpo (la razza invece lo centra e lo ingrandisce). */}
+        <span className="relative block text-5xl">{talento.name.split(" ")[0]}</span>
+        <span className="relative block text-5xl">{talento.name.split(" ").slice(1).join(" ")}</span>
 
       </span>
 

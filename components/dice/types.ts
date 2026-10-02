@@ -43,7 +43,18 @@ export type D12DiceProps = {
   announce?: boolean;
   /** Colori, materiale e font dei numeri del dado. */
   appearance?: Partial<DiceAppearance>;
+  /** Come la camera inquadra il lancio (default `"reference"`). */
+  framing?: DiceFraming;
 };
+
+/**
+ * Inquadratura della scena. Con `"reference"` la camera resta alla distanza di
+ * riferimento, con il dado al centro, e arretra solo nei canvas stretti. Con
+ * `"tight"` si avvicina finché il volo del dado, salto compreso, riempie il
+ * canvas: il dado è il più grande possibile e a riposo sta sotto il centro,
+ * perché lo spazio sopra serve al salto.
+ */
+export type DiceFraming = "reference" | "tight";
 
 /**
  * Il piano su cui cade il dado: un disco pieno, solo l'ombra (il dado sembra
@@ -142,6 +153,37 @@ export type CameraFitOptions = {
   baseDistance: number;
   /** Semi-larghezza orizzontale, alla distanza del bersaglio, che deve restare visibile. */
   minHalfWidth: number;
+};
+
+export type FlightFrameOptions = {
+  /** Larghezza / altezza del canvas. */
+  aspect: number;
+  /** Angolo di campo verticale in gradi. */
+  fov: number;
+  /** Punto a cui guarda la camera. */
+  target: Vec3Tuple;
+  /** Direzione dal bersaglio alla camera (anche non normalizzata); l'alto è +y. */
+  direction: Vec3Tuple;
+  /** Raggio della sfera che contiene il dado. */
+  dieRadius: number;
+  /** Altezza del centro del dado appoggiato sul piano. */
+  restHeight: number;
+  /** Altezza massima del salto sopra il riposo. */
+  apexHeight: number;
+  /** Raggio del disco attorno all'origine in cui il dado sta e atterra. */
+  landingRadius: number;
+  /** Margine attorno al volo, in frazione della semi-altezza e della semi-larghezza. */
+  margin: number;
+};
+
+export type FlightFrame = {
+  /** Distanza camera-bersaglio. */
+  distance: number;
+  /**
+   * Spostamento verticale dell'immagine, in frazione della semi-altezza del
+   * canvas: positivo se la vista sale e quindi il bersaglio scende sullo schermo.
+   */
+  shiftY: number;
 };
 
 export type CreateRollPlanOptions = {

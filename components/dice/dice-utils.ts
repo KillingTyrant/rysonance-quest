@@ -12,6 +12,8 @@ import type {
   DiceController,
   DiceControllerOptions,
   DiceControllerState,
+  FlightFrame,
+  FlightFrameOptions,
   RollOptions,
   RollPlan,
   RollPose,
@@ -108,6 +110,114 @@ export function fitCameraDistance({
 }: CameraFitOptions): number {
   const tanHalfFov = Math.tan((fov * Math.PI) / 360);
   return Math.max(baseDistance, minHalfWidth / (tanHalfFov * aspect));
+}
+
+/** Punti sul bordo del disco di atterraggio, al riposo e all'apice: il volo sta dentro. */
+const FLIGHT_RIM_SAMPLES = 24;
+const FIT_ITERATIONS = 40;
+
+/**
+ * Inquadratura stretta sul volo: la distanza minima a cui il volume del lancio
+ * (il disco di atterraggio dal riposo fino all'apice, con il dado attorno) resta
+ * tutto nel canvas, e lo spostamento verticale che lo centra. Il salto sale verso
+ * la camera, quindi il volume sta più sopra che sotto il bersaglio e `shiftY` è
+ * positivo: il dado a riposo finisce sotto il centro.
+ *
+ * Senza spostamento orizzontale: la larghezza basta per il lato più largo.
+ */
+export function fitFlightFrame(options: FlightFrameOptions): FlightFrame {
+  const tanHalfFov = Math.tan((options.fov * Math.PI) / 360);
+  const maxHalfHeight = tanHalfFov * (1 - options.margin);
+  const maxHalfWidth = maxHalfHeight * options.aspect;
+  const fits = (distance: number) => {
+    const bounds = flightBounds(options, distance);
+    return (
+      bounds !== null &&
+      (bounds.maxY - bounds.minY) / 2 <= maxHalfHeight &&
+      bounds.maxX <= maxHalfWidth
+    );
+  };
+
+  // Raddoppia fino a contenere il volo, poi stringe: la dimensione apparente cala con la distanza.
+  let far = 1;
+  for (let i = 0; i < 32 && !fits(far); i += 1) far *= 2;
+  let near = far / 2;
+  for (let i = 0; i < FIT_ITERATIONS; i += 1) {
+    const middle = (near + far) / 2;
+    if (fits(middle)) far = middle;
+    else near = middle;
+  }
+
+  const bounds = flightBounds(options, far);
+  const centerY = bounds ? (bounds.maxY + bounds.minY) / 2 : 0;
+  return { distance: far, shiftY: centerY / tanHalfFov };
+}
+
+/**
+ * Estensione del volo vista dalla camera a `distance` dal bersaglio, in tangenti
+ * dell'angolo dall'asse ottico (le unità del piano immagine a distanza 1). `null`
+ * se una parte del dado finisce alle spalle della camera.
+ */
+function flightBounds(
+  { target, direction, dieRadius, restHeight, apexHeight, landingRadius }: FlightFrameOptions,
+  distance: number,
+): { minY: number; maxY: number; maxX: number } | null {
+  // La base di `lookAt` con l'alto del mondo in +y: avanti, destra = avanti × alto, su = destra × avanti.
+  const forward = normalize3([-direction[0], -direction[1], -direction[2]]);
+  const right = normalize3([-forward[2], 0, forward[0]]);
+  const up = cross3(right, forward);
+  const eye: Vec3Tuple = [
+    target[0] - forward[0] * distance,
+    target[1] - forward[1] * distance,
+    target[2] - forward[2] * distance,
+  ];
+
+  let minY = Infinity;
+  let maxY = -Infinity;
+  let maxX = 0;
+  for (const height of [restHeight, restHeight + apexHeight]) {
+    for (let i = 0; i < FLIGHT_RIM_SAMPLES; i += 1) {
+      const angle = (i / FLIGHT_RIM_SAMPLES) * TWO_PI;
+      const offset: Vec3Tuple = [
+        Math.cos(angle) * landingRadius - eye[0],
+        height - eye[1],
+        Math.sin(angle) * landingRadius - eye[2],
+      ];
+      const depth = dot3(offset, forward);
+      if (depth <= dieRadius) return null;
+      // Le due tangenti alla sfera del dado nel piano fra l'asse ottico e l'asse dato.
+      const [lowY, highY] = tangentSpan(dot3(offset, up), depth, dieRadius);
+      const [, highX] = tangentSpan(Math.abs(dot3(offset, right)), depth, dieRadius);
+      minY = Math.min(minY, lowY);
+      maxY = Math.max(maxY, highY);
+      maxX = Math.max(maxX, highX);
+    }
+  }
+  return { minY, maxY, maxX };
+}
+
+/** Tangenti dei due raggi che sfiorano la sfera; oltre i 90° dall'asse non c'è immagine. */
+function tangentSpan(lateral: number, depth: number, radius: number): Vec2Tuple {
+  const center = Math.atan2(lateral, depth);
+  const half = Math.asin(radius / Math.hypot(lateral, depth));
+  const limit = Math.PI / 2;
+  return [
+    center - half <= -limit ? -Infinity : Math.tan(center - half),
+    center + half >= limit ? Infinity : Math.tan(center + half),
+  ];
+}
+
+function dot3(a: Vec3Tuple, b: Vec3Tuple): number {
+  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
+
+function cross3(a: Vec3Tuple, b: Vec3Tuple): Vec3Tuple {
+  return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+}
+
+function normalize3(v: Vec3Tuple): Vec3Tuple {
+  const length = Math.hypot(v[0], v[1], v[2]);
+  return [v[0] / length, v[1] / length, v[2] / length];
 }
 
 /** Avanzamento 0..1 della fase [start, end] al tempo normalizzato p. */

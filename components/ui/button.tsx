@@ -26,6 +26,9 @@ const buttonVariants = cva(
         // NUOVA VARIANTE SMALL (Usa il nuovo CSS btn-ticket-sm)
         ticketSmall:
           "btn-ticket-sm text-[#f4f4f4] [--ticket-bg:#272727] [--ticket-border-width:0px] hover:text-[#272727] hover:[--ticket-bg:#f4f4f4] hover:[--ticket-border:#272727] hover:[--ticket-border-width:3px] active:text-[#f4f4f4] active:[--ticket-bg:#272727] active:[--ticket-border-width:0px]",
+        // La forma di ticketSmall con i colori di ticket, stati inattivi compresi.
+        ticketSmallBrand:
+          "btn-ticket-sm text-brand-foreground [--ticket-bg:hsl(var(--brand))] [--ticket-border-width:0px] hover:text-[#272727] hover:[--ticket-bg:#f4f4f4] hover:[--ticket-border:#272727] hover:[--ticket-border-width:3px] active:text-brand-foreground active:[--ticket-bg:hsl(var(--brand))] active:[--ticket-border-width:0px] disabled:opacity-100 disabled:text-[#797979] disabled:[--ticket-bg:#FFD787] aria-disabled:pointer-events-none aria-disabled:text-[#797979] aria-disabled:[--ticket-bg:#FFD787]",
       },
       size: {
         default: "h-9 px-4 py-2",
@@ -53,12 +56,12 @@ const buttonVariants = cva(
     // Le regole sottostanti sovrascrivono w, h, font-size e line-height se usi ticketSmall + md/sm
     compoundVariants: [
       {
-        variant: "ticketSmall",
+        variant: ["ticketSmall", "ticketSmallBrand"],
         size: "md",
         className: "w-[200px] h-[40px] text-[20px]/[23px]",
       },
       {
-        variant: "ticketSmall",
+        variant: ["ticketSmall", "ticketSmallBrand"],
         size: "sm",
         className: "w-[200px] min-w-0 h-[32px] text-[16px]/[19px]",
       },
@@ -85,8 +88,8 @@ const dotSizes = {
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, longLabel, asChild = false, showDots, children, ...props }, ref) => {
 
-    // Logica speciale per la variante ticketSmall
-    const isTicketSmall = variant === "ticketSmall";
+    // Logica speciale per le varianti ticketSmall e ticketSmallBrand
+    const isTicketSmall = variant === "ticketSmall" || variant === "ticketSmallBrand";
     const displayDots = showDots !== undefined ? showDots : (variant === "ticket" || isTicketSmall);
 
     const dotClass = isTicketSmall ? "w-[10px] h-[10px]" : (dotSizes[(size as keyof typeof dotSizes) || "default"] || dotSizes.default);
