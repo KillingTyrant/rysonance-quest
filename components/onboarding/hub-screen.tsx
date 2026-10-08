@@ -42,12 +42,14 @@ function labelLines(label: string): [string, string] {
 }
 
 /**
- * L'icona dentro il quadrato della riga: quella della razza o della via
- * scelta. I talenti non hanno icona e tengono la spunta.
+ * L'icona dentro il quadrato della riga: quella della razza, della via o del
+ * talento scelto. Il talento è uno solo (`TALENTI_DA_SCEGLIERE`): se diventassero
+ * di più, il quadrato mostrerebbe il primo.
  */
 function selectionImage(groupId: GroupId, draft: PersonaggioDraft): StaticImageData | undefined {
   if (groupId === "razza" && draft.razza_key) return CATALOG_IMAGES.razzeIcone[draft.razza_key];
   if (groupId === "via" && draft.via_key) return CATALOG_IMAGES.vieIcone[draft.via_key];
+  if (groupId === "talenti" && draft.talenti[0]) return CATALOG_IMAGES.talentiIcone[draft.talenti[0]];
   return undefined;
 }
 
@@ -114,7 +116,7 @@ export function HubScreen({
 
       <h1 className="text-4xl font-extrabold">Genesi dell&apos;eroe</h1>
 
-      <div className="relative mt-4">
+      <div className="relative mt-8">
         {/*
           Il sigillo delle scelte, dietro le righe e sotto lo squarcio (-z-20 contro
           -z-10). Come nel mockup il centro sta 122px sotto l'inizio della lista e
@@ -126,7 +128,7 @@ export function HubScreen({
           viaKey={draft.via_key}
           className="pointer-events-none absolute -right-[117px] -top-[45px] -z-20"
         />
-        <ol className="flex flex-col gap-8">
+        <ol className="flex flex-col gap-6">
           {WIZARD_GROUPS.map((group) => {
             const isDone = completed(group.id);
             const isUnlocked = unlocked(group.id);
@@ -209,7 +211,7 @@ export function HubScreen({
             );
           })}
           {/* Crea random */}
-          <li key={'create-random'}>
+          <li key={'create-random'} className="mt-4">
             <button
               type="button"
               onClick={onRandomize}

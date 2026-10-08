@@ -19,6 +19,30 @@ function isStaffPath(pathname: string): boolean {
   return pathname === "/staff" || pathname.startsWith("/staff/");
 }
 
+/** Il wizard di creazione: la quest prevede un solo personaggio per utente. */
+function isOnboardingPath(pathname: string): boolean {
+  return pathname === "/onboarding" || pathname.startsWith("/onboarding/");
+}
+
+/**
+ * Redirect per chi ha una sessione: si porta dietro i cookie che getClaims può
+ * aver rinnovato su `supabaseResponse` (vedi la nota in fondo a updateSession).
+ */
+function redirectWithSession(
+  request: NextRequest,
+  supabaseResponse: NextResponse,
+  pathname: string,
+): NextResponse {
+  const url = request.nextUrl.clone();
+  url.pathname = pathname;
+  url.search = "";
+  const response = NextResponse.redirect(url);
+  supabaseResponse.cookies
+    .getAll()
+    .forEach((cookie) => response.cookies.set(cookie));
+  return response;
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -80,6 +104,30 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);
+  }
+
+  const isHome = pathname === "/";
+  if (user && request.method === "GET" && (isHome || isOnboardingPath(pathname))) {
+    // Un eroe a testa. Chi è loggato salta la home: in lobby se l'eroe ce l'ha,
+    // nel wizard se deve ancora crearlo; e nel wizard non rientra chi ne ha già
+    // uno (ci si arriva soprattutto dal login, che senza `?next=` porta lì).
+    // Solo GET: la server action del wizard fa POST su /onboarding e non va
+    // dirottata. Se la query fallisce si lascia passare, è un controllo
+    // ottimistico: la home rimanda comunque in lobby chi ha una sessione. Il
+    // filtro per proprietario lo fa RLS.
+    const { data: personaggi, error } = await supabase
+      .from("personaggi")
+      .select("id")
+      .limit(1);
+
+    if (!error) {
+      if (personaggi.length > 0) {
+        return redirectWithSession(request, supabaseResponse, "/lobby");
+      }
+      if (isHome) {
+        return redirectWithSession(request, supabaseResponse, "/onboarding");
+      }
+    }
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.

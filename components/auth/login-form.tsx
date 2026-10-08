@@ -41,9 +41,8 @@ export function LoginForm({
       });
       if (error) throw error;
       // Chi arriva con `?next=` (lo staff, rimandato qui dal proxy) torna lì;
-      // tutti gli altri vanno all'onboarding.
-      // TODO: verificare se l'utente ha già completato la prima creazione personaggio
-      // Se sì, reindirizzare a /lobby, altrimenti a /onboarding
+      // tutti gli altri vanno all'onboarding, e chi ha già un personaggio il
+      // proxy lo rimanda in lobby.
       router.push(nextFromLocation());
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");

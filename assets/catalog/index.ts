@@ -21,11 +21,16 @@ import nani_bg from "./razze/nani_bg.svg";
 import orchi_bg from "./razze/orchi_bg.svg";
 import ulu_ari_bg from "./razze/ulu_ari_bg.svg";
 import umani_bg from "./razze/umani_bg.svg";
-import armi_a_distanza from "./talenti/armi-a-distanza.svg";
-import armi_corpo_a_corpo from "./talenti/armi-corpo-a-corpo.svg";
-import magia_ancestrale from "./talenti/magia-ancestrale.svg";
-import magia_bianca from "./talenti/magia-bianca.svg";
-import magia_elementale from "./talenti/magia-elementale.svg";
+import armi_a_distanza from "./talenti/armi-a-distanza.jpg";
+import armi_corpo_a_corpo from "./talenti/armi-corpo-a-corpo.jpg";
+import magia_ancestrale from "./talenti/magia-ancestrale.jpg";
+import magia_bianca from "./talenti/magia-bianca.jpg";
+import magia_elementale from "./talenti/magia-elementale.jpg";
+import armi_a_distanza_icon from "./talenti/armi-a-distanza_icon.png";
+import armi_corpo_a_corpo_icon from "./talenti/armi-corpo-a-corpo_icon.png";
+import magia_ancestrale_icon from "./talenti/magia-ancestrale_icon.png";
+import magia_bianca_icon from "./talenti/magia-bianca_icon.png";
+import magia_elementale_icon from "./talenti/magia-elementale_icon.png";
 import combattente_icon from "./vie/combattente_icon.png";
 import sapiente_icon from "./vie/sapiente_icon.png";
 import viandante_icon from "./vie/viandante_icon.png";
@@ -42,16 +47,17 @@ import viandante_bg from "./vie/viandante_bg.svg";
  * dove `felidi.jpg` è l'arte dei Gata-Ari e `canidi.jpg` quella degli Ulu-Ari: qui i
  * file hanno il nome della chiave. Tribù e vie non hanno ancora illustrazioni.
  *
- * Razze e vie hanno anche un'icona quadrata (60×56), mostrata nel riepilogo della hub
- * quando sono scelte, con il nome della chiave come le altre.
+ * Razze, vie e talenti hanno anche un'icona quadrata (60×56; quelle dei talenti a 3×,
+ * 179×166), mostrata nel riepilogo della hub quando sono scelti, con il nome
+ * `<chiave>_icon` come le altre.
  *
  * Razze e vie hanno poi un emblema SVG monocromo (`<chiave>_bg.svg`), la sagoma che
  * riempie il sigillo sul fondo della hub: conta solo la forma, il colore lo decide chi
  * lo disegna (vedi `components/onboarding/sigillo-eroe.tsx`).
  *
- * I talenti a scelta hanno per ora illustrazioni SVG segnaposto, disegnate a mano
- * (640×360). Per sostituirle con l'arte definitiva basta cambiare l'import: la card
- * le ritaglia con `object-cover`, quindi va bene qualunque formato ~16:9.
+ * I talenti a scelta hanno l'arte definitiva (2114×1920), con il nome della chiave:
+ * `armi-corpo-a-corpo.jpg` è l'arte consegnata come "Armi da Mischia". La card le
+ * ritaglia con `object-cover`, quindi il formato non deve seguire quello della card.
  *
  * Indice a stringa e non union di chiavi: le chiavi vivono nel seed del DB, e una
  * chiave senza arte deve dare `undefined`, non un errore di tipo.
@@ -63,6 +69,7 @@ export const CATALOG_IMAGES: {
   razzeEmblemi: Record<string, StaticImageData | undefined>;
   vieEmblemi: Record<string, StaticImageData | undefined>;
   talenti: Record<string, StaticImageData | undefined>;
+  talentiIcone: Record<string, StaticImageData | undefined>;
 } = {
   razze: { elfi, gata_ari, nani, orchi, ulu_ari, umani },
   razzeIcone: {
@@ -98,5 +105,12 @@ export const CATALOG_IMAGES: {
     "magia-bianca": magia_bianca,
     "armi-a-distanza": armi_a_distanza,
     "armi-corpo-a-corpo": armi_corpo_a_corpo,
+  },
+  talentiIcone: {
+    "magia-elementale": magia_elementale_icon,
+    "magia-ancestrale": magia_ancestrale_icon,
+    "magia-bianca": magia_bianca_icon,
+    "armi-a-distanza": armi_a_distanza_icon,
+    "armi-corpo-a-corpo": armi_corpo_a_corpo_icon,
   },
 };

@@ -41,7 +41,7 @@ const buttonVariants = cva(
         sm: "w-fit min-w-[240px] h-[40px] px-8 text-[20px]/[23px] font-extrabold tracking-normal flex items-center justify-center [--ticket-notch:13.3px]",
         // La stessa CTA dentro la nav: 240 di base, ma sui telefoni più stretti si
         // restringe per stare accanto al logo.
-        nav: "w-[240px] min-w-0 shrink h-[40px] px-8 text-[20px]/[23px] font-extrabold tracking-normal flex items-center justify-center [--ticket-notch:13.3px]",
+        nav: "min-w-[240px] min-w-0 shrink h-[32px] px-8 text-[20px]/[23px] font-extrabold tracking-normal flex items-center justify-center [--ticket-notch:13.3px]",
         icon: "h-9 w-9 rounded-md",
       },
       // Etichetta troppo lunga per i 20px della CTA: scende a 16px.

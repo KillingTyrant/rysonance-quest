@@ -1,3 +1,4 @@
+import { CATALOG_IMAGES } from "@/assets/catalog";
 import { TALENTI_DA_SCEGLIERE } from "@/lib/onboarding/validate";
 
 import { StepSection } from "../step-section";
@@ -42,7 +43,7 @@ export function TalentiStep({ catalog, draft, onChange }: StepProps) {
               >
                 <TalentoCard
                   talento={talento}
-                  // image={CATALOG_IMAGES.talenti[talento.key]}
+                  image={CATALOG_IMAGES.talenti[talento.key]}
                   selected={selected}
                   onSelect={() => scegli(talento.key)}
                   hideDescription={true}

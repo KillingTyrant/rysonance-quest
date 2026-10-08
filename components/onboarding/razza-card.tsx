@@ -4,6 +4,13 @@ import { cardVariants } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { Razza } from "@/lib/onboarding/types";
 
+/**
+ * Larghezza media di una lettera del nome, in em: Sprat Condensed maiuscolo
+ * con il tracking -0.08em del titolo. Misurata sui nomi del catalogo
+ * (0,49–0,53) e presa per eccesso, così il nome non tocca i bordi.
+ */
+const EM_PER_LETTERA = 0.53;
+
 type RazzaCardProps = {
   razza: Razza;
   selected: boolean;
@@ -29,10 +36,12 @@ export function RazzaCard({
   media,
   onSelect,
 }: RazzaCardProps) {
-  // Un nome composto ("Gata-Ari") sul telefono non sta su una riga a 120px e
-  // va a capo dopo il trattino: su due righe il design lo vuole a 105px. Da
-  // `sm` la card aperta è larga almeno due colonne e ogni nome ci sta intero.
-  const nomeComposto = /[\s-]/.test(razza.name);
+  // Il nome sta sempre su una riga: il corpo del mockup (72px chiusa, 120px
+  // aperta) è un massimo, e se la card è più stretta del nome il corpo scende
+  // fino a farcelo stare. Sul telefono "Gata-Ari" a 120px è largo 480px contro
+  // i ~330 della card, e senza questo andrebbe a capo dopo il trattino.
+  const corpo = selected ? 120 : 72;
+  const corpoAdattato = `min(${corpo}px, ${(100 / (razza.name.length * EM_PER_LETTERA)).toFixed(2)}cqi)`;
 
   const cardRef = useRef<HTMLDivElement>(null);
   // Si centra solo la card appena aperta da un tocco: rientrando nello step con
@@ -90,24 +99,20 @@ export function RazzaCard({
           className="absolute inset-x-0 bottom-0 h-[150px] bg-gradient-to-t from-black/70 to-transparent"
         />
 
-        <span className="relative flex h-full w-full flex-col p-4">
+        {/* Contenitore per le unità `cqi` del nome: 100cqi è la larghezza
+            utile della card, padding escluso. */}
+        <span className="relative flex h-full w-full flex-col p-4 [container-type:inline-size]">
           <span
             className={cn(
               "flex flex-1 items-end",
               selected ? "justify-center pb-4" : "justify-end",
             )}
           >
-            {/* I corpi del mockup valgono su ogni schermo, telefono compreso:
-                72px chiusa, 120px aperta (105px per i nomi su due righe). */}
             <span
+              style={{ fontSize: corpoAdattato }}
               className={cn(
                 "font-sprat uppercase leading-none tracking-[-0.08em] text-white",
-                selected
-                  ? cn(
-                      "text-center font-extralight",
-                      nomeComposto ? "text-[105px] sm:text-[120px]" : "text-[120px]",
-                    )
-                  : "text-right font-normal text-[72px]",
+                selected ? "text-center font-extralight" : "text-right font-normal",
               )}
             >
               {razza.name}

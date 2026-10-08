@@ -30,7 +30,7 @@ export const WIZARD_GROUPS = [
     label: "Scegli la tua razza",
     introTitle: "Scelta della razza",
     introDescription:
-      "Ogni eroe di Rysonance appartiene a una razza. Qui decidi chi è il tuo eroe: il popolo da cui proviene.",
+      "Scegli con attenzione la razza del tuo alterego: a prescindere dalle nostre azioni, il sangue determinerà sempre una parte di noi che nessuna magia potrà mai cambiare.",
     steps: ["identita"],
   },
   {
@@ -38,7 +38,7 @@ export const WIZARD_GROUPS = [
     label: "Scegli la tua Via",
     introTitle: "Scelta della Via",
     introDescription:
-      "La Via è il cammino che il tuo eroe percorre e definisce il suo modo di stare al mondo. Qui sceglierai la tua Via.",
+      "La strada, il cammino, l'approccio. La Via determina ciò che il tuo alterego sa fare. Ricorda: siamo ciò che facciamo.",
     steps: ["via"],
   },
   {
@@ -46,7 +46,7 @@ export const WIZARD_GROUPS = [
     label: "Scegli i tuoi talenti",
     introTitle: "Scelta dei talenti",
     introDescription:
-      "I talenti sono le capacità che rendono unico il tuo eroe. Qui sceglierai i talenti con cui comincia il viaggio.",
+      "È difficile stabilire con certezza se i talenti siano doti innate o apprese attraverso il duro lavoro. Ma quello che è certo è che i talenti sono ciò che ci rende diversi dagli altri.",
     steps: ["talenti"],
   },
 ] as const satisfies readonly GroupDef[];

@@ -1,3 +1,5 @@
+import Image, { type StaticImageData } from "next/image";
+
 import { cardVariants } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { Talento } from "@/lib/onboarding/types";
@@ -6,7 +8,7 @@ type TalentoCardProps = {
   talento: Talento;
   selected: boolean;
   /** L'illustrazione del talento (vedi `CATALOG_IMAGES.talenti`). */
-  // image?: StaticImageData;
+  image?: StaticImageData;
   onSelect: () => void;
   /** Nasconde la descrizione del talento sotto l'immagine. */
   hideDescription?: boolean;
@@ -24,7 +26,7 @@ type TalentoCardProps = {
 export function TalentoCard({
   talento,
   selected,
-  // image = undefined,
+  image,
   onSelect,
   hideDescription = false,
 }: TalentoCardProps) {
@@ -41,30 +43,34 @@ export function TalentoCard({
       )}
     >
       <span className="relative flex min-h-0 w-full flex-1 flex-col justify-end overflow-hidden bg-muted p-2 font-sprat">
-        {/* {image ? (
+        {image && (
           <Image
             src={image}
+            // Decorativa: il nome del talento è già sulla copertina.
             alt=""
             fill
-            sizes="(min-width: 1024px) 22rem, (min-width: 640px) 50vw, 100vw"
+            /* Come la razza: chiusa è un terzo della griglia (max-w-5xl meno
+               padding e gap), aperta le prende tutte e tre. */
+            sizes={
+              selected
+                ? "(min-width: 1024px) 992px, 100vw"
+                : "(min-width: 1024px) 323px, (min-width: 640px) 50vw, 100vw"
+            }
+            placeholder="blur"
             className={cn(
               "object-cover transition-transform duration-500",
               "motion-safe:group-hover:scale-105",
             )}
           />
-        ) : (
-          <Sparkles
-            aria-hidden
-            className="absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 text-muted-foreground"
-          />
-        )} */}
+        )}
 
-        {/* Come nella card della razza: il velo parte da `card`, il colore
-            sotto la copertina, così il nome resta leggibile in entrambi i temi
-            e l'immagine sfuma nel corpo della card senza uno stacco netto. */}
+        {/* Come nella card della razza: il velo sta solo in fondo, sotto il
+            nome, e parte da nero e non da `card`. L'arte è fitta e colorata,
+            quindi il nome è bianco in entrambi i temi e il contrasto non deve
+            dipendere dal tema. */}
         <span
           aria-hidden
-          className="absolute inset-0 bg-gradient-to-b from-card via-card/20 to-transparent"
+          className="absolute inset-x-0 bottom-0 h-[150px] bg-gradient-to-t from-black/70 to-transparent"
         />
 
         {/* <span
@@ -84,8 +90,8 @@ export function TalentoCard({
         </span> */}
         {/* Aperta o chiusa, le stesse classi: il nome resta ancorato in basso a
             sinistra e non cambia corpo (la razza invece lo centra e lo ingrandisce). */}
-        <span className="relative block text-5xl">{talento.name.split(" ")[0]}</span>
-        <span className="relative block text-5xl">{talento.name.split(" ").slice(1).join(" ")}</span>
+        <span className="relative block text-5xl text-white">{talento.name.split(" ")[0]}</span>
+        <span className="relative block text-5xl text-white">{talento.name.split(" ").slice(1).join(" ")}</span>
 
       </span>
 

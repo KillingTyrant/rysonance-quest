@@ -15,6 +15,11 @@ const LATO = 320;
  * l'emblema è sempre quello del disegno: l'esterno ha sei puntini (60°),
  * l'interno tre rombi (120°). Il medio porta le icone delle vie, a coppie
  * opposte ogni 60°: uno scatto porta sull'asse l'icona accanto.
+ *
+ * `width` e `height` sono il viewBox, e il suo centro deve essere il centro
+ * del cerchio: ogni livello è centrato per il suo riquadro e gira intorno al
+ * centro dell'emblema. Un viewBox stretto attorno a un disegno asimmetrico
+ * sposta il cerchio fuori centro, e girando l'anello oscilla.
  */
 const ANELLI = [
   {
@@ -35,7 +40,10 @@ const ANELLI = [
     id: "interno",
     gradi: -120,
     width: 226,
-    height: 231,
+    // Il cerchio ha centro a y≈118: il rombo in cima sporge di 5 e in fondo non
+    // c'è niente a pareggiarlo, quindi il viewBox scende fino a 236 (il disegno
+    // finisce a 231) per avere il centro sul cerchio.
+    height: 236,
     d: "M213.352 169.845C221.406 154.286 226 136.679 226 117.964C226 57.3347 178.038 7.724 118.065 5.06628L113 0L107.935 5.06628C47.962 7.724 0 57.3347 0 117.964C0 136.651 4.59417 154.286 12.6478 169.845L10.9042 177.209L17.8785 178.87C37.9988 210.181 73.0916 231 113 231C152.908 231 188.001 210.181 208.121 178.87L215.096 177.209L213.352 169.845ZM113 228.232C74.0049 228.232 39.687 207.856 20.0926 177.181L21.6701 170.565L15.3877 169.07C7.36174 153.788 2.79525 136.402 2.79525 117.964C2.79525 58.7743 49.6503 10.354 108.212 7.83473L113.028 12.6518L117.843 7.83473C176.405 10.354 223.26 58.802 223.26 117.964C223.26 136.402 218.694 153.788 210.668 169.07L204.385 170.565L205.963 177.181C186.368 207.828 152.05 228.232 113.055 228.232H113Z",
   },
 ] as const;

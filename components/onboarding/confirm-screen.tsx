@@ -50,7 +50,7 @@ export function ConfirmScreen({
 
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-extrabold leading-tight sm:text-4xl">
-            Stai per far evocare
+            Stai per evocare
             <span className="block">{name}</span>
           </h1>
           {/* <p className="text-muted-foreground">

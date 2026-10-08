@@ -1,10 +1,15 @@
 import { cn } from "@/lib/utils";
 
-const PUNTI = "50,14 86,34.8 86,76.4 50,97.1 14,76.4 14,34.8";
+/**
+ * Le misure dell'esagono, in unità del `viewBox` (100 = larghezza): le usa anche
+ * `carta-immagine.ts`, che lo ridisegna sul canvas dell'immagine condivisa.
+ */
+export const ESAGONO_ALTEZZA = 111.1;
+export const ESAGONO_PUNTI = "50,14 86,34.8 86,76.4 50,97.1 14,76.4 14,34.8";
 /** Tratto che arrotonda i vertici: metà sporge fuori dal poligono, che è rientrato di 14. */
-const TRATTO = 28;
-/** Spessore del bordo bianco, in unità del `viewBox` (100 = larghezza dell'esagono). */
-const BORDO = 2;
+export const ESAGONO_TRATTO = 28;
+/** Spessore del bordo bianco. */
+export const ESAGONO_BORDO = 2;
 
 /**
  * L'esagono a punta in alto dietro al numero della quest, largo quanto il testo che
@@ -18,24 +23,24 @@ const BORDO = 2;
 export function Esagono({ className, bordo = false }: { className?: string; bordo?: boolean }) {
   return (
     <svg
-      viewBox="0 0 100 111.1"
+      viewBox={`0 0 100 ${ESAGONO_ALTEZZA}`}
       className={cn("h-auto w-[1.94em] overflow-visible text-numero", className)}
       aria-hidden
     >
       {bordo && (
         <polygon
-          points={PUNTI}
+          points={ESAGONO_PUNTI}
           fill="white"
           stroke="white"
-          strokeWidth={TRATTO}
+          strokeWidth={ESAGONO_TRATTO}
           strokeLinejoin="round"
         />
       )}
       <polygon
-        points={PUNTI}
+        points={ESAGONO_PUNTI}
         fill="currentColor"
         stroke="currentColor"
-        strokeWidth={bordo ? TRATTO - 2 * BORDO : TRATTO}
+        strokeWidth={bordo ? ESAGONO_TRATTO - 2 * ESAGONO_BORDO : ESAGONO_TRATTO}
         strokeLinejoin="round"
       />
     </svg>

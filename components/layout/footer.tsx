@@ -1,3 +1,5 @@
+import Script from "next/script";
+
 import { cn } from "@/lib/utils";
 
 export async function Footer({ className }: { className?: string }) {
@@ -14,6 +16,13 @@ export async function Footer({ className }: { className?: string }) {
                 className="iubenda-white iubenda-noiframe iubenda-embed hover:underline"
                 title="Cookie Policy"
             >Cookie Policy</a>
+            {/*
+              iubenda.js riscrive i link `.iubenda-embed` (stili inline, script del
+              badge inserito accanto). Caricato da qui parte solo dopo che il footer
+              è stato idratato: dal root layout poteva arrivare prima e far fallire
+              l'hydration. next/script lo carica una volta sola per sessione.
+            */}
+            <Script src="https://cdn.iubenda.com/iubenda.js" strategy="lazyOnload" />
         </footer>
     )
 }

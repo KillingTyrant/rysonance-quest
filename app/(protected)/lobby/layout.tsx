@@ -12,10 +12,7 @@ export default function ProtectedLayout({
         <div className="flex-1 w-full flex flex-col max-w-5xl px-gutter py-4">
           {children}
         </div>
-        {/* Il footer si allunga sotto i link (`box-content`: la riga resta h-6) per
-            fare posto al bottone flottante "Crea nuovo eroe" (40px a 16px dal bordo):
-            a fine pagina il bottone sta nel footer e non copre privacy e cookie. */}
-        {/* <Footer className="box-content pb-16" /> */}
+        {/* <Footer /> */}
       </div>
     </main>
   );

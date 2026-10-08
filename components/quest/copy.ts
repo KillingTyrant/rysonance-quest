@@ -32,6 +32,8 @@ export const QUEST_COPY = {
     condividi: "Condividi Personaggio",
     condividiTitolo: (nome: string) => `${nome} · Rysonance`,
     condividiTesto: "Il mio eroe per la quest di Prince Doji.",
+    /** Le etichette sopra i valori, nell'immagine condivisa. */
+    etichette: { razza: "Razza", via: "Via", talento: "Talento" },
     /** Letto dagli screen reader prima del numero nell'esagono. */
     numero: "Il tuo numero:",
     // Comincia con il testo del badge Apple, così il nome accessibile contiene quello visibile.

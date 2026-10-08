@@ -1,7 +1,7 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
-import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -19,19 +19,12 @@ export async function HomeCta() {
   const { data } = await supabase.auth.getClaims();
   const user = data?.claims;
 
-  // Chi ha già una sessione non deve rifare il sign-up: torna alla lobby.
-  if (user) {
-    return (
-      <div className="flex w-full max-w-xs flex-col items-center gap-4 pt-4">
-        <Button asChild variant="ticket">
-          <Link href="/lobby">Vai alla Lobby</Link>
-        </Button>
-        <Link href="/dado" className="text-sm underline underline-offset-4 opacity-70 hover:opacity-100">
-          Lancia il dado
-        </Link>
-      </div>
-    );
-  }
+  // Chi ha una sessione la home non la vede: il proxy lo manda in lobby o nel
+  // wizard. Qui si arriva solo se quel controllo è saltato (query fallita), e
+  // la lobby va bene in entrambi i casi. Leggere la sessione tiene anche la CTA
+  // fuori dalla shell statica, così una navigazione verso `/` passa sempre dal
+  // server, e quindi dal proxy, invece di uscire dalla cache del router.
+  if (user) redirect("/lobby");
 
   return (
     <div className="flex w-full max-w-xs flex-col items-center gap-4 pt-4">

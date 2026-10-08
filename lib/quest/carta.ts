@@ -15,5 +15,6 @@ export function toQuestCarta(catalog: Catalog, personaggio: Personaggio): QuestC
     razzaKey: personaggio.razza_key,
     razza: resolved.razza?.name ?? null,
     via: resolved.via?.name ?? null,
+    talento: resolved.talenti.map((talento) => talento.name).join(", ") || null,
   };
 }

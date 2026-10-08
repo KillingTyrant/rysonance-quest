@@ -8,11 +8,20 @@ import { Suspense } from "react";
 export async function Nav({
     hideAuthButton,
     sticky,
+    disableLogoLink,
 }: {
     hideAuthButton?: boolean;
     /** Tiene la nav — e quindi la sua azione — visibile mentre si scorre. */
     sticky?: boolean;
+    /**
+     * Logo senza link. Nel wizard `/` riporterebbe comunque all'onboarding (il
+     * proxy ci rimanda chi non ha ancora un eroe): il link non porterebbe da
+     * nessuna parte.
+     */
+    disableLogoLink?: boolean;
 }) {
+    const logo = <Logo iconOnly={false} className="h-7 w-auto shrink-0" />;
+
     return (
         <nav
             className={cn(
@@ -26,9 +35,7 @@ export async function Nav({
             */}
             <div className="w-full h-nav max-w-5xl flex justify-between items-center gap-3 px-gutter text-sm">
                 <div className="h-full flex shrink-0 gap-5 items-center font-semibold">
-                    <Link href={"/"} >
-                        <Logo iconOnly={false} className="h-5 w-auto shrink-0" />
-                    </Link>
+                    {disableLogoLink ? logo : <Link href={"/"} >{logo}</Link>}
                 </div>
                 {/* `min-w-0`: sui telefoni stretti la CTA può restringersi invece
                     di spingere fuori il logo. */}

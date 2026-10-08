@@ -9,6 +9,8 @@ export type QuestCarta = {
   razzaKey: string;
   razza: string | null;
   via: string | null;
+  /** I nomi dei talenti scelti, separati da virgola (oggi è uno solo). */
+  talento: string | null;
 };
 
 export type Quest = {

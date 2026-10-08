@@ -28,7 +28,7 @@ export function GroupIntro({ group, disabled, onContinue, onBack }: GroupIntroPr
           disabled={disabled}
           onClick={onContinue}
         >
-          Ho capito
+          Scegli
         </Button>
 
         {/* <Button

@@ -25,6 +25,8 @@ type CondividiCartaProps = {
   carta: QuestCarta;
   /** URL dell'illustrazione, della stessa origine. */
   illustrazione: string | null;
+  /** Il numero estratto nella quest, se il dado è già stato lanciato. */
+  numero: number | null;
   className?: string;
 };
 
@@ -36,19 +38,22 @@ type CondividiCartaProps = {
  * `navigator.share` va chiamato dentro il gesto, e un'attesa asincrona in mezzo lo
  * farebbe rifiutare. Nel frattempo il bottone resta disabilitato.
  */
-export function CondividiCarta({ carta, illustrazione, className }: CondividiCartaProps) {
+export function CondividiCarta({ carta, illustrazione, numero, className }: CondividiCartaProps) {
   const logoRef = useRef<SVGSVGElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [fallita, setFallita] = useState(false);
 
   useEffect(() => {
     let annullato = false;
+    // I nomi delle famiglie generati da next/font stanno nelle variabili che il
+    // root layout mette sul body.
+    const stile = getComputedStyle(document.body);
     creaImmagineCarta({
       carta,
       illustrazione,
-      // Il nome della famiglia generato da next/font sta nella variabile che il
-      // root layout mette sul body.
-      fontFamily: getComputedStyle(document.body).getPropertyValue("--font-sprat").trim(),
+      numero,
+      fontFamily: stile.getPropertyValue("--font-sprat").trim(),
+      fontSans: stile.getPropertyValue("--font-cabinet").trim(),
       logo: logoRef.current,
     })
       .then((blob) => {
@@ -61,7 +66,7 @@ export function CondividiCarta({ carta, illustrazione, className }: CondividiCar
     return () => {
       annullato = true;
     };
-  }, [carta, illustrazione]);
+  }, [carta, illustrazione, numero]);
 
   function condividi() {
     const title = QUEST_COPY.carta.condividiTitolo(carta.nome);

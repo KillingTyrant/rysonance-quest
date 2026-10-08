@@ -8,6 +8,7 @@
 
 <p align="center">
   <a href="#funzionalità"><strong>Funzionalità</strong></a> ·
+  <a href="#un-eroe-per-utente"><strong>Un eroe per utente</strong></a> ·
   <a href="#esecuzione-in-locale"><strong>Esecuzione in locale</strong></a> ·
   <a href="#sviluppo-locale-con-supabase-in-localhost"><strong>Sviluppo con Supabase locale</strong></a> ·
   <a href="#segnalazioni-e-issue"><strong>Segnalazioni e issue</strong></a> ·
@@ -30,6 +31,50 @@
 - Componenti con [shadcn/ui](https://ui.shadcn.com/)
 - Deploy opzionale con [l'integrazione Supabase per Vercel e il deploy su Vercel](#deploy-your-own)
   - Variabili d'ambiente assegnate automaticamente al progetto Vercel
+
+## Un eroe per utente
+
+La quest prevede un solo personaggio per utente. Il vincolo lo applica **solo l'app**: nel
+database (`rysonance-db`) né la tabella `personaggi` né la RPC `crea_personaggio` impediscono
+a un utente di averne più di uno.
+
+### Dove finisce l'utente
+
+| Utente              | Apre                    | Finisce in                              |
+| ------------------- | ----------------------- | --------------------------------------- |
+| non loggato         | una pagina protetta     | `/` (lo staff su `/staff/...` va invece a `/auth/login?next=...`) |
+| loggato, senza eroe | `/`                     | `/onboarding`                           |
+| loggato, senza eroe | `/onboarding`           | resta nel wizard                        |
+| loggato, con eroe   | `/` o `/onboarding`     | `/lobby`                                |
+
+Il login senza `?next=` porta a `/onboarding` (`DEFAULT_NEXT` in `lib/auth/next.ts`): è il
+proxy a rimandare in lobby chi ha già un eroe. Finito il wizard si va a `/quest/[id]`.
+
+### Dove sta la logica
+
+- **`lib/supabase/proxy.ts`**: per un utente loggato, su `/` e `/onboarding` legge se esiste
+  almeno un suo personaggio (una query con `limit 1`, il filtro per proprietario lo fa RLS) e
+  reindirizza come da tabella. Due eccezioni:
+  - vale solo per le richieste `GET`: la server action del wizard (`salvaPersonaggio`) fa
+    `POST` su `/onboarding` e non va dirottata;
+  - se la query fallisce non reindirizza: è un controllo ottimistico, non una barriera.
+- **`components/home/home-cta.tsx`**: rete di sicurezza. Se un utente loggato arriva comunque
+  alla home, lo manda in `/lobby`. Legge la sessione di proposito: così la CTA resta fuori
+  dalla shell statica e una navigazione verso `/` passa sempre dal server (e quindi dal
+  proxy) invece di uscire dalla cache del router.
+- **Lobby**: non ha un bottone di creazione. L'unico invito a creare l'eroe è lo stato vuoto
+  di `PersonaggioList` ("Crea il primo personaggio"), visibile solo a chi non ne ha.
+- **Onboarding**: il logo della nav non è cliccabile (`<Nav disableLogoLink />`), perché `/`
+  riporterebbe comunque al wizard.
+
+### Limiti
+
+- È un controllo d'interfaccia: chi chiama direttamente la server action o la RPC può ancora
+  creare un secondo personaggio. Per renderlo un vincolo vero serve un controllo in
+  `crea_personaggio`, da fare in `rysonance-db`.
+- Il proxy non sa chi è staff (lo decidono le RPC pagina per pagina): uno staff loggato che
+  apre `/` viene trattato come un giocatore. Lo staff entra dai link diretti a `/staff/...`,
+  che non sono toccati.
 
 ## Esecuzione in locale
 
