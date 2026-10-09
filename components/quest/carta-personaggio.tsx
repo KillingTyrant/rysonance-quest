@@ -1,7 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { type CSSProperties, type PointerEvent, useId, useRef } from "react";
+import {
+  type CSSProperties,
+  type PointerEvent,
+  useId,
+  useRef,
+  useSyncExternalStore,
+} from "react";
 
 import { CATALOG_IMAGES } from "@/assets/catalog";
 import { Logo } from "@/components/layout/logo";
@@ -20,6 +26,12 @@ const INCLINAZIONE_Y = 8;
 const INCLINAZIONE_X = 7;
 
 type QuickTo = ReturnType<typeof gsap.quickTo>;
+
+const subscribeNoop = () => () => {};
+/** Su Android niente badge Apple: il pass si scarica da un link. */
+const getPiattaforma = () => (/android/i.test(navigator.userAgent) ? "android" : "apple");
+/** Il server non conosce il telefono: lo spazio del wallet resta vuoto fino all'idratazione. */
+const getPiattaformaServer = () => null;
 
 /**
  * Colore della card per razza, per chiave del DB come `CATALOG_IMAGES.razze`: sfondo
@@ -57,7 +69,7 @@ type CartaPersonaggioProps = {
  * La card del personaggio, ultima schermata della quest e scheda dei personaggi nella
  * lobby: in alto una fascia nel colore della razza con nome e razza, sotto l'illustrazione della
  * razza con il numero estratto, il pulsante "Condividi Personaggio" e il badge
- * "Aggiungi a Apple Wallet".
+ * "Aggiungi a Apple Wallet" (su Android un link per scaricare il pass).
  *
  * Entra girandosi (sul retro c'è il simbolo Rysonance), poi una banda di luce la
  * attraversa e il nome arriva lettera per lettera. Da lì è olografica: si inclina verso il dito e il riflesso lo segue.
@@ -84,6 +96,8 @@ export function CartaPersonaggio({
 
   const illustrazione = CATALOG_IMAGES.razze[carta.razzaKey];
   const colore = COLORI_RAZZA[carta.razzaKey];
+  const piattaforma = useSyncExternalStore(subscribeNoop, getPiattaforma, getPiattaformaServer);
+  const passHref = `/api/personaggi/${carta.personaggioId}/pkpass`;
 
   const { contextSafe } = useGSAP(
     () => {
@@ -289,25 +303,42 @@ export function CartaPersonaggio({
                 illustrazione={illustrazione?.src ?? null}
                 numero={numero}
               />
-              {/* `<a>` e non `<Link>`: la risposta è un download `.pkpass`, e su iOS la
-                  schermata "Aggiungi" si apre solo da una navigazione vera. Il badge è
-                  l'SVG ufficiale Apple in italiano: le linee guida chiedono di usare solo
-                  quello, senza ridisegnarlo, deformarlo, coprirlo o aggiungergli effetti
-                  (per questo sta sopra gli strati olografici). */}
-              <a
-                href={`/api/personaggi/${carta.personaggioId}/pkpass`}
-                aria-label={QUEST_COPY.carta.walletLabel(carta.nome)}
-                className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-              >
-                <Image
-                  src="/IT_Add_to_Apple_Wallet_RGB_101821.svg"
-                  alt=""
-                  width={111}
-                  height={35}
-                  unoptimized
-                  className="h-10 w-auto"
-                />
-              </a>
+              {/* Alto quanto il badge anche vuoto (sul server e all'idratazione), così
+                  "Condividi Personaggio" non si sposta quando arriva il contenuto. */}
+              <div className="flex h-10 items-center">
+                {/* `<a>` e non `<Link>`: la risposta è un download `.pkpass`, e su iOS la
+                    schermata "Aggiungi" si apre solo da una navigazione vera. Il badge è
+                    l'SVG ufficiale Apple in italiano: le linee guida chiedono di usare solo
+                    quello, senza ridisegnarlo, deformarlo, coprirlo o aggiungergli effetti
+                    (per questo sta sopra gli strati olografici). */}
+                {piattaforma === "apple" && (
+                  <a
+                    href={passHref}
+                    aria-label={QUEST_COPY.carta.walletLabel(carta.nome)}
+                    className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                  >
+                    <Image
+                      src="/IT_Add_to_Apple_Wallet_RGB_101821.svg"
+                      alt=""
+                      width={111}
+                      height={35}
+                      unoptimized
+                      className="h-10 w-auto"
+                    />
+                  </a>
+                )}
+                {/* Android non apre il `.pkpass` da solo: lo scarica, e lo apre un'app
+                    di pass (WalletPasses, Pass2U…). Il badge Apple qui non ha senso. */}
+                {piattaforma === "android" && (
+                  <a
+                    href={passHref}
+                    aria-label={QUEST_COPY.carta.walletAndroidLabel(carta.nome)}
+                    className="rounded-sm text-sm font-semibold text-white underline underline-offset-4 [text-shadow:0_1px_3px_rgb(0_0_0/0.8)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                  >
+                    {QUEST_COPY.carta.walletAndroid}
+                  </a>
+                )}
+              </div>
             </div>
           </div>
 

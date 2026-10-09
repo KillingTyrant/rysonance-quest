@@ -38,6 +38,9 @@ export const QUEST_COPY = {
     numero: "Il tuo numero:",
     // Comincia con il testo del badge Apple, così il nome accessibile contiene quello visibile.
     walletLabel: (nome: string) => `Aggiungi a Apple Wallet la scheda di ${nome}`,
+    /** Su Android, al posto del badge Apple. */
+    walletAndroid: "Scarica il pass",
+    walletAndroidLabel: (nome: string) => `Scarica il pass della scheda di ${nome}`,
   },
   caricamento: {
     rysonance: "Attendo la risposta da un eco lontano...",
