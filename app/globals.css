@@ -236,15 +236,24 @@
     background-repeat: no-repeat;
   }
 
-  /* Timbro, lettere del logo e fase partner dello splash nascosti finché GSAP non li fa entrare; con "riduci movimento" restano visibili e fermi. */
+  /* Timbro, lettere del logo e fasi successive dello splash nascosti finché GSAP non li fa entrare; con "riduci movimento" restano visibili e fermi. */
   @media (prefers-reduced-motion: no-preference) {
     .quest-stamp,
     .logo-entrance path,
-    .splash-partner {
+    .splash-partner,
+    .splash-blanco {
       visibility: hidden;
     }
     .splash-bar {
       transform: scaleX(0);
+    }
+  }
+
+  /* Con "riduci movimento" GSAP non anima lo splash: resta solo la fase finale, invece delle tre sovrapposte. */
+  @media (prefers-reduced-motion: reduce) {
+    .splash-rysonance,
+    .splash-partner {
+      visibility: hidden;
     }
   }
 }

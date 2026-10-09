@@ -22,9 +22,10 @@ const INCLINAZIONE_X = 7;
 type QuickTo = ReturnType<typeof gsap.quickTo>;
 
 /**
- * Colore della card per razza, per chiave del DB come `CATALOG_IMAGES.razze`. Fisso
- * e non un token del tema: è il colore della razza, uguale ovunque. Una razza senza
- * colore resta sul blu notte di `--numero`.
+ * Colore della card per razza, per chiave del DB come `CATALOG_IMAGES.razze`: sfondo
+ * della fascia del titolo e dell'esagono del numero. Fisso e non un token del tema: è
+ * il colore della razza, uguale ovunque. Una razza senza colore resta sul blu notte di
+ * `--numero`.
  */
 const COLORI_RAZZA: Record<string, string | undefined> = {
   umani: "#1E1E39",
@@ -271,7 +272,7 @@ export function CartaPersonaggio({
                 ref={numeroRef}
                 className="absolute right-4 top-4 z-10 grid place-items-center text-4xl [&>*]:[grid-area:1/1]"
               >
-                <Esagono bordo />
+                <Esagono bordo colore={colore} />
                 <span className="font-extrabold leading-none tabular-nums text-numero-foreground">
                   <span className="sr-only">{QUEST_COPY.carta.numero} </span>
                   {numero}

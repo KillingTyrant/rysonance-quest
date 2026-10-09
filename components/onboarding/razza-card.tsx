@@ -1,8 +1,10 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { cardVariants } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { Razza } from "@/lib/onboarding/types";
+
+import { useCentraAllaApertura } from "./use-centra-alla-apertura";
 
 /**
  * Larghezza media di una lettera del nome, in em: Sprat Condensed maiuscolo
@@ -43,25 +45,13 @@ export function RazzaCard({
   const corpo = selected ? 120 : 72;
   const corpoAdattato = `min(${corpo}px, ${(100 / (razza.name.length * EM_PER_LETTERA)).toFixed(2)}cqi)`;
 
-  const cardRef = useRef<HTMLDivElement>(null);
-  // Si centra solo la card appena aperta da un tocco: rientrando nello step con
-  // la razza già scelta la pagina resta in cima, dove la porta il wizard.
-  const centraAllaApertura = useRef(false);
-
-  useEffect(() => {
-    if (!selected || !centraAllaApertura.current) return;
-    centraAllaApertura.current = false;
-    const movimento = window.matchMedia("(prefers-reduced-motion: no-preference)").matches;
-    cardRef.current?.scrollIntoView({ block: "center", behavior: movimento ? "smooth" : "auto" });
-  }, [selected]);
+  const { ref: cardRef, segnaTocco } = useCentraAllaApertura<HTMLDivElement>(selected);
 
   return (
     <div
       ref={cardRef}
       className={cn(
         cardVariants({ size: selected ? "expanded" : "compact" }),
-        // `scroll-mt-nav`: centrata nello spazio sotto la nav sticky, non
-        // nell'intera finestra, dove la nav ne coprirebbe la cima.
         "flex scroll-mt-nav flex-col overflow-hidden border-0",
         disabled && "opacity-50",
       )}
@@ -76,7 +66,7 @@ export function RazzaCard({
         aria-pressed={selected}
         disabled={disabled}
         onClick={() => {
-          centraAllaApertura.current = !selected;
+          segnaTocco();
           onSelect();
         }}
         className={cn(

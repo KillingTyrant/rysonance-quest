@@ -9,10 +9,10 @@ import type { StepProps } from "../wizard-steps";
  * Gli unici talenti che sceglie l'utente: li prende da tutta la lista, senza
  * vincoli.
  *
- * Si sceglie come la razza: si tocca una card e quella si apre, e toccarne
- * un'altra sposta la scelta invece di aggiungerla. Non c'è niente da
- * deselezionare né card disabilitate: oltre `TALENTI_DA_SCEGLIERE` esce il
- * talento scelto per primo.
+ * Si sceglie come la razza: si tocca una card e quella si apre, toccarla di
+ * nuovo la richiude e il talento torna da scegliere, e toccarne un'altra sposta
+ * la scelta invece di aggiungerla. Non ci sono card disabilitate: oltre
+ * `TALENTI_DA_SCEGLIERE` esce il talento scelto per primo.
  *
  * Quanti se ne scelgono è lo stesso numero per tutte le Vie
  * (`TALENTI_DA_SCEGLIERE`): non dipende più dalla Via e il database non lo
@@ -21,11 +21,10 @@ import type { StepProps } from "../wizard-steps";
  */
 export function TalentiStep({ catalog, draft, onChange }: StepProps) {
   function scegli(key: string) {
-    onChange({
-      talenti: [...draft.talenti.filter((scelto) => scelto !== key), key].slice(
-        -TALENTI_DA_SCEGLIERE,
-      ),
-    });
+    const altri = draft.talenti.filter((scelto) => scelto !== key);
+    // Toccare la card aperta la richiude.
+    if (altri.length < draft.talenti.length) onChange({ talenti: altri });
+    else onChange({ talenti: [...altri, key].slice(-TALENTI_DA_SCEGLIERE) });
   }
 
   return (

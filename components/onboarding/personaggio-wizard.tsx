@@ -272,7 +272,7 @@ export function PersonaggioWizard({ catalog }: { catalog: Catalog }) {
       >
         {/* 40px dalla nav, dal design della scelta della razza. */}
         <header className="flex flex-col gap-1 pt-10">
-          <h1 className="text-[20px] font-bold">
+          <h1 className="text-[24px] font-extrabold">
             {position?.group.introTitle ?? WIZARD_STEPS[stepIndex(step)].title}
           </h1>
           {position && position.count > 1 && (

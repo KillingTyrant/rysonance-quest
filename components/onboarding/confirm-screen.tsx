@@ -75,7 +75,11 @@ export function ConfirmScreen({
         </div>
       )}
 
-      <div className="flex w-full flex-col items-center gap-3">
+      {/*
+        Stesse distanze delle intro dei macro-passi (`GroupIntro`): link a
+        120px dal fondo, CTA a 176px, `gap-8` in mezzo con il link a `text-base`.
+      */}
+      <div className="flex w-full flex-col items-center gap-8 pb-[120px]">
         <Button variant="ticket" disabled={pending} onClick={onConfirm}>
           {pending ? "Creazione…" : "Crea e gioca"}
         </Button>
@@ -89,7 +93,7 @@ export function ConfirmScreen({
         <Link
           href="#"
           aria-disabled={pending}
-          className="w-full text-center text-muted-foreground underline aria-disabled:pointer-events-none aria-disabled:opacity-50"
+          className="w-full text-center text-base text-muted-foreground underline aria-disabled:pointer-events-none aria-disabled:opacity-50"
           onClick={(event) => {
             event.preventDefault();
             if (!pending) onBack();

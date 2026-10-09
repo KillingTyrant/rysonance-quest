@@ -21,10 +21,10 @@ export const QUEST_COPY = {
     annuncio: (numero: number) => `È uscito il ${numero}`,
   },
   istruzioni: {
-    titolo: "Dopo il concerto, torna al banchetto di Rysonance per riscuotere il premio.",
+    titolo: "Dopo il concerto, torna al banchetto di Rysonance per riscuotere il premio",
     testi: [
-      "Mostra il cellulare con il numero e comunica il titolo della canzone associata.",
-      "Potrai conservare la scheda del tuo personaggio e portarlo anche in gioco all'uscita di Rysonance!",
+      "Mostra il numero nella tua scheda e comunica il titolo della canzone associata.",
+      "Conserva la scheda poiché ti servirà per i prossimi eventi all’uscita di Rysonance!",
     ],
     cta: "Goditi l'evento",
   },
@@ -42,5 +42,6 @@ export const QUEST_COPY = {
   caricamento: {
     rysonance: "Attendo la risposta da un eco lontano...",
     partner: "Attendo la risposta da un eco lontano...",
+    blanco: "Attendo la risposta da un eco lontano...",
   },
 } as const;

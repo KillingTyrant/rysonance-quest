@@ -4,6 +4,8 @@ import { cardVariants } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { Talento } from "@/lib/onboarding/types";
 
+import { useCentraAllaApertura } from "./use-centra-alla-apertura";
+
 type TalentoCardProps = {
   talento: Talento;
   selected: boolean;
@@ -15,13 +17,15 @@ type TalentoCardProps = {
 };
 
 /**
- * La card di un talento a scelta, con i due stati della card della razza:
- * chiusa è la copertina con il nome, aperta — quando è il talento scelto —
- * prende l'altezza piena. A differenza della razza il nome non si sposta e non
- * cresce: resta in basso a sinistra, allo stesso corpo, aperta o chiusa.
+ * La card di un talento a scelta, con i due stati e il comportamento della card
+ * della razza: chiusa è la copertina con il nome, aperta — quando è il talento
+ * scelto — prende l'altezza piena. Un tocco la apre e la porta al centro dello
+ * schermo, un secondo la richiude; l'illustrazione scivola fra i due stati.
+ * Senza bordo in entrambi: la scelta si legge dall'altezza della card.
  *
- * Sotto la copertina può stare la descrizione di atmosfera. È un solo bottone,
- * e lo stato scelto si legge dall'altezza e dal bordo, non solo dal colore.
+ * A differenza della razza il nome non si sposta e non cresce: resta in basso a
+ * sinistra, allo stesso corpo, aperta o chiusa. Sotto la copertina può stare la
+ * descrizione di atmosfera, dentro lo stesso bottone.
  */
 export function TalentoCard({
   talento,
@@ -30,16 +34,22 @@ export function TalentoCard({
   onSelect,
   hideDescription = false,
 }: TalentoCardProps) {
+  const { ref, segnaTocco } = useCentraAllaApertura<HTMLButtonElement>(selected);
+
   return (
     <button
+      ref={ref}
       type="button"
       aria-pressed={selected}
-      onClick={onSelect}
+      onClick={() => {
+        segnaTocco();
+        onSelect();
+      }}
       className={cn(
         cardVariants({ size: selected ? "expanded" : "compact" }),
-        "group flex flex-col overflow-hidden text-left",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        selected && "border-primary ring-1 ring-primary",
+        // Come la razza: niente bordo, e il focus da tastiera è un anello interno.
+        "flex scroll-mt-nav flex-col overflow-hidden border-0 text-left uppercase",
+        "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-ring",
       )}
     >
       <span className="relative flex min-h-0 w-full flex-1 flex-col justify-end overflow-hidden bg-muted p-2 font-sprat">
@@ -50,16 +60,21 @@ export function TalentoCard({
             alt=""
             fill
             /* Come la razza: chiusa è un terzo della griglia (max-w-5xl meno
-               padding e gap), aperta le prende tutte e tre. */
+               padding e gap), aperta le prende tutte e tre. Chiusa conta anche
+               l'ingrandimento di 1,1 (323px → 355px). */
             sizes={
               selected
                 ? "(min-width: 1024px) 992px, 100vw"
-                : "(min-width: 1024px) 323px, (min-width: 640px) 50vw, 100vw"
+                : "(min-width: 1024px) 355px, (min-width: 640px) 55vw, 110vw"
             }
             placeholder="blur"
             className={cn(
-              "object-cover transition-transform duration-500",
-              "motion-safe:group-hover:scale-105",
+              /* L'arte non ha un soggetto da inquadrare come quella della
+                 razza: chiusa è appena ingrandita, aperta torna a riempire la
+                 card, così aprendo e chiudendo l'illustrazione scivola fra i
+                 due stati invece di saltare. */
+              "object-cover transition-transform duration-500 ease-in-out motion-reduce:transition-none",
+              selected ? "scale-100" : "scale-110",
             )}
           />
         )}

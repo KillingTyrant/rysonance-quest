@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 
 import { QUEST_COPY } from "./copy";
 import { Esagono } from "./esagono";
+import { FUORI_MASCHERA, MASCHERA, MASCHERA_RIGHE } from "./maschera";
 import { QuestHeader } from "./quest-header";
 import type { QuestStep } from "./quest-machine";
 
@@ -133,7 +134,7 @@ export function PassoNumero({ step, numero, origine, onContinua, onGodi }: Passo
       <div
         ref={numeroRef}
         aria-hidden
-        className="grid place-items-center text-[min(30vw,8rem)] opacity-0 motion-reduce:opacity-100 [&>*]:[grid-area:1/1]"
+        className="grid place-items-center text-[min(24vw,6.4rem)] opacity-0 motion-reduce:opacity-100 [&>*]:[grid-area:1/1]"
       >
         <Esagono />
         <p className="font-extrabold leading-none tabular-nums text-numero-foreground">
@@ -143,8 +144,14 @@ export function PassoNumero({ step, numero, origine, onContinua, onGodi }: Passo
     </div>
   );
 
+  // Il fondo della schermata, e con lui i bottoni dei due step, sta a 176px dal bordo
+  // basso dello schermo, sopra il bottone delle preferenze di iubenda (38×38 fisso a
+  // 16px dal fondo): al padding del <main> si aggiunge quel che manca.
   return (
-    <section ref={rootRef} className="flex flex-1 flex-col text-center">
+    <section
+      ref={rootRef}
+      className="flex flex-1 flex-col pb-[calc(176px_-_var(--quest-bottom))] text-center"
+    >
       <QuestHeader />
 
       {/* Il riferimento dei testi tolti dal flusso: restano al bordo in cui stavano. */}
@@ -231,11 +238,17 @@ function TestiRisultato({ attivo, numero, onContinua, children }: TestiRisultato
     const split = SplitText.create(titoloRef.current, {
       type: "lines",
       mask: "lines",
+      linesClass: "pezzo",
       ignore: ".sr-only",
     });
     gsap
       .timeline({ delay: 0.4 })
-      .from(split.lines, { yPercent: 100, duration: 0.7, stagger: 0.08, ease: "power4.out" })
+      .from(split.lines, {
+        yPercent: FUORI_MASCHERA,
+        duration: 0.7,
+        stagger: 0.08,
+        ease: "power4.out",
+      })
       .from(
         bottoneRef.current,
         { opacity: 0, y: 24, duration: 0.5, ease: "back.out(1.7)" },
@@ -251,7 +264,8 @@ function TestiRisultato({ attivo, numero, onContinua, children }: TestiRisultato
         tabIndex={-1}
         inert={!attivo}
         className={cn(
-          "text-balance text-xl font-bold leading-tight opacity-0 outline-none motion-reduce:opacity-100",
+          "text-balance text-[24px]/[20px] font-bold opacity-0 outline-none motion-reduce:opacity-100",
+          MASCHERA_RIGHE,
           !attivo && "absolute inset-x-0 top-0",
         )}
       >
@@ -297,11 +311,17 @@ function TestiIstruzioni({ attivo, inArrivo, numero, onGodi }: TestiIstruzioniPr
     const split = SplitText.create(titoloRef.current, {
       type: "words",
       mask: "words",
+      wordsClass: "pezzo",
       ignore: ".sr-only",
     });
     gsap
       .timeline({ delay: cambiato ? 0.45 : 0.15 })
-      .from(split.words, { yPercent: 100, duration: 0.6, stagger: 0.05, ease: "power4.out" })
+      .from(split.words, {
+        yPercent: FUORI_MASCHERA,
+        duration: 0.6,
+        stagger: 0.05,
+        ease: "power4.out",
+      })
       .from(
         gsap.utils.toArray<HTMLElement>(testiRef.current?.children ?? []),
         { opacity: 0, y: 12, duration: 0.45, stagger: 0.12, ease: "power2.out" },
@@ -323,12 +343,12 @@ function TestiIstruzioni({ attivo, inArrivo, numero, onGodi }: TestiIstruzioniPr
         ref={titoloRef}
         data-quest-titolo
         tabIndex={-1}
-        className="text-balance text-xl font-bold leading-tight outline-none"
+        className={cn("text-balance text-[24px]/[20px] font-bold outline-none", MASCHERA)}
       >
         {QUEST_COPY.istruzioni.titolo}
         <span className="sr-only"> Il tuo numero è {numero}.</span>
       </h1>
-      <div ref={testiRef} className="flex flex-col gap-4 text-balance text-sm">
+      <div ref={testiRef} className="flex flex-col gap-4 text-balance text-[18px]/[18px]">
         {QUEST_COPY.istruzioni.testi.map((testo) => (
           <p key={testo}>{testo}</p>
         ))}

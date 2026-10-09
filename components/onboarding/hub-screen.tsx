@@ -5,9 +5,10 @@ import { CATALOG_IMAGES } from "@/assets/catalog";
 // Import relativo e non con l'alias `@/`: vedi la nota in `assets/catalog/index.ts`.
 import squarcio from "../../assets/layout/squarcio.webp";
 
+import { LogoutButton } from "@/components/auth/logout-button";
+import { NavAction } from "@/components/layout/nav-action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { WIZARD_GROUPS, type GroupId } from "@/lib/onboarding/groups";
 import { resolveDraft, type ResolvedPersonaggio } from "@/lib/onboarding/selectors";
 import { cn } from "@/lib/utils";
@@ -17,20 +18,6 @@ import { NAME_MAX_LENGTH } from "@/lib/onboarding/validate";
 import { SigilloEroe } from "./sigillo-eroe";
 import type { SaveError } from "./wizard-steps";
 
-/** Il riepilogo della riga, con i nomi del catalogo al posto delle chiavi. */
-function selectionValue(groupId: GroupId, resolved: ResolvedPersonaggio): string | null {
-  if (groupId === "razza") return resolved.razza?.name ?? null;
-
-  if (groupId === "via") return resolved.via?.name ?? null;
-
-  if (groupId === "talenti") {
-    const { talenti } = resolved;
-    return talenti.length > 0 ? talenti.map((talento) => talento.name).join(", ") : null;
-  }
-
-  return null;
-}
-
 /**
  * L'etichetta spezzata in due righe: la prima parola ("Scegli") sta da sola
  * sopra, il resto scende sotto, così le righe della hub restano allineate
@@ -39,6 +26,27 @@ function selectionValue(groupId: GroupId, resolved: ResolvedPersonaggio): string
 function labelLines(label: string): [string, string] {
   const [first, ...rest] = label.split(" ");
   return [first, rest.join(" ")];
+}
+
+/**
+ * Il riepilogo della riga, con i nomi del catalogo al posto delle chiavi, già
+ * diviso in righe. La razza ne ha una; la Via due, "Via del" sopra il nome
+ * ("Guerriero", "Sapiente", "Viandante"); i talenti sempre due, la prima
+ * parola sopra e il resto sotto ("Magia / elementale", "Armi / corpo a corpo").
+ */
+function selectionLines(groupId: GroupId, resolved: ResolvedPersonaggio): string[] | null {
+  if (groupId === "razza") return resolved.razza ? [resolved.razza.name.split(" ")[0]] : null;
+
+  if (groupId === "via") return resolved.via ? ["Via del", resolved.via.name] : null;
+
+  if (groupId === "talenti") {
+    const { talenti } = resolved;
+    return talenti.length > 0
+      ? labelLines(talenti.map((talento) => talento.name).join(", "))
+      : null;
+  }
+
+  return null;
 }
 
 /**
@@ -96,7 +104,10 @@ export function HubScreen({
   return (
     // `overflow-x-clip`: il sigillo esce dal bordo destro, e senza la pagina
     // scorrerebbe di lato. `clip` e non `hidden`, che farebbe da contenitore di scroll.
-    <div className="relative isolate flex flex-1 flex-col overflow-x-clip px-gutter py-4">
+    // `pb-[54px]`: il bottone delle preferenze di iubenda è fisso in basso a
+    // destra, 38×38 a 16px dai bordi (CSS di iubenda): così la CTA "Crea Eroe"
+    // finisce all'altezza del suo bordo alto e non gli si accosta di fianco.
+    <div className="relative isolate flex flex-1 flex-col overflow-x-clip px-gutter pt-4 pb-[54px]">
       {/*
         Arte di sfondo: lo squarcio ha la metà alta trasparente e la materia in
         basso, quindi resta ancorato al fondo. Sta prima del velo che tiene
@@ -113,6 +124,14 @@ export function HubScreen({
         />
         <div className="absolute inset-0" />
       </div>
+
+      {/*
+        Il logout sta nello slot della nav solo qui: negli step lo slot è del
+        bottone che conferma la scelta, e la nav del wizard non ha l'AuthButton.
+      */}
+      <NavAction>
+        <LogoutButton />
+      </NavAction>
 
       <h1 className="text-4xl font-extrabold">Genesi dell&apos;eroe</h1>
 
@@ -132,7 +151,7 @@ export function HubScreen({
           {WIZARD_GROUPS.map((group) => {
             const isDone = completed(group.id);
             const isUnlocked = unlocked(group.id);
-            const selectedValue = selectionValue(group.id, resolved);
+            const selectedLines = selectionLines(group.id, resolved);
             const image = selectionImage(group.id, draft);
             const [labelHead, labelTail] = labelLines(group.label);
             return (
@@ -158,11 +177,12 @@ export function HubScreen({
                   {/* Da completato il quadrato cresce: 56px contro i 48 di quello
                       attivo e di quello bloccato. `mx-1` fa occupare anche a questi
                       56px di larghezza: i quadrati restano centrati sullo stesso asse
-                      e le etichette allineate fra loro. */}
+                      e le etichette allineate fra loro. Quelli con il "+" hanno
+                      il raggio a 8px del design (`rounded-lg`). */}
                   <span
                     className={cn(
-                      "relative isolate flex shrink-0 items-center justify-center overflow-hidden rounded-sm",
-                      isDone ? "size-14" : "size-12 mx-1",
+                      "relative isolate flex shrink-0 items-center justify-center overflow-hidden",
+                      isDone ? "size-14 rounded-sm" : "size-12 mx-1 rounded-lg",
                       image
                         ? isDone
                           ? "text-white"
@@ -170,8 +190,8 @@ export function HubScreen({
                         : isDone
                           ? "bg-primary text-white"
                           : isUnlocked
-                            ? "bg-brand text-primary border-primary rounded-sm border-2"
-                            : "bg-muted/60 text-muted-foreground rounded-sm border-2",
+                            ? "bg-brand text-primary border-primary border-2"
+                            : "bg-muted/60 text-muted-foreground border-2",
                     )}
                   >
                     {image && (
@@ -194,16 +214,20 @@ export function HubScreen({
                     )}
                     {!isDone ? <Plus /> : !image ? <Check /> : null}
                   </span>
-                  <span className={cn("w-full font-medium leading-snug", isDone && "")}>
-                    {!selectedValue && <span className="block">{labelHead}</span>}
-                    {!selectedValue && <span className="block">{labelTail}</span>}
-                    {selectedValue && group.id === 'razza' ? (
-                      <>
-                        <span className="block font-bold text-xl"> {selectedValue.split(" ")[0]} </span>
-                        {/* <span className="block"> {selectedValue.split(" ")[1]} </span> */}
-                      </>
+                  {/* 16/16.9 extrabold come su Figma, anche sulle righe grigie
+                      bloccate: le due righe dell'etichetta restano strette. */}
+                  <span className="w-full text-base font-extrabold leading-[16.9px]">
+                    {selectedLines ? (
+                      selectedLines.map((line) => (
+                        <span key={line} className="block font-bold text-xl">
+                          {line}
+                        </span>
+                      ))
                     ) : (
-                      <span className="block font-bold text-xl"> {selectedValue} </span>
+                      <>
+                        <span className="block">{labelHead}</span>
+                        <span className="block">{labelTail}</span>
+                      </>
                     )}
                   </span>
                 </button>
@@ -211,7 +235,7 @@ export function HubScreen({
             );
           })}
           {/* Crea random */}
-          <li key={'create-random'} className="mt-4">
+          <li key={'create-random'} className="mt-10">
             <button
               type="button"
               onClick={onRandomize}
@@ -236,7 +260,7 @@ export function HubScreen({
                 <RefreshCcw />
 
               </span>
-              <span className={cn("w-full font-medium leading-snug ")}>
+              <span className="w-full text-base font-extrabold leading-[16.9px]">
                 <span className="block">Crea</span>
                 <span className="block">un eroe random</span>
               </span>
@@ -249,18 +273,20 @@ export function HubScreen({
       <div className="mt-auto flex flex-col gap-3 pt-6 justify-center items-center">
         {allComplete && (
           <div className="flex flex-col gap-2 w-full">
-            <Label htmlFor="nome-personaggio" className="text-white font-bold text-xl">Nome dell&apos;eroe</Label>
+            {/* Senza label visibile: il placeholder fa da invito e
+                `aria-label` dà il nome al campo per gli screen reader. */}
             <Input
               id="nome-personaggio"
               value={draft.name}
               maxLength={NAME_MAX_LENGTH}
               autoComplete="off"
-              placeholder="Es. Aurel"
+              placeholder="Scegli un nome"
+              aria-label="Nome dell'eroe"
               disabled={pending}
               aria-invalid={draft.name.length > 0 && nameProblems.length > 0}
               aria-describedby={nameProblems.length > 0 ? "nome-personaggio-hint" : undefined}
               onChange={(event) => onNameChange(event.target.value)}
-              className="w-full bg-primary text-background rounded-md"
+              className="w-full bg-primary text-background rounded-xl text-center"
             />
           </div>
         )}

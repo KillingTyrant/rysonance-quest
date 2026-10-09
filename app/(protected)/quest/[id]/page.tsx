@@ -16,7 +16,7 @@ export const metadata = {
  * pagina. Chi apre l'id di un altro utente trova un 404: lo decide RLS.
  *
  * Senza `generateStaticParams` l'id è un dato di runtime: si legge dentro
- * Suspense. Intanto lo splash (Rysonance, poi il partner) fa tutta la sua
+ * Suspense. Intanto lo splash (Rysonance, il partner, Blanco) fa tutta la sua
  * animazione, e la quest compare solo dopo, anche se è arrivata prima: lo
  * decide `SplashGate` sul client. Se la quest tarda, resta lo splash finale.
  */

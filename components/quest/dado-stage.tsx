@@ -9,9 +9,11 @@ import type { DiceAppearance, ScreenPoint } from "@/components/dice/types";
 import { gsap, SplitText, useGSAP } from "@/components/motion/gsap";
 import { useReducedMotion } from "@/components/motion/use-reduced-motion";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 import { QUEST_COPY } from "./copy";
 import { DadoGesto } from "./dado-gesto";
+import { FUORI_MASCHERA, MASCHERA_RIGHE } from "./maschera";
 import { QuestHeader } from "./quest-header";
 import type { QuestEvent, QuestState } from "./quest-machine";
 
@@ -99,11 +101,12 @@ export function DadoStage({
         SplitText.create(titleRef.current, {
           type: "lines",
           mask: "lines",
+          linesClass: "pezzo",
           // Il font arriva con `display: swap`: quando cambia, le righe si ricalcolano.
           autoSplit: true,
           onSplit: (self) =>
             gsap.from(self.lines, {
-              yPercent: 100,
+              yPercent: FUORI_MASCHERA,
               duration: 0.7,
               stagger: 0.08,
               delay: 0.1,
@@ -322,13 +325,16 @@ export function DadoStage({
             ref={titleRef}
             data-quest-titolo
             tabIndex={-1}
-            className="text-balance text-3xl font-bold leading-tight opacity-0 outline-none motion-reduce:opacity-100"
+            className={cn(
+              "text-balance text-[32px]/[21px] font-extrabold opacity-0 outline-none motion-reduce:opacity-100",
+              MASCHERA_RIGHE,
+            )}
           >
             {QUEST_COPY.dado.titolo}
           </h1>
           <p
             ref={subtitleRef}
-            className="text-muted-foreground opacity-0 motion-reduce:opacity-100"
+            className="text-[20px]/[20px] font-medium text-muted-foreground opacity-0 motion-reduce:opacity-100"
           >
             {QUEST_COPY.dado.sottotitolo}
           </p>

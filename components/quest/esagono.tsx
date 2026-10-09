@@ -19,11 +19,23 @@ export const ESAGONO_BORDO = 2;
  *
  * Con `bordo` sotto c'è un secondo esagono bianco della stessa forma e quello colorato
  * ha il tratto più sottile, così il bordo sta dentro la sagoma e l'ingombro non cambia.
+ *
+ * `colore` sostituisce il blu notte di `--numero` (la card lo dà nel colore della razza);
+ * se manca resta `--numero`.
  */
-export function Esagono({ className, bordo = false }: { className?: string; bordo?: boolean }) {
+export function Esagono({
+  className,
+  bordo = false,
+  colore,
+}: {
+  className?: string;
+  bordo?: boolean;
+  colore?: string;
+}) {
   return (
     <svg
       viewBox={`0 0 100 ${ESAGONO_ALTEZZA}`}
+      style={{ color: colore }}
       className={cn("h-auto w-[1.94em] overflow-visible text-numero", className)}
       aria-hidden
     >
